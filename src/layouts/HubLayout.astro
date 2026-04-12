@@ -9,9 +9,14 @@ interface Props {
   description: string;
   canonicalPath: string;
   ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   noindex?: boolean;
   schemas?: object[];
-  ogType?: 'website' | 'article';
+  ogType?: 'website' | 'article' | 'video.movie' | 'video.tv_show';
+  articleSection?: string;
+  publishedTime?: string;
 }
 
 const props = Astro.props;

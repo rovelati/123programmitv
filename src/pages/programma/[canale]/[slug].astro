@@ -47,6 +47,16 @@ const description = program.description
   : `${program.title} in onda su ${channel.name} ${dateLabel} alle ${startLabel}.`;
 
 const canonicalPath = `/programma/${channel.id}/${slug}`;
+
+// OG type: video.movie per film, video.tv_show per serie, article per il resto
+const isFilm   = program.category?.toLowerCase().includes('film') || /\(\d{4}\)/.test(program.title);
+const isSeries = program.category?.toLowerCase().includes('serie') || program.category?.toLowerCase().includes('fiction');
+const ogType   = isFilm ? 'video.movie' : isSeries ? 'video.tv_show' : 'article';
+
+// OG image: usa il poster del programma se disponibile
+const ogImage    = program.poster_url ?? '/og/default.png';
+const ogImageAlt = `${program.title} — ${channel.name}`;
+const articleSection = isFilm ? 'Film' : isSeries ? 'Serie TV' : 'Programmi TV';
 ---
 
 <BaseLayout
@@ -55,7 +65,11 @@ const canonicalPath = `/programma/${channel.id}/${slug}`;
   {canonicalPath}
   noindex={!isIndexable}
   {schemas}
-  ogType="article"
+  {ogType}
+  {ogImage}
+  {ogImageAlt}
+  {articleSection}
+  publishedTime={program.startTime}
 >
   <Header />
 
