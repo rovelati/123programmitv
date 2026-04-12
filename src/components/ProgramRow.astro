@@ -1,0 +1,94 @@
+---
+import { formatTime, isProgramLive } from '../utils/timeSlots';
+import type { Program } from '../types';
+
+interface Props {
+  program: Program;
+  showChannel?: string;
+  /** Dati canale — usati per popolare l'overlay */
+  channelId?: string;
+  channelLogo?: string;
+  channelName?: string;
+}
+
+const { program, showChannel, channelId, channelLogo, channelName } = Astro.props;
+
+const startLabel = formatTime(program.startTime);
+const endLabel   = formatTime(program.endTime);
+const isLive     = isProgramLive(program.startTime, program.endTime);
+
+const CATEGORY_COLORS: Record<string, string> = {
+  'Film':         'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+  'Cinema':       'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+  'Serie TV':     'bg-blue-100   dark:bg-blue-900/30   text-blue-700   dark:text-blue-300',
+  'Sport':        'bg-green-100  dark:bg-green-900/30  text-green-700  dark:text-green-300',
+  'Tg':           'bg-slate-100  dark:bg-slate-700      text-slate-600  dark:text-slate-300',
+  'Documentario': 'bg-amber-100  dark:bg-amber-900/30  text-amber-700  dark:text-amber-300',
+  'Show':         'bg-pink-100   dark:bg-pink-900/30   text-pink-700   dark:text-pink-300',
+  'Bambini':      'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+};
+const badgeClass = CATEGORY_COLORS[program.category] ?? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400';
+
+// Dati serializzati per l'overlay (non indicizzati, solo client-side)
+const overlayData = JSON.stringify({
+  id:          program.id,
+  title:       program.title,
+  startTime:   program.startTime,
+  endTime:     program.endTime,
+  category:    program.category  ?? '',
+  description: program.description ?? '',
+  poster_url:  program.poster_url  ?? null,
+  channelId:   channelId   ?? program.channel_id ?? '',
+  channelLogo: channelLogo ?? '',
+  channelName: channelName ?? showChannel ?? '',
+});
+---
+
+<li
+  data-program={overlayData}
+  role="button"
+  tabindex="0"
+  class:list={[
+    'grid grid-cols-[52px_1fr] gap-3 px-4 py-3 cursor-pointer',
+    'hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
+    isLive && 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/10',
+  ]}
+  aria-label={`${program.title} — ${startLabel}`}
+>
+  <!-- Orario -->
+  <div class="text-right pt-0.5 flex-shrink-0">
+    <span class="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums block">{startLabel}</span>
+    <span class="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums block">{endLabel}</span>
+  </div>
+
+  <!-- Contenuto programma -->
+  <div class="min-w-0">
+    <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+      {isLive && (
+        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 px-1.5 py-0.5 rounded-full">
+          <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block"></span>
+          Live
+        </span>
+      )}
+      {showChannel && <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{showChannel}</span>}
+    </div>
+
+    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug truncate">{program.title}</p>
+
+    <div class="flex items-center gap-2 mt-0.5">
+      {program.category && (
+        <span class:list={['text-[10px] px-1.5 py-0.5 rounded-full font-semibold', badgeClass]}>
+          {program.category}
+        </span>
+      )}
+    </div>
+
+    {program.description && (
+      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-2 leading-relaxed">{program.description}</p>
+    )}
+  </div>
+
+  <!-- Indicatore "apri dettaglio" -->
+  <div class="hidden" aria-hidden="true"></div>
+</li>

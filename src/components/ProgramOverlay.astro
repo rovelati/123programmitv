@@ -1,0 +1,383 @@
+---
+// ProgramOverlay.astro
+// Overlay globale per i dettagli del programma — client-side only, non indicizzabile.
+// Incluso una volta in HubLayout.astro; si attiva su qualsiasi [data-program] cliccato.
+---
+
+<!-- ─── Overlay root ──────────────────────────────────────────────────────── -->
+<div
+  id="program-overlay"
+  class="fixed inset-0 z-[200] flex items-end md:items-center justify-center"
+  aria-modal="true"
+  role="dialog"
+  aria-labelledby="overlay-title-el"
+  aria-hidden="true"
+>
+  <!-- Backdrop -->
+  <div id="overlay-backdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+
+  <!-- Panel: bottom-sheet su mobile, modal centrato su desktop -->
+  <div
+    id="overlay-panel"
+    class="relative w-full md:max-w-[520px] mx-auto max-h-[92dvh] overflow-y-auto bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col"
+  >
+    <!-- Drag handle (mobile only) -->
+    <div class="md:hidden flex justify-center pt-3 pb-0 flex-shrink-0" aria-hidden="true">
+      <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+    </div>
+
+    <!-- Header: canale + pulsante chiudi -->
+    <div class="flex items-center justify-between px-5 pt-3 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shadow-sm">
+          <img
+            id="overlay-channel-logo"
+            src=""
+            alt=""
+            width="32"
+            height="32"
+            class="w-8 h-8 object-contain"
+          />
+        </div>
+        <span id="overlay-channel-name" class="text-sm font-bold text-slate-500 dark:text-slate-400 truncate"></span>
+      </div>
+      <button
+        id="overlay-close"
+        aria-label="Chiudi"
+        class="ml-2 w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 dark:text-slate-500"
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M14 4L4 14M4 4l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body scrollabile -->
+    <div class="flex-1 overflow-y-auto">
+
+      <!-- Poster (nascosto di default) -->
+      <div id="overlay-poster-wrap" class="hidden overflow-hidden">
+        <img
+          id="overlay-poster"
+          src=""
+          alt=""
+          class="w-full h-52 sm:h-64 object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Contenuto principale -->
+      <div class="px-5 pt-5 pb-8 space-y-4">
+
+        <!-- Badge LIVE + barra di avanzamento -->
+        <div id="overlay-live-section" class="hidden space-y-2">
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800/50 px-2.5 py-1 rounded-full">
+            <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block"></span>
+            In onda ora
+          </span>
+          <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div id="overlay-progress" class="h-full bg-blue-500 rounded-full transition-[width] duration-300" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Titolo programma -->
+        <h2 id="overlay-title-el" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight tracking-tight"></h2>
+
+        <!-- Orario + categoria -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            <span id="overlay-time" class="text-sm font-bold tabular-nums"></span>
+          </div>
+          <span id="overlay-category" class="hidden text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wide"></span>
+        </div>
+
+        <!-- Descrizione -->
+        <p id="overlay-description" class="hidden text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+
+        <!-- Divider -->
+        <div class="h-px bg-slate-100 dark:bg-slate-800" aria-hidden="true"></div>
+
+        <!-- Azioni -->
+        <div class="flex gap-3">
+          <a
+            id="overlay-watch"
+            href="#"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-2xl transition-colors text-sm shadow-sm"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+            Guarda ora
+          </a>
+          <button
+            id="overlay-favorite"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-slate-200 font-bold rounded-2xl transition-all text-sm"
+          >
+            <svg
+              id="overlay-fav-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="overlay-fav-label">In rubrica</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Stili animazione ─────────────────────────────────────────────────── -->
+<style>
+  /* Overlay root: nascosto di default (opacity + pointer-events), nessun display:none */
+  #program-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #program-overlay.overlay-open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Panel mobile: slide-up */
+  #overlay-panel {
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  /* Panel desktop: scale + fade */
+  @media (min-width: 768px) {
+    #overlay-panel {
+      transform: scale(0.93);
+      opacity: 0;
+      transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+  }
+  #program-overlay.overlay-open #overlay-panel {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  @media (min-width: 768px) {
+    #program-overlay.overlay-open #overlay-panel {
+      transform: scale(1);
+    }
+  }
+</style>
+
+<!-- ─── Script client-side ──────────────────────────────────────────────── -->
+<script>
+(function () {
+  'use strict';
+
+  /** Mappa channel_id → URL stream ufficiale */
+  const STREAMS = {
+    'rai-1':      'https://www.raiplay.it/dirette/rai1',
+    'rai-2':      'https://www.raiplay.it/dirette/rai2',
+    'rai-3':      'https://www.raiplay.it/dirette/rai3',
+    'rai-4':      'https://www.raiplay.it/dirette/rai4',
+    'rai-5':      'https://www.raiplay.it/dirette/rai5',
+    'rai-movie':  'https://www.raiplay.it/dirette/raimovie',
+    'rai-news24': 'https://www.raiplay.it/dirette/rainews24',
+    'rai-sport':  'https://www.raiplay.it/dirette/raisport',
+    'canale-5':   'https://mediasetinfinity.mediaset.it/diretta/canale5_cC5',
+    'italia-1':   'https://mediasetinfinity.mediaset.it/diretta/italia1_cI1',
+    'rete-4':     'https://mediasetinfinity.mediaset.it/diretta/rete4_cR4',
+    'la-5':       'https://mediasetinfinity.mediaset.it/diretta/la5_cKA',
+    'italia-2':   'https://mediasetinfinity.mediaset.it/diretta/italia2_cI2',
+    'mediaset-extra': 'https://mediasetinfinity.mediaset.it/diretta/mediasetextra_cKQ',
+    'twenty-seven': 'https://mediasetinfinity.mediaset.it/diretta/_cTS',
+    'mediaset-27-twentyseven': 'https://mediasetinfinity.mediaset.it/diretta/_cTS',
+    'cine34':     'https://mediasetinfinity.mediaset.it/diretta/cine34_cB6',
+    'tgcom24':    'https://mediasetinfinity.mediaset.it/diretta/video_cKF',
+    'focus':      'https://mediasetinfinity.mediaset.it/diretta/focus_cFU',
+    'iris':       'https://mediasetinfinity.mediaset.it/diretta/iris_cKI',
+    'top-crime':  'https://mediasetinfinity.mediaset.it/diretta/topcrime_cLT',
+    'topcrime':   'https://mediasetinfinity.mediaset.it/diretta/topcrime_cLT',
+    '20':         'https://mediasetinfinity.mediaset.it/diretta/20_cVE',
+    'la7':        'https://www.la7.it/dirette-tv',
+    'la7d':       'https://www.la7.it/dirette-tv',
+    'tv8':        'https://www.tv8.it/streaming',
+    'nove':       'https://nove.tv/live-streaming-nove',
+    'real-time':  'https://realtime.it/live-streaming-real-time',
+    'dmax':       'https://dmax.it/live-streaming-dmax',
+    'giallo':     'https://giallotv.it/live-streaming-giallo',
+    'warner-tv':  'https://discovery.it/live-streaming-discovery',
+    'cielo':      'https://www.cielotv.it/streaming',
+    'sky-tg24':   'https://tg24.sky.it/diretta',
+    'tv2000':     'https://www.play2000.it/live/tv',
+  };
+
+  /** Programma attualmente visualizzato nell'overlay */
+  let _prog = null;
+
+  /** Formatta un ISO timestamp in HH:MM (fuso Europa/Roma) */
+  function fmt(iso) {
+    return new Date(iso).toLocaleTimeString('it-IT', {
+      timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+  }
+
+  const $ = (id) => document.getElementById(id);
+
+  /** Legge i preferiti dal localStorage */
+  function getFavs() {
+    try { return JSON.parse(localStorage.getItem('tv-rubrica') || '[]'); } catch { return []; }
+  }
+  function saveFavs(arr) { localStorage.setItem('tv-rubrica', JSON.stringify(arr)); }
+
+  /** Aggiorna lo stato visivo del pulsante "In rubrica" */
+  function refreshFavBtn(id) {
+    const isFav = getFavs().includes(id);
+    const icon  = $('overlay-fav-icon');
+    const label = $('overlay-fav-label');
+    const btn   = $('overlay-favorite');
+    if (!btn) return;
+
+    if (icon) icon.setAttribute('fill', isFav ? 'currentColor' : 'none');
+    if (label) label.textContent = isFav ? 'Rimuovi' : 'In rubrica';
+
+    // Bordo + colore testo
+    btn.classList.toggle('border-blue-500',     isFav);
+    btn.classList.toggle('text-blue-600',        isFav);
+    btn.classList.toggle('dark:border-blue-500', isFav);
+    btn.classList.toggle('dark:text-blue-400',   isFav);
+    btn.classList.toggle('border-slate-200',    !isFav);
+    btn.classList.toggle('dark:border-slate-700', !isFav);
+    btn.classList.toggle('text-slate-700',      !isFav);
+    btn.classList.toggle('dark:text-slate-200', !isFav);
+  }
+
+  /** Apre l'overlay con i dati del programma */
+  function openOverlay(data) {
+    _prog = data;
+
+    const hidden = (id, hide) => $( id )?.classList.toggle('hidden', hide);
+    const txt    = (id, val)  => { const el = $(id); if (el) el.textContent = val || ''; };
+
+    // ── Canale ──────────────────────────────────────────────────────────────
+    const logoEl = $('overlay-channel-logo');
+    if (logoEl) { logoEl.src = data.channelLogo || ''; logoEl.alt = data.channelName || ''; }
+    txt('overlay-channel-name', data.channelName);
+
+    // ── Poster ──────────────────────────────────────────────────────────────
+    const posterEl = $('overlay-poster');
+    if (data.poster_url && posterEl) {
+      posterEl.src = data.poster_url;
+      posterEl.alt = data.title || '';
+    }
+    hidden('overlay-poster-wrap', !data.poster_url);
+
+    // ── Live + progress ─────────────────────────────────────────────────────
+    const now = Date.now();
+    const s = new Date(data.startTime).getTime();
+    const e = new Date(data.endTime).getTime();
+    const isLive = s <= now && now < e;
+    hidden('overlay-live-section', !isLive);
+    if (isLive) {
+      const pct = Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
+      const bar = $('overlay-progress');
+      if (bar) bar.style.width = pct + '%';
+    }
+
+    // ── Testo ────────────────────────────────────────────────────────────────
+    txt('overlay-title-el', data.title);
+    txt('overlay-time', `${fmt(data.startTime)} – ${fmt(data.endTime)}`);
+    txt('overlay-category', data.category);
+    hidden('overlay-category', !data.category);
+    txt('overlay-description', data.description);
+    hidden('overlay-description', !data.description);
+
+    // ── Link "Guarda ora" → stream ufficiale se disponibile, altrimenti pagina interna ──
+    const watchEl = $('overlay-watch');
+    if (watchEl) {
+      const streamUrl = data.channelId ? STREAMS[data.channelId] : null;
+      if (streamUrl) {
+        watchEl.href = streamUrl;
+        watchEl.setAttribute('target', '_blank');
+        watchEl.setAttribute('rel', 'noopener noreferrer');
+        watchEl.title = 'Apri lo streaming ufficiale';
+      } else {
+        watchEl.href = data.channelId ? `/${data.channelId}` : '#';
+        watchEl.removeAttribute('target');
+        watchEl.removeAttribute('rel');
+        watchEl.title = '';
+      }
+    }
+
+    // ── Preferiti ───────────────────────────────────────────────────────────
+    refreshFavBtn(data.id);
+
+    // ── Mostra overlay ───────────────────────────────────────────────────────
+    const overlay = $('program-overlay');
+    if (overlay) {
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.classList.add('overlay-open');
+    }
+    document.body.style.overflow = 'hidden';
+  }
+
+  /** Chiude l'overlay */
+  function closeOverlay() {
+    const overlay = $('program-overlay');
+    if (overlay) {
+      overlay.classList.remove('overlay-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    document.body.style.overflow = '';
+    _prog = null;
+  }
+
+  // ── Event delegation: qualsiasi [data-program] apre l'overlay ─────────────
+  document.addEventListener('click', ev => {
+    const trigger = ev.target.closest('[data-program]');
+    if (trigger) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      try { openOverlay(JSON.parse(trigger.dataset.program)); } catch (err) { console.warn('[overlay] parse error', err); }
+      return;
+    }
+    // Click sul backdrop
+    if (ev.target === $('overlay-backdrop')) closeOverlay();
+  });
+
+  // ── Tastiera ───────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') { closeOverlay(); return; }
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      const trigger = (ev.target).closest?.('[data-program]');
+      if (trigger) {
+        ev.preventDefault();
+        try { openOverlay(JSON.parse(trigger.dataset.program)); } catch {}
+      }
+    }
+  });
+
+  // ── Pulsanti overlay ───────────────────────────────────────────────────────
+  $('overlay-close')?.addEventListener('click', closeOverlay);
+
+  $('overlay-favorite')?.addEventListener('click', () => {
+    if (!_prog?.id) return;
+    const f = getFavs();
+    const i = f.indexOf(_prog.id);
+    if (i >= 0) f.splice(i, 1); else f.push(_prog.id);
+    saveFavs(f);
+    refreshFavBtn(_prog.id);
+  });
+
+  // Esponi globalmente per usarlo dall'ORA-mode JS in ChannelCard
+  window.__openProgramOverlay = openOverlay;
+})();
+</script>

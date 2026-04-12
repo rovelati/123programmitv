@@ -1,0 +1,78 @@
+# Cache-Control per pagine hub (prerenderate)
+# max-age=1800 (30 min) + stale-while-revalidate=3600 (1h) = zero downtime durante rebuild
+
+/
+  Cache-Control: public, max-age=300, stale-while-revalidate=300
+
+/domani
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+
+/film-stasera
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+
+/serie-stasera
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+
+/sport-stasera
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+
+# Hub canali (pattern generico)
+/rai-1
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rai-2
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rai-3
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rai-4
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rai-5
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rai-movie
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/canale-5
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/italia-1
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/rete-4
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/la7
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/la7d
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/tv8
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/nove
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/iris
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/focus
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/dmax
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/giallo
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/real-time
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/warner-tv
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/cine34
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/tgcom24
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/top-crime
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/cielo
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+/mediaset-extra
+  Cache-Control: public, max-age=1800, stale-while-revalidate=3600
+
+# Schede programma SSR — no cache, no index
+/programma/*
+  Cache-Control: no-store, no-cache
+  X-Robots-Tag: noindex, nofollow
+
+# Assets statici — cache lunga
+/og/*
+  Cache-Control: public, max-age=86400
+/favicon/*
+  Cache-Control: public, max-age=604800

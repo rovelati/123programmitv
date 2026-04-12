@@ -1,0 +1,28 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ProgramOverlay from '../components/ProgramOverlay.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  ogImage?: string;
+  noindex?: boolean;
+  schemas?: object[];
+  ogType?: 'website' | 'article';
+}
+
+const props = Astro.props;
+---
+
+<BaseLayout {...props}>
+  <Header />
+  <main id="main-content">
+    <slot />
+  </main>
+  <Footer />
+  <!-- Overlay globale programmi — incluso una volta, usa event delegation -->
+  <ProgramOverlay />
+</BaseLayout>

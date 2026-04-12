@@ -1,0 +1,280 @@
+---
+/**
+ * Card canale.
+ * mode = 'ora'     → JS client-side trova il programma live in tempo reale
+ * mode = 'stasera' → server-side: prime time 20:30+ (statico, corretto)
+ * mode = 'domani'  → server-side: prime time domani o primo dalle 06:00
+ */
+import { formatTime, isProgramLive } from '../utils/timeSlots';
+import type { Channel, Program } from '../types';
+
+interface Props {
+  channel: Channel;
+  programs: Program[];
+  mode?: 'ora' | 'stasera' | 'domani';
+}
+
+const { channel, programs, mode = 'stasera' } = Astro.props;
+
+// ─── Soglie UTC (CEST = UTC+2) ────────────────────────────────────────────
+const toUTCMin = (t: string) => { const d = new Date(t); return d.getUTCHours() * 60 + d.getUTCMinutes(); };
+const PRIME_START   = 18 * 60 + 30; // 20:30 Roma
+const PRIME_END     = 21 * 60;       // 23:00 Roma
+const MORNING_START = 4 * 60;        // 06:00 Roma
+const EVENING_START = 16 * 60;       // 18:00 Roma
+
+// ─── Selezione programma SERVER-SIDE (per stasera/domani) ─────────────────
+const primeTimeProgram = programs.find(p => { const m = toUTCMin(p.startTime); return m >= PRIME_START && m < PRIME_END; }) ?? null;
+const eveningProgram   = programs.find(p => toUTCMin(p.startTime) >= EVENING_START) ?? null;
+const morningFirst     = programs.find(p => toUTCMin(p.startTime) >= MORNING_START) ?? null;
+
+let displayProgram: Program | null = null;
+if (mode === 'domani') {
+  displayProgram = primeTimeProgram ?? morningFirst ?? programs[0] ?? null;
+} else if (mode === 'stasera') {
+  displayProgram = primeTimeProgram ?? eveningProgram ?? programs[0] ?? null;
+}
+
+// Per stasera/domani: prossimo programma
+const nextProgram = displayProgram
+  ? programs.find(p => new Date(p.startTime) > new Date(displayProgram!.endTime))
+  : null;
+
+// Per stasera/domani: progress bar sempre a 0 (programma futuro)
+const progress = 0;
+
+// ─── JSON per ORA mode (usato dal JS client-side) ─────────────────────────
+// Include tutti i campi necessari per l'overlay
+const programsJson = mode === 'ora'
+  ? JSON.stringify(programs.map(p => ({
+      id: p.id,
+      title: p.title,
+      startTime: p.startTime,
+      endTime: p.endTime,
+      category: p.category ?? '',
+      description: p.description ?? '',
+      poster_url: p.poster_url ?? null,
+    })))
+  : '[]';
+
+// ─── JSON overlay per stasera/domani (server-side) ────────────────────────
+const staseraOverlayJson = displayProgram
+  ? JSON.stringify({
+      id:          displayProgram.id,
+      title:       displayProgram.title,
+      startTime:   displayProgram.startTime,
+      endTime:     displayProgram.endTime,
+      category:    displayProgram.category   ?? '',
+      description: displayProgram.description ?? '',
+      poster_url:  displayProgram.poster_url  ?? null,
+      channelId:   channel.id,
+      channelLogo: channel.logo,
+      channelName: channel.name,
+    })
+  : null;
+---
+
+<a
+  href={`/${channel.id}`}
+  class:list={[
+    'block group border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
+    mode === 'ora' && 'ora-card',
+  ]}
+  data-channel-id={mode === 'ora' ? channel.id : undefined}
+  data-channel-logo={mode === 'ora' ? channel.logo : undefined}
+  data-channel-name={mode === 'ora' ? channel.name : undefined}
+  aria-label={`Vai ai programmi ${channel.name}`}
+>
+  <div class="grid grid-cols-[72px_1fr] sm:grid-cols-[88px_1fr_20px] gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
+
+    <!-- Colonna sinistra: logo + nome + numero -->
+    <div class="flex flex-col items-start gap-1.5">
+      <div class="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center overflow-hidden rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-sm">
+        <img
+          src={channel.logo}
+          alt={`Logo ${channel.name}`}
+          width="36" height="36"
+          class="w-full h-full object-contain"
+          loading="lazy"
+          onerror="this.style.display='none'"
+        />
+      </div>
+      <div class="min-w-0 w-full">
+        <p class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">{channel.name}</p>
+        {channel.number > 0 && <p class="text-[10px] text-slate-400 dark:text-slate-500">CH {channel.number}</p>}
+      </div>
+    </div>
+
+    <!-- Colonna destra: programma -->
+    <div class="min-w-0 py-0.5">
+
+      {/* ── MODE: ORA → placeholder, aggiornato da JS ── */}
+      {mode === 'ora' && (
+        /* data-programs: Astro valuta le espressioni negli attributi (non nei tag <script>) */
+        <div class="ora-program-content" data-programs={programsJson}>
+          <!-- Scheletro iniziale — JS lo sostituisce subito -->
+          <div class="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1.5"></div>
+          <div class="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-3"></div>
+          <div class="h-[3px] w-full bg-slate-200 dark:bg-slate-600 rounded-full mb-2"></div>
+          <div class="h-3 w-2/3 bg-slate-100 dark:bg-slate-700/60 rounded animate-pulse"></div>
+        </div>
+      )}
+
+      {/* ── MODE: STASERA / DOMANI → server-side ── */}
+      {mode !== 'ora' && (
+        <>
+          {displayProgram ? (
+            /* data-program: attiva l'overlay quando si clicca sul contenuto del programma */
+            <div
+              data-program={staseraOverlayJson}
+              class="cursor-pointer"
+              title="Clicca per i dettagli"
+            >
+              <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mb-0.5 flex items-center gap-1.5 flex-wrap">
+                <span class="tabular-nums">{formatTime(displayProgram.startTime)} – {formatTime(displayProgram.endTime)}</span>
+                {displayProgram.category && (
+                  <span class="uppercase tracking-wide font-semibold">{displayProgram.category}</span>
+                )}
+              </p>
+              <p class="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                {displayProgram.title}
+              </p>
+              <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-600 mb-2">
+                <div class="h-full rounded-full bg-slate-300 dark:bg-slate-500" style="width:0%"></div>
+              </div>
+              {nextProgram && (
+                <p class="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+                  <span class="tabular-nums">{formatTime(nextProgram.startTime)}</span>{' — '}
+                  <span class="text-slate-600 dark:text-slate-400">{nextProgram.title}</span>
+                </p>
+              )}
+            </div>
+          ) : (
+            <p class="text-xs text-slate-400 dark:text-slate-500 italic">Nessun programma</p>
+          )}
+        </>
+      )}
+    </div>
+
+    <!-- Chevron (solo desktop) -->
+    <div class="hidden sm:flex items-center justify-center">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="text-slate-300 dark:text-slate-600 group-hover:text-blue-400 transition-colors">
+        <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+  </div>
+</a>
+
+<script>
+// ORA mode: JS client-side, usa Date.now() reale del browser.
+// NOTA: gli script Astro sono ES modules deferred — il DOM è già pronto
+// quando questo viene eseguito. NON usare DOMContentLoaded (già scattato).
+
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('it-IT', {
+    timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+}
+
+function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programDataJson) {
+  if (!prog) return '<p class="text-xs text-slate-400 italic">Nessun programma</p>';
+
+  const liveBadge = isLive
+    ? `<span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block"></span>Live</span>`
+    : isUpcoming
+    ? `<span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">Prossimo</span>`
+    : '';
+
+  const barPct = progress + '%';
+  const barColor = isLive ? '#3b82f6' : '#cbd5e1';
+  const catHTML = prog.category ? `<span class="uppercase tracking-wide font-semibold">${prog.category}</span>` : '';
+  const nextHTML = nextProg
+    ? `<p class="text-[11px] text-slate-400 truncate"><span class="tabular-nums">${fmtTime(nextProg.startTime)}</span> — <span class="text-slate-600">${nextProg.title}</span></p>`
+    : '';
+
+  // data-program attiva l'overlay; escapiamo le virgolette per l'attributo HTML
+  const safeJson = programDataJson ? programDataJson.replace(/"/g, '&quot;') : '';
+  const overlayAttr = safeJson ? ` data-program="${safeJson}" style="cursor:pointer"` : '';
+
+  return `
+    <div${overlayAttr}>
+      <p class="text-[10px] text-slate-400 mb-0.5 flex items-center gap-1.5 flex-wrap">
+        ${liveBadge}
+        <span class="tabular-nums">${fmtTime(prog.startTime)} – ${fmtTime(prog.endTime)}</span>
+        ${catHTML}
+      </p>
+      <p class="text-[13px] font-bold text-slate-900 leading-snug mb-2 line-clamp-2 group-hover:text-blue-600">${prog.title}</p>
+      <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 mb-2">
+        <div class="h-full rounded-full transition-all" style="width:${barPct};background:${barColor}"></div>
+      </div>
+      ${nextHTML}
+    </div>
+  `;
+}
+
+function updateOraCards() {
+  const now = Date.now();
+  document.querySelectorAll('.ora-card').forEach(card => {
+    const contentEl = card.querySelector('.ora-program-content');
+    if (!contentEl) return;
+
+    // Il JSON è nell'attributo data-programs (Astro valuta gli attributi, non il contenuto dei <script>)
+    let programs = [];
+    try { programs = JSON.parse(contentEl.dataset.programs || '[]'); } catch(e) { return; }
+    if (!programs.length) return;
+
+    // Dati canale salvati sul <a> (data-channel-*)
+    const channelId   = card.dataset.channelId   || '';
+    const channelLogo = card.dataset.channelLogo  || '';
+    const channelName = card.dataset.channelName  || '';
+
+    const live = programs.find(p => new Date(p.startTime).getTime() <= now && now < new Date(p.endTime).getTime()) || null;
+    const justStarted = programs
+      .filter(p => new Date(p.startTime).getTime() <= now)
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())[0] || null;
+    const upcoming = programs
+      .filter(p => new Date(p.startTime).getTime() > now)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] || null;
+
+    const display = live || justStarted || upcoming || null;
+    const isLive = !!live;
+    const isUpcoming = !live && !justStarted && !!upcoming;
+
+    let progress = 0;
+    if (isLive && display) {
+      const s = new Date(display.startTime).getTime();
+      const e = new Date(display.endTime).getTime();
+      progress = Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
+    }
+
+    const nextProg = display
+      ? (programs.find(p => new Date(p.startTime).getTime() >= new Date(display.endTime).getTime()) || null)
+      : null;
+
+    // Costruisci il JSON per l'overlay
+    let programDataJson = null;
+    if (display) {
+      programDataJson = JSON.stringify({
+        id:          display.id,
+        title:       display.title,
+        startTime:   display.startTime,
+        endTime:     display.endTime,
+        category:    display.category    || '',
+        description: display.description || '',
+        poster_url:  display.poster_url  || null,
+        channelId,
+        channelLogo,
+        channelName,
+      });
+    }
+
+    contentEl.innerHTML = buildCardHTML(display, nextProg, isLive, isUpcoming, progress, programDataJson);
+  });
+}
+
+// Esegui subito (DOM già pronto — script module è deferred)
+updateOraCards();
+// Aggiorna ogni 30s per la progress bar
+setInterval(updateOraCards, 30000);
+</script>

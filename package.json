@@ -1,0 +1,33 @@
+{
+  "name": "astro-123programmitv",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "ASTRO_ADAPTER=cloudflare astro build",
+    "postbuild": "node scripts/generate-sitemap-film.js",
+    "preview": "astro preview",
+    "typecheck": "astro check --no-watch",
+    "notify-indexing": "node scripts/notify-indexing.js",
+    "build:node": "astro build"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.1.0",
+    "@astrojs/sitemap": "^3.7.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "astro": "^6.1.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/node": "^10.0.4",
+    "@types/node": "^22.0.0",
+    "googleapis": "^143.0.0",
+    "typescript": "^5.9.3"
+  }
+}

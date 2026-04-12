@@ -1,0 +1,95 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import ChannelCard from '../components/ChannelCard.astro';
+import ChannelNav from '../components/ChannelNav.astro';
+import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
+import { getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
+import { buildHubHomeJsonLd } from '../utils/jsonld';
+
+const tomorrow = getTomorrowInRome();
+const dateLabel = formatDateIT(tomorrow);
+
+const [channels, programs] = await Promise.all([
+  fetchChannels(),
+  fetchProgramsForDate(tomorrow),
+]);
+
+// Per domani: escludiamo i programmi prima delle 06:00 Roma CEST = 04:00 UTC
+const MORNING_START_UTC_MIN = 4 * 60; // 04:00 UTC = 06:00 Roma
+
+const channelsWithPrograms = channels.filter(ch =>
+  programs.some(p => {
+    if (p.channel_id !== ch.id) return false;
+    const d = new Date(p.startTime);
+    return d.getUTCHours() * 60 + d.getUTCMinutes() >= MORNING_START_UTC_MIN;
+  })
+);
+
+const schemas = buildHubHomeJsonLd({ channels, today: tomorrow });
+
+const title = `Programmi TV Domani — ${dateLabel} | 123ProgrammiTV`;
+const description = `Guida TV di domani: tutti i programmi in onda dalle 06:00 su RAI, Mediaset, La7 e altri canali italiani. Orari e palinsesti.`;
+---
+
+<HubLayout {title} {description} canonicalPath="/domani" {schemas}>
+
+  <!-- HERO -->
+  <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="flex items-center gap-3 mb-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+          📅 Domani
+        </span>
+        <span class="text-slate-400 dark:text-slate-500 text-sm font-medium">
+          Dalle 06:00 · {channelsWithPrograms.length} canali disponibili
+        </span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-2">
+        Programmi TV <span class="text-blue-600">Domani</span>
+      </h1>
+
+      <p class="text-base sm:text-lg font-medium capitalize text-slate-500 dark:text-slate-400 mb-4">
+        {dateLabel} · dalle 06:00 · prime time dalle 20:30
+      </p>
+
+      <div class="flex items-center gap-3">
+        <a href="/stasera" class="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline">
+          ← Stasera in TV
+        </a>
+        <a href="/" class="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+          Cosa c'è ora
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- LISTA CANALI -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="mb-4">
+      <ChannelNav />
+    </div>
+
+    <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">
+      Guida TV di domani · dalle 06:00
+    </h2>
+
+    <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      {channelsWithPrograms.map(channel => {
+        // Filtra programmi dalle 6 AM Roma (4 UTC)
+        const channelPrograms = programs.filter(p => {
+          if (p.channel_id !== channel.id) return false;
+          const d = new Date(p.startTime);
+          return d.getUTCHours() * 60 + d.getUTCMinutes() >= MORNING_START_UTC_MIN;
+        });
+        return <ChannelCard {channel} programs={channelPrograms} mode="domani" />;
+      })}
+    </div>
+
+  </section>
+
+</HubLayout>

@@ -1,0 +1,44 @@
+# Redirect 301 dai vecchi URL React → nuova struttura piatta
+
+# Hub time slot
+# /stasera ora è una pagina reale — NON redirigere
+/oggi                       /           301
+
+# Canali (da /programmi-tv/slug → /slug)
+/programmi-tv/rai-1         /rai-1      301
+/programmi-tv/rai-2         /rai-2      301
+/programmi-tv/rai-3         /rai-3      301
+/programmi-tv/rai-4         /rai-4      301
+/programmi-tv/rai-5         /rai-5      301
+/programmi-tv/canale-5      /canale-5   301
+/programmi-tv/italia-1      /italia-1   301
+/programmi-tv/rete-4        /rete-4     301
+/programmi-tv/la7           /la7        301
+/programmi-tv/la7d          /la7d       301
+/programmi-tv/tv8           /tv8        301
+/programmi-tv/nove          /nove       301
+/programmi-tv/iris          /iris       301
+/programmi-tv/focus         /focus      301
+/programmi-tv/dmax          /dmax       301
+/programmi-tv/giallo        /giallo     301
+/programmi-tv/real-time     /real-time  301
+/programmi-tv/warner-tv     /warner-tv  301
+/programmi-tv/cine34        /cine34     301
+/programmi-tv/tgcom24       /tgcom24    301
+/programmi-tv/top-crime     /top-crime  301
+/programmi-tv/cielo         /cielo      301
+/programmi-tv/:canale       /:canale    301
+
+# Categorie
+/film                       /film-stasera   301
+/serie-tv                   /serie-stasera  301
+/sport                      /sport-stasera  301
+/film/stasera               /film-stasera   301
+/serie-tv/stasera           /serie-stasera  301
+/sport/stasera              /sport-stasera  301
+
+# Legacy palinsesto
+/palinsesto/:canale         /:canale    301
+
+# Radio (redirect alla home per ora, non priorità SEO)
+/radio/*                    /           301

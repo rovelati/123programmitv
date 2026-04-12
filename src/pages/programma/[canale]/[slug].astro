@@ -1,0 +1,168 @@
+---
+/**
+ * Scheda singolo programma — SSR on-demand (mai prerenderizzata).
+ * - Se program.indexable = false → noindex, nofollow
+ * - Se program.indexable = true (film con synopsis >300 parole) → index, follow + JSON-LD
+ * Sempre: linka con anchor text esatto alla hub canale e alla home.
+ */
+export const prerender = false;
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import ChannelNav from '../../../components/ChannelNav.astro';
+import { fetchProgramBySlug, fetchChannels } from '../../../lib/epg';
+import { formatTime, formatDateIT } from '../../../utils/timeSlots';
+import { getChannelLogo } from '../../../utils/channelLogos';
+import { buildProgramJsonLd } from '../../../utils/jsonld';
+import { HUB_CHANNELS } from '../../../utils/channelSlug';
+
+const { canale, slug } = Astro.params as { canale: string; slug: string };
+
+const [program, channels] = await Promise.all([
+  fetchProgramBySlug(canale, slug),
+  fetchChannels(),
+]);
+
+if (!program) {
+  return Astro.redirect('/', 302);
+}
+
+const channel = channels.find(c => c.id === canale);
+if (!channel) {
+  return Astro.redirect('/', 302);
+}
+
+const isIndexable = program.indexable === true;
+const startLabel = formatTime(program.startTime);
+const endLabel = formatTime(program.endTime);
+const dateLabel = program.date ? formatDateIT(program.date) : '';
+
+const schemas = isIndexable ? buildProgramJsonLd({ program, channel }) : [];
+
+const title = `${program.title} — ${channel.name} ${dateLabel} ore ${startLabel} | 123ProgrammiTV`;
+const description = program.description
+  ? program.description.slice(0, 155) + (program.description.length > 155 ? '…' : '')
+  : `${program.title} in onda su ${channel.name} ${dateLabel} alle ${startLabel}.`;
+
+const canonicalPath = `/programma/${channel.id}/${slug}`;
+---
+
+<BaseLayout
+  {title}
+  {description}
+  {canonicalPath}
+  noindex={!isIndexable}
+  {schemas}
+  ogType="article"
+>
+  <Header />
+
+  <main id="main-content" class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+
+    <Breadcrumb items={[
+      { label: 'Programmi stasera', href: '/' },
+      { label: channel.name, href: `/${channel.id}` },
+      { label: program.title },
+    ]} />
+
+    <!-- Header programma -->
+    <article>
+      <header class="flex items-start gap-4 mb-6">
+        {program.poster_url ? (
+          <img
+            src={program.poster_url}
+            alt={`Locandina ${program.title}`}
+            width="100"
+            height="150"
+            class="w-24 h-36 object-cover rounded-lg flex-shrink-0"
+            loading="eager"
+          />
+        ) : (
+          <div class="w-24 h-36 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-gray-600">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+        )}
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-2">
+            <img
+              src={getChannelLogo(channel.id, channel.logo)}
+              alt={`Logo ${channel.name}`}
+              width="24"
+              height="24"
+              class="w-6 h-6 object-contain rounded bg-white p-0.5"
+            />
+            <!-- Anchor text esatto per internal linking → hub canale -->
+            <a href={`/${channel.id}`} class="text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium">
+              Programmi {channel.name} stasera
+            </a>
+          </div>
+
+          <h1 class="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight">
+            {program.title}
+          </h1>
+
+          <div class="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+            <span>{dateLabel}</span>
+            <span class="text-gray-700">·</span>
+            <span class="font-mono text-white">{startLabel} – {endLabel}</span>
+            {program.category && (
+              <>
+                <span class="text-gray-700">·</span>
+                <span class="px-2 py-0.5 rounded bg-gray-800 text-xs text-gray-300">{program.category}</span>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <!-- Descrizione -->
+      {program.description && (
+        <section class="mb-8">
+          <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Trama</h2>
+          <p class="text-gray-200 leading-relaxed">{program.description}</p>
+        </section>
+      )}
+
+      <!-- Internal links obbligatori (PageRank sculpting verso hub) -->
+      <section class="p-4 rounded-lg bg-gray-900 border border-gray-800 mb-6">
+        <p class="text-xs text-gray-500 mb-3">Vai alla guida TV completa:</p>
+        <div class="flex flex-wrap gap-3">
+          <!-- Link con anchor text esatto verso hub canale -->
+          <a
+            href={`/${channel.id}`}
+            class="text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium"
+          >
+            Programmi {channel.name} stasera →
+          </a>
+          <!-- Link con anchor text esatto verso home -->
+          <a
+            href="/"
+            class="text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium"
+          >
+            Tutti i programmi stasera in TV →
+          </a>
+        </div>
+      </section>
+    </article>
+
+    <!-- Navigazione canali (link equity verso hub) -->
+    <ChannelNav currentChannelId={channel.id} />
+
+    <!-- Cross-link ad altri canali -->
+    <nav class="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label="Altri canali TV">
+      {HUB_CHANNELS.filter(c => c.id !== channel.id).slice(0, 8).map(ch => (
+        <a href={`/${ch.id}`} class="text-gray-500 hover:text-gray-300 transition-colors">
+          {ch.name}
+        </a>
+      ))}
+    </nav>
+  </main>
+
+  <Footer />
+</BaseLayout>

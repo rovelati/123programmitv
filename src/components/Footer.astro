@@ -1,0 +1,51 @@
+---
+import { HUB_CHANNELS } from '../utils/channelSlug';
+
+const CATEGORY_HUBS = [
+  { href: '/film-stasera',  label: 'Film stasera in TV' },
+  { href: '/serie-stasera', label: 'Serie TV stasera' },
+  { href: '/sport-stasera', label: 'Sport stasera in TV' },
+  { href: '/domani',        label: 'Programmi di domani' },
+];
+
+const LEGAL_LINKS = [
+  { href: '/cookie-policy',        label: 'Cookie Policy' },
+  { href: '/termini-e-condizioni', label: 'Termini e Condizioni' },
+];
+---
+
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 mt-12 text-sm text-slate-500 dark:text-slate-400">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+
+    <div class="mb-8">
+      <h2 class="text-slate-900 dark:text-slate-100 font-semibold mb-3 text-xs uppercase tracking-wider">Canali TV</h2>
+      <nav class="flex flex-wrap gap-2" aria-label="Guida TV per canale">
+        {HUB_CHANNELS.map(ch => (
+          <a href={`/${ch.id}`} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            Programmi {ch.name}
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-slate-900 dark:text-slate-100 font-semibold mb-3 text-xs uppercase tracking-wider">Categorie</h2>
+      <nav class="flex flex-wrap gap-4" aria-label="Programmi per categoria">
+        <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Programmi stasera in TV</a>
+        {CATEGORY_HUBS.map(cat => (
+          <a href={cat.href} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{cat.label}</a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <p class="text-xs text-slate-400 dark:text-slate-500">&copy; {new Date().getFullYear()} 123ProgrammiTV &mdash; Guida TV italiana</p>
+      <nav class="flex gap-4 text-xs" aria-label="Link legali">
+        {LEGAL_LINKS.map(link => (
+          <a href={link.href} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{link.label}</a>
+        ))}
+      </nav>
+    </div>
+
+  </div>
+</footer>

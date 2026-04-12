@@ -1,0 +1,173 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import HubGrid from '../components/HubGrid.astro';
+import ChannelNav from '../components/ChannelNav.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
+import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { buildHubCategoryJsonLd } from '../utils/jsonld';
+import type { Channel, Program } from '../types';
+
+const today = getTodayInRome();
+const dateLabel = formatDateIT(today);
+
+const [allChannels, allPrograms] = await Promise.all([
+  fetchChannels(),
+  fetchProgramsForDate(today),
+]);
+
+// Mappa channel_id → Channel (logo, nome, ecc.)
+const channelMap = new Map<string, Channel>(allChannels.map(ch => [ch.id, ch]));
+
+/**
+ * Canali dedicati prevalentemente al cinema.
+ * Tutti i loro programmi (≥ 06:00 ora di Roma) sono considerati film.
+ */
+const FILM_CHANNELS = new Set([
+  'iris',
+  'cine34',
+  'rai-movie',
+  'cielo',
+  'sky-cinema-uno',
+  'sky-cinema-due',
+]);
+
+/**
+ * Anno tra parentesi in titolo o descrizione: (1985), (2023), ecc.
+ * Segnale forte che si tratta di un film.
+ */
+const YEAR_RE = /\(\s*(?:19|20)\d{2}\s*\)/;
+
+/** Parole chiave nel campo genre come fallback */
+const FILM_KW = ['film', 'cinema', 'movie'];
+
+function isFilm(p: Program): boolean {
+  const cid = p.channel_id ?? '';
+  const utcHour = new Date(p.startTime).getUTCHours();
+
+  // 1. Canale dedicato al cinema → includi solo programmi dopo le 06:00 Rome (04:00 UTC)
+  if (FILM_CHANNELS.has(cid) && utcHour >= 4) return true;
+
+  // 2. Anno nel titolo → fortissimo indicatore di film
+  if (YEAR_RE.test(p.title)) return true;
+
+  // 3. Anno nella descrizione
+  if (p.description && YEAR_RE.test(p.description)) return true;
+
+  // 4. "Regia di" / "regia:" nella descrizione → crediti registici = film
+  if (p.description) {
+    const desc = p.description.toLowerCase();
+    if (desc.includes('regia di') || desc.includes('regia:')) return true;
+  }
+
+  // 5. Keyword nel campo genre (fallback debole)
+  if (FILM_KW.some(k => p.category?.toLowerCase().includes(k))) return true;
+
+  return false;
+}
+
+const filmPrograms = allPrograms.filter(isFilm);
+
+// Raggruppa per channel_id mantenendo l'ordine dei canali
+const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
+
+interface FilmGroup { channel: Channel; programs: Program[] }
+const groupMap = new Map<string, FilmGroup>();
+
+for (const p of filmPrograms) {
+  const cid = p.channel_id ?? '';
+  const ch = channelMap.get(cid);
+  if (!ch) continue; // canale non in DB → salta
+  if (!groupMap.has(cid)) groupMap.set(cid, { channel: ch, programs: [] });
+  groupMap.get(cid)!.programs.push(p);
+}
+
+// Ordina i gruppi per posizione canale
+const filmGroups: FilmGroup[] = [...groupMap.values()].sort(
+  (a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999),
+);
+
+const totalFilms = filmPrograms.length;
+
+const schemas = buildHubCategoryJsonLd({
+  categoryName: 'Film',
+  categorySlug: 'film-stasera',
+  programs: filmPrograms,
+  today,
+});
+
+const title = `Film stasera in TV — ${dateLabel} | 123ProgrammiTV`;
+const description = `Tutti i film stasera in TV su tutti i canali italiani. Orari, titoli e trame dei film in onda questa sera.`;
+---
+
+<HubLayout {title} {description} canonicalPath="/film-stasera" {schemas}>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+    <Breadcrumb items={[
+      { label: 'Programmi stasera', href: '/' },
+      { label: 'Film stasera in TV' },
+    ]} />
+  </div>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-b border-slate-100 dark:border-slate-700">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">
+      🎬 Film stasera in TV — <span class="text-blue-600">{dateLabel}</span>
+    </h1>
+    <p class="text-slate-500 dark:text-slate-400 text-sm">{totalFilms} film in onda stasera sui canali italiani.</p>
+  </section>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
+    <ChannelNav />
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
+    <nav class="flex flex-wrap gap-2" aria-label="Altre categorie">
+      <a href="/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors">Tutti i programmi stasera</a>
+      <a href="/serie-stasera" class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white text-blue-700 dark:text-blue-300 text-xs font-medium transition-colors">Serie TV stasera</a>
+      <a href="/sport-stasera" class="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 hover:bg-green-600 hover:text-white text-green-700 dark:text-green-300 text-xs font-medium transition-colors">Sport stasera</a>
+    </nav>
+  </div>
+
+  <!-- Film per canale -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
+    {filmGroups.length === 0 ? (
+      <p class="text-slate-400 dark:text-slate-500 py-8 text-center">Nessun film trovato per questa sera.</p>
+    ) : (
+      filmGroups.map(({ channel, programs: chPrograms }) => (
+        <div>
+          {/* Intestazione canale */}
+          <div class="flex items-center gap-3 mb-2 px-1">
+            <div class="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
+              <img
+                src={channel.logo}
+                alt={`Logo ${channel.name}`}
+                width="30"
+                height="30"
+                class="w-[30px] h-[30px] object-contain"
+                loading="lazy"
+                onerror="this.style.display='none'"
+              />
+            </div>
+            <a
+              href={`/${channel.id}`}
+              class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              {channel.name}
+            </a>
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+              {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
+            </span>
+          </div>
+
+          {/* Griglia programmi del canale */}
+          <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+            <HubGrid programs={chPrograms} channel={channel} />
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+
+</HubLayout>
