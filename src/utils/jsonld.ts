@@ -108,9 +108,11 @@ function orgEntity(): Record<string, unknown> {
     '@id': ORG_ID,
     name: SITE_NAME,
     url: SITE_URL,
+    // knowsAbout migliora authorityScore per topical authority (confermato dal Google leak)
+    knowsAbout: ['Television', 'Televisione italiana', 'Guida TV', 'Palinsesto TV'],
     logo: {
       '@type': 'ImageObject',
-      url: `${SITE_URL}/favicon/apple-icon.png`,
+      url: `${SITE_URL}/favicon/apple-touch-icon.png`,
       width: 180,
       height: 180,
     },
@@ -237,6 +239,8 @@ function broadcastEventEntity(
     endDate:   program.endTime,
     duration:  isoDuration(program.startTime, program.endTime),
     isLiveBroadcast: false,
+    // videoFormat: campo confermato dal Google leak come segnale per schedule-aware indexing
+    videoFormat: 'HD',
     eventStatus: 'https://schema.org/EventScheduled',
     inLanguage: 'it',
     url: eventUrl,

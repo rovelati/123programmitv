@@ -154,9 +154,20 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
     />
 
-    <!-- ═══ Favicon ══════════════════════════════════════════════════════ -->
+    <!-- ═══ Favicon & Web App ════════════════════════════════════════════ -->
+    <!-- ICO multi-size per browser legacy -->
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any" />
+    <!-- PNG per browser moderni -->
+    <link rel="icon" type="image/png" href="/favicon/favicon-16x16.png" sizes="16x16" />
     <link rel="icon" type="image/png" href="/favicon/favicon-32x32.png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/favicon/apple-icon.png" />
+    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+    <!-- Apple Touch Icon (iOS home screen) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+    <!-- Web App Manifest (Android / PWA) -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- MS Tile -->
+    <meta name="msapplication-TileColor" content="#3b82f6" />
+    <meta name="msapplication-TileImage" content="/web-app-manifest-192x192.png" />
 
     <!-- ═══ JSON-LD Structured Data ═══════════════════════════════════════ -->
     {schemas.length > 0 && <SchemaInjector {schemas} />}
