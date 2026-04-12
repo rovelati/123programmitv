@@ -39,14 +39,14 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p 65002 89.116.147.83 >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p 65002 89.116.147.83 >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Deploy via rsync
         run: |
           rsync -av --checksum --delete \
             --exclude='api' \
             --exclude='ads.txt' \
-            -e "ssh -p 65002 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            -e "ssh -p 65002 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
             dist/client/ \
             u914016995@89.116.147.83:/home/u914016995/domains/123programmitv.it/public_html/
 
