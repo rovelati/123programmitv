@@ -116,20 +116,14 @@
           <button
             id="overlay-favorite"
             class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-slate-200 font-bold rounded-2xl transition-all text-sm"
+            aria-label="Aggiungi al calendario"
           >
-            <svg
-              id="overlay-fav-icon"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            <!-- Icona calendario -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
             <span id="overlay-fav-label">In rubrica</span>
           </button>
@@ -223,41 +217,191 @@
   /** Programma attualmente visualizzato nell'overlay */
   let _prog = null;
 
-  /** Formatta un ISO timestamp in HH:MM (fuso Europa/Roma) */
+  const $ = (id) => document.getElementById(id);
+
+  /** HH:MM in fuso Europa/Roma */
   function fmt(iso) {
     return new Date(iso).toLocaleTimeString('it-IT', {
       timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false,
     });
   }
 
-  const $ = (id) => document.getElementById(id);
+  // ─── Logica calendario ────────────────────────────────────────────────────
 
-  /** Legge i preferiti dal localStorage */
-  function getFavs() {
-    try { return JSON.parse(localStorage.getItem('tv-rubrica') || '[]'); } catch { return []; }
+  /** True se browser è Chrome (non Edge, Opera, Samsung) */
+  function isChrome() {
+    const ua = navigator.userAgent;
+    return /Chrome\//.test(ua) && !/Edg\/|OPR\/|SamsungBrowser/.test(ua);
   }
-  function saveFavs(arr) { localStorage.setItem('tv-rubrica', JSON.stringify(arr)); }
 
-  /** Aggiorna lo stato visivo del pulsante "In rubrica" */
-  function refreshFavBtn(id) {
-    const isFav = getFavs().includes(id);
-    const icon  = $('overlay-fav-icon');
+  /** ISO → YYYYMMDDTHHMMSSZ (UTC, formato ICS / Google Calendar) */
+  function toICSDate(iso) {
+    return new Date(iso).toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d+Z$/, 'Z');
+  }
+
+  /** Escape campi testo per ICS (RFC 5545) */
+  function escapeICS(s) {
+    return (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n|\r\n/g, '\\n');
+  }
+
+  /** Foldatura ICS: max 75 byte per riga (RFC 5545 §3.1) */
+  function foldLine(str) {
+    const result = [];
+    let cur = str;
+    while (cur.length > 75) {
+      result.push(cur.slice(0, 75));
+      cur = ' ' + cur.slice(75);
+    }
+    result.push(cur);
+    return result.join('\r\n');
+  }
+
+  /** Costruisce il testo descrizione per il calendario */
+  function buildCalendarDesc(prog) {
+    const channelName = prog.channelName || prog.channelId || '';
+    const startFmt    = fmt(prog.startTime);
+    const endFmt      = fmt(prog.endTime);
+    const streamUrl   = prog.channelId ? STREAMS[prog.channelId] : null;
+    const moreInfoUrl = prog.channelId
+      ? `https://www.123programmitv.it/${prog.channelId}`
+      : 'https://www.123programmitv.it';
+
+    const parts = [
+      `📺 ${channelName} · dalle ${startFmt} alle ${endFmt}`,
+    ];
+
+    if (prog.description) {
+      parts.push('');
+      parts.push(prog.description);
+    }
+
+    if (streamUrl) {
+      parts.push('');
+      parts.push(`▶️ Dove guardarlo: ${streamUrl}`);
+    }
+
+    parts.push('');
+    parts.push(`ℹ️ Per maggiori informazioni: ${moreInfoUrl}`);
+    parts.push('');
+    parts.push('📅 123ProgrammiTV — guida TV italiana');
+
+    return parts.join('\n');
+  }
+
+  /** Apre Google Calendar con l'evento pre-compilato */
+  function addToGoogleCalendar(prog) {
+    const start     = toICSDate(prog.startTime);
+    const end       = toICSDate(prog.endTime);
+    const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
+    const location  = streamUrl || `https://www.123programmitv.it/${prog.channelId || ''}`;
+
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text:     prog.title,
+      dates:    `${start}/${end}`,
+      details:  buildCalendarDesc(prog),
+      location,
+      sf:       'true',
+      output:   'xml',
+    });
+
+    window.open(
+      `https://calendar.google.com/calendar/render?${params.toString()}`,
+      '_blank',
+      'noopener,noreferrer',
+    );
+  }
+
+  /** Scarica un file .ics con l'evento */
+  function downloadICS(prog) {
+    const start     = toICSDate(prog.startTime);
+    const end       = toICSDate(prog.endTime);
+    const stamp     = toICSDate(new Date().toISOString());
+    const uid       = `${prog.id || Date.now()}@123programmitv.it`;
+    const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
+    const moreInfoUrl = prog.channelId
+      ? `https://www.123programmitv.it/${prog.channelId}`
+      : 'https://www.123programmitv.it';
+
+    const desc = buildCalendarDesc(prog);
+    const location = streamUrl || moreInfoUrl;
+
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//123ProgrammiTV//IT',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      foldLine(`UID:${uid}`),
+      foldLine(`DTSTAMP:${stamp}`),
+      foldLine(`DTSTART:${start}`),
+      foldLine(`DTEND:${end}`),
+      foldLine(`SUMMARY:${escapeICS(prog.title)}`),
+      foldLine(`DESCRIPTION:${escapeICS(desc)}`),
+      foldLine(`LOCATION:${escapeICS(location)}`),
+      foldLine(`URL:${moreInfoUrl}`),
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ];
+
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = (prog.title || 'programma').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_').toLowerCase() + '.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  /** Feedback visivo temporaneo sul pulsante (2 s) */
+  function showCalFeedback(success) {
     const label = $('overlay-fav-label');
     const btn   = $('overlay-favorite');
-    if (!btn) return;
+    if (!label || !btn) return;
 
-    if (icon) icon.setAttribute('fill', isFav ? 'currentColor' : 'none');
-    if (label) label.textContent = isFav ? 'Rimuovi' : 'In rubrica';
+    label.textContent = success ? '✓ Salvato!' : 'In rubrica';
 
-    // Bordo + colore testo
-    btn.classList.toggle('border-blue-500',     isFav);
-    btn.classList.toggle('text-blue-600',        isFav);
-    btn.classList.toggle('dark:border-blue-500', isFav);
-    btn.classList.toggle('dark:text-blue-400',   isFav);
-    btn.classList.toggle('border-slate-200',    !isFav);
-    btn.classList.toggle('dark:border-slate-700', !isFav);
-    btn.classList.toggle('text-slate-700',      !isFav);
-    btn.classList.toggle('dark:text-slate-200', !isFav);
+    if (success) {
+      btn.classList.add('border-green-500', 'text-green-600', 'dark:border-green-400', 'dark:text-green-400');
+      setTimeout(() => {
+        label.textContent = 'In rubrica';
+        btn.classList.remove('border-green-500', 'text-green-600', 'dark:border-green-400', 'dark:text-green-400');
+      }, 2200);
+    }
+  }
+
+  /** Azione principale: aggiunge l'evento al calendario + traccia su GA4 */
+  function addToCalendar(prog) {
+    if (!prog) return;
+
+    const method = isChrome() ? 'google_calendar' : 'ics';
+
+    // ── GA4 tracking ──────────────────────────────────────────────────────
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', 'add_to_calendar', {
+          event_category: 'engagement',
+          event_label:    prog.title,
+          method,
+          channel_id:     prog.channelId || '',
+          channel_name:   prog.channelName || '',
+        });
+      }
+    } catch (_) {}
+
+    // ── Aggiungi al calendario ─────────────────────────────────────────────
+    if (method === 'google_calendar') {
+      addToGoogleCalendar(prog);
+    } else {
+      downloadICS(prog);
+    }
+
+    showCalFeedback(true);
   }
 
   /** Apre l'overlay con i dati del programma */
@@ -317,9 +461,6 @@
       }
     }
 
-    // ── Preferiti ───────────────────────────────────────────────────────────
-    refreshFavBtn(data.id);
-
     // ── Mostra overlay ───────────────────────────────────────────────────────
     const overlay = $('program-overlay');
     if (overlay) {
@@ -369,12 +510,7 @@
   $('overlay-close')?.addEventListener('click', closeOverlay);
 
   $('overlay-favorite')?.addEventListener('click', () => {
-    if (!_prog?.id) return;
-    const f = getFavs();
-    const i = f.indexOf(_prog.id);
-    if (i >= 0) f.splice(i, 1); else f.push(_prog.id);
-    saveFavs(f);
-    refreshFavBtn(_prog.id);
+    addToCalendar(_prog);
   });
 
   // Esponi globalmente per usarlo dall'ORA-mode JS in ChannelCard

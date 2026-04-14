@@ -18,59 +18,106 @@ const [allChannels, allPrograms] = await Promise.all([
   fetchProgramsForDate(today),
 ]);
 
-// Mappa channel_id → Channel (logo, nome, ecc.)
+// Mappa channel_id → Channel
 const channelMap = new Map<string, Channel>(allChannels.map(ch => [ch.id, ch]));
 
-/**
- * Canali dedicati prevalentemente al cinema.
- * Tutti i loro programmi (≥ 06:00 ora di Roma) sono considerati film.
- */
+// ─── Canali esclusivamente/prevalentemente cinematografici ───────────────────
+// Cielo è ESCLUSO: alterna film a reality, TG, sport clip → troppi falsi positivi
 const FILM_CHANNELS = new Set([
-  'iris',
-  'cine34',
-  'rai-movie',
-  'cielo',
-  'sky-cinema-uno',
-  'sky-cinema-due',
+  'iris', 'cine34', 'rai-movie',
+  'sky-cinema-uno', 'sky-cinema-due',
+  'sky-cinema-drama', 'sky-cinema-comedy',
+  'sky-cinema-uno-plus-24', 'sky-cinema-collection',
+  'sky-cinema-action', 'sky-cinema-suspense',
+  'sky-cinema-romance', 'sky-cinema-family',
+  'paramount-network', 'paramount-channel',
 ]);
 
-/**
- * Anno tra parentesi in titolo o descrizione: (1985), (2023), ecc.
- * Segnale forte che si tratta di un film.
- */
+// Anno tra parentesi nel titolo o descrizione: segnale fortissimo di film
 const YEAR_RE = /\(\s*(?:19|20)\d{2}\s*\)/;
 
-/** Parole chiave nel campo genre come fallback */
+// Parole chiave nel campo genre come fallback
 const FILM_KW = ['film', 'cinema', 'movie'];
 
+// ─── Finestra "stasera": dalle 20:00 alle ~04:00 in ora italiana ─────────────
+// In CEST (apr–ott, UTC+2): 20:00 CEST = 18:00 UTC.
+// In CET  (nov–mar, UTC+1): 20:00 CET  = 19:00 UTC.
+// Usiamo >= 18 UTC come soglia: nei mesi invernali include anche 19:00-20:00 locale
+// (accettabile). Il confine notturno (01:00-03:59 locale) corrisponde a 23:00-01:59 UTC.
+function isStasera(p: Program): boolean {
+  const h = new Date(p.startTime).getUTCHours();
+  return h >= 18 || h < 2;   // 20:00–03:59 ora di Roma
+}
+
+// Durata in minuti
+function durationMin(p: Program): number {
+  return (new Date(p.endTime).getTime() - new Date(p.startTime).getTime()) / 60000;
+}
+
+// Marker di puntata/episodio → è una serie, NON un film
+function hasEpisodeMarker(p: Program): boolean {
+  const txt = `${p.title} ${p.description ?? ''}`;
+  return /\b(?:S\s*\d+\s*E\s*\d+|\d{1,2}x\d{1,2}|Ep\.?\s*\d+|Episodio\s+\d+|Stagione\s+\d+)\b/i.test(txt)
+    || /Puntata\s+del\b/i.test(txt);
+}
+
+// Rubriche e format NON cinematografici da escludere per titolo
+const EXCLUDE_TITLE_FRAGMENTS = [
+  'appuntamento al cinema', 'note di cinema', 'movie mag',
+  'cinematin',  // cinematinée
+  'anica',
+  'tg24', 'telegiornale', 'tg2 ', 'tg1 ', 'tg3 ',
+  'in pillole', 'mezz\'ora', 'notizie',
+  'top 20 ', 'countdown',
+  'sfida implacabile',    // Steve Austin (game show)
+  'icarus ultra',
+  'rubrica',
+  'santa messa', 'messa in',
+];
+
+function isExcludedByTitle(p: Program): boolean {
+  const t = p.title.toLowerCase();
+  return EXCLUDE_TITLE_FRAGMENTS.some(f => t.includes(f));
+}
+
+// ─── Rilevamento film ─────────────────────────────────────────────────────────
 function isFilm(p: Program): boolean {
+  // Solo "stasera": dalle 20:00 in poi
+  if (!isStasera(p)) return false;
+
   const cid = p.channel_id ?? '';
-  const utcHour = new Date(p.startTime).getUTCHours();
+  const dur  = durationMin(p);
 
-  // 1. Canale dedicato al cinema → includi solo programmi dopo le 06:00 Rome (04:00 UTC)
-  if (FILM_CHANNELS.has(cid) && utcHour >= 4) return true;
+  // Hard-exclude: rubriche per titolo
+  if (isExcludedByTitle(p)) return false;
 
-  // 2. Anno nel titolo → fortissimo indicatore di film
-  if (YEAR_RE.test(p.title)) return true;
+  // Hard-exclude: episodio di serie TV
+  if (hasEpisodeMarker(p)) return false;
 
-  // 3. Anno nella descrizione
-  if (p.description && YEAR_RE.test(p.description)) return true;
+  // 1. Canale cinematografico dedicato + durata da film (≥ 70 min)
+  if (FILM_CHANNELS.has(cid) && dur >= 70) return true;
 
-  // 4. "Regia di" / "regia:" nella descrizione → crediti registici = film
-  if (p.description) {
+  // 2. Anno nel titolo (segnale fortissimo) + durata da film
+  if (YEAR_RE.test(p.title) && dur >= 60) return true;
+
+  // 3. Anno nella descrizione + durata da film
+  if (p.description && YEAR_RE.test(p.description) && dur >= 70) return true;
+
+  // 4. "Regia di" / "regia:" nella descrizione + durata da lungometraggio
+  //    (soglia alta per evitare falsi positivi tipo "Santa Messa — regia di X")
+  if (p.description && dur >= 75) {
     const desc = p.description.toLowerCase();
     if (desc.includes('regia di') || desc.includes('regia:')) return true;
   }
 
-  // 5. Keyword nel campo genre (fallback debole)
-  if (FILM_KW.some(k => p.category?.toLowerCase().includes(k))) return true;
+  // 5. Keyword nel campo genre (fallback debole) + durata lunga
+  if (FILM_KW.some(k => p.category?.toLowerCase().includes(k)) && dur >= 80) return true;
 
   return false;
 }
 
+// ─── Filtra e raggruppa per canale ───────────────────────────────────────────
 const filmPrograms = allPrograms.filter(isFilm);
-
-// Raggruppa per channel_id mantenendo l'ordine dei canali
 const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
 
 interface FilmGroup { channel: Channel; programs: Program[] }
@@ -78,13 +125,13 @@ const groupMap = new Map<string, FilmGroup>();
 
 for (const p of filmPrograms) {
   const cid = p.channel_id ?? '';
-  const ch = channelMap.get(cid);
-  if (!ch) continue; // canale non in DB → salta
+  const ch  = channelMap.get(cid);
+  if (!ch) continue;
   if (!groupMap.has(cid)) groupMap.set(cid, { channel: ch, programs: [] });
   groupMap.get(cid)!.programs.push(p);
 }
 
-// Ordina i gruppi per posizione canale
+// Ordina i gruppi per posizione canale (DB order = audience reach)
 const filmGroups: FilmGroup[] = [...groupMap.values()].sort(
   (a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999),
 );
@@ -98,8 +145,8 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title = `Film stasera in TV — ${dateLabel} | 123ProgrammiTV`;
-const description = `Tutti i film stasera in TV su tutti i canali italiani. Orari, titoli e trame dei film in onda questa sera.`;
+const title       = `Film stasera in TV — ${dateLabel} | 123ProgrammiTV`;
+const description = `Tutti i film stasera in TV: titoli e orari dei film in onda questa sera su RAI, Mediaset, La7 e canali tematici.`;
 ---
 
 <HubLayout {title} {description} canonicalPath="/film-stasera" {schemas}>
@@ -115,7 +162,9 @@ const description = `Tutti i film stasera in TV su tutti i canali italiani. Orar
     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">
       🎬 Film stasera in TV — <span class="text-blue-600">{dateLabel}</span>
     </h1>
-    <p class="text-slate-500 dark:text-slate-400 text-sm">{totalFilms} film in onda stasera sui canali italiani.</p>
+    <p class="text-slate-500 dark:text-slate-400 text-sm">
+      {totalFilms} {totalFilms === 1 ? 'film' : 'film'} in prima serata sui canali italiani.
+    </p>
   </section>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
@@ -130,10 +179,10 @@ const description = `Tutti i film stasera in TV su tutti i canali italiani. Orar
     </nav>
   </div>
 
-  <!-- Film per canale -->
+  <!-- Film per canale (solo prima serata e seconda serata) -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
     {filmGroups.length === 0 ? (
-      <p class="text-slate-400 dark:text-slate-500 py-8 text-center">Nessun film trovato per questa sera.</p>
+      <p class="text-slate-400 dark:text-slate-500 py-8 text-center">Nessun film in prima serata per questa sera.</p>
     ) : (
       filmGroups.map(({ channel, programs: chPrograms }) => (
         <div>

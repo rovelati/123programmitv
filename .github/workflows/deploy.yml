@@ -1,5 +1,8 @@
 name: Build & Deploy
 
+permissions:
+  contents: write
+
 on:
   # Ogni giorno alle 03:30 ora di Roma (02:30 UTC in estate, 03:30 in inverno)
   # L'EPG importer gira alle 01:00 → 2h di margine abbondante
@@ -17,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -34,21 +39,25 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SITE_URL: ${{ secrets.SITE_URL }}
 
-      - name: Setup SSH
+      # Hostinger blocca connessioni SSH in ingresso da GitHub runners (timeout).
+      # Pubblicazione alternativa: push del build statico su branch dedicato.
+      # Il server Hostinger fa pull di questo branch e rsync locale verso public_html.
+      - name: Publish static build to deploy branch
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p 65002 89.116.147.83 >> ~/.ssh/known_hosts 2>/dev/null || true
+          DEPLOY_BRANCH="deploy-static"
+          rm -rf .deploy-tmp
+          mkdir -p .deploy-tmp
+          cp -R dist/client/. .deploy-tmp/
 
-      - name: Deploy via rsync
-        run: |
-          rsync -av --checksum --delete \
-            --exclude='api' \
-            --exclude='ads.txt' \
-            -e "ssh -p 65002 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-            dist/client/ \
-            u914016995@89.116.147.83:/home/u914016995/domains/123programmitv.it/public_html/
+          git switch --orphan "$DEPLOY_BRANCH"
+          git rm -rf . >/dev/null 2>&1 || true
+          cp -R .deploy-tmp/. .
+          rm -rf .deploy-tmp
+
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "deploy: publish static build" || true
+          git push --force origin "$DEPLOY_BRANCH"
 
       - name: Done
         run: echo "✅ Deploy completato — $(date '+%Y-%m-%d %H:%M:%S UTC')"
