@@ -265,8 +265,8 @@
     const endFmt      = fmt(prog.endTime);
     const streamUrl   = prog.channelId ? STREAMS[prog.channelId] : null;
     const moreInfoUrl = prog.channelId
-      ? `https://www.123programmitv.it/${prog.channelId}`
-      : 'https://www.123programmitv.it';
+      ? `https://123programmitv.it/${prog.channelId}`
+      : 'https://123programmitv.it';
 
     const parts = [
       `📺 ${channelName} · dalle ${startFmt} alle ${endFmt}`,
@@ -295,7 +295,7 @@
     const start     = toICSDate(prog.startTime);
     const end       = toICSDate(prog.endTime);
     const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
-    const location  = streamUrl || `https://www.123programmitv.it/${prog.channelId || ''}`;
+    const location  = streamUrl || `https://123programmitv.it/${prog.channelId || ''}`;
 
     const params = new URLSearchParams({
       action: 'TEMPLATE',
@@ -322,8 +322,8 @@
     const uid       = `${prog.id || Date.now()}@123programmitv.it`;
     const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
     const moreInfoUrl = prog.channelId
-      ? `https://www.123programmitv.it/${prog.channelId}`
-      : 'https://www.123programmitv.it';
+      ? `https://123programmitv.it/${prog.channelId}`
+      : 'https://123programmitv.it';
 
     const desc = buildCalendarDesc(prog);
     const location = streamUrl || moreInfoUrl;

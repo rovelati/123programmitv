@@ -9,7 +9,7 @@ import tailwindcss from '@tailwindcss/vite'
 const useCloudflare = process.env.ASTRO_ADAPTER === 'cloudflare'
 
 export default defineConfig({
-  site: 'https://www.123programmitv.it',
+  site: 'https://123programmitv.it',
   output: 'static',
   adapter: useCloudflare
     ? cloudflare({ prerenderEnvironment: 'node', imageService: 'compile', platformProxy: { enabled: false }, sessions: false })
@@ -21,7 +21,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.includes('/programma/'),
       serialize(item) {
-        if (item.url === 'https://www.123programmitv.it/') {
+        if (item.url === 'https://123programmitv.it/') {
           return { ...item, priority: 1.0, changefreq: 'hourly' }
         }
         if (/\/(rai-1|canale-5|italia-1|la7|rete-4|rai-2|rai-3)$/.test(item.url)) {

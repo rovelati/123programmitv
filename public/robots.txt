@@ -3,7 +3,7 @@ Allow: /
 Disallow: /programma/
 
 # Sitemap principale (hub + categorie)
-Sitemap: https://www.123programmitv.it/sitemap-index.xml
+Sitemap: https://123programmitv.it/sitemap-index.xml
 
 # Sitemap film indicizzabili (generata post-build)
-Sitemap: https://www.123programmitv.it/sitemap-film.xml
+Sitemap: https://123programmitv.it/sitemap-film.xml

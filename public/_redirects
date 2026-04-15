@@ -1,3 +1,6 @@
+# www → apex (canonical è 123programmitv.it senza www)
+https://www.123programmitv.it/*  https://123programmitv.it/:splat  301
+
 # Redirect 301 dai vecchi URL React → nuova struttura piatta
 
 # Hub time slot

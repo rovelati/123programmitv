@@ -16,7 +16,7 @@
  */
 import type { Channel, Program } from '../types';
 
-const SITE_URL   = 'https://www.123programmitv.it';
+const SITE_URL   = 'https://123programmitv.it';
 const SITE_NAME  = '123ProgrammiTV';
 const ORG_ID     = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
