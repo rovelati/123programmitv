@@ -1,7 +1,8 @@
 name: Build & Deploy
 
 permissions:
-  contents: write
+  contents: read
+  deployments: write
 
 on:
   # Ogni giorno alle 03:30 ora di Roma (02:30 UTC in estate, 03:30 in inverno)
@@ -9,8 +10,12 @@ on:
   schedule:
     - cron: '30 1 * * *'   # 03:30 CEST (UTC+2, estate)
 
-  # Trigger manuale da GitHub UI o via API
+  # Trigger manuale da GitHub UI o via Deploy Hook Cloudflare
   workflow_dispatch:
+
+  # Push su main (es. aggiornamenti codice)
+  push:
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -20,8 +25,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -32,32 +35,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (Node adapter — SSG)
-        run: npm run build:node
+      - name: Build (Cloudflare adapter)
+        run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SITE_URL: ${{ secrets.SITE_URL }}
+          ASTRO_ADAPTER: cloudflare
 
-      # Hostinger blocca connessioni SSH in ingresso da GitHub runners (timeout).
-      # Pubblicazione alternativa: push del build statico su branch dedicato.
-      # Il server Hostinger fa pull di questo branch e rsync locale verso public_html.
-      - name: Publish static build to deploy branch
-        run: |
-          DEPLOY_BRANCH="deploy-static"
-          rm -rf .deploy-tmp
-          mkdir -p .deploy-tmp
-          cp -R dist/client/. .deploy-tmp/
-
-          git switch --orphan "$DEPLOY_BRANCH"
-          git rm -rf . >/dev/null 2>&1 || true
-          cp -R .deploy-tmp/. .
-          rm -rf .deploy-tmp
-
-          git add -A
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -m "deploy: publish static build" || true
-          git push --force origin "$DEPLOY_BRANCH"
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 123programmitv
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Done
         run: echo "✅ Deploy completato — $(date '+%Y-%m-%d %H:%M:%S UTC')"
