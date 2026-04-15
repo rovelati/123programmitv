@@ -94,11 +94,12 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title = `Serie TV stasera in TV — ${dateLabel} | 123ProgrammiTV`;
-const description = `Tutte le serie TV in onda stasera sui canali italiani. Orari e palinsesti aggiornati.`;
+const title       = `Serie TV Stasera in TV | Programmazione Canali Italiani — 123ProgrammiTV`;
+const description = `Tutte le serie TV stasera sui canali italiani: episodi, orari e palinsesti aggiornati su RAI, Mediaset, La7 e altro.`;
+const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fiction stasera, episodi stasera`;
 ---
 
-<HubLayout {title} {description} canonicalPath="/serie-stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/serie-stasera" {schemas}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[

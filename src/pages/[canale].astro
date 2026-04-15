@@ -42,8 +42,9 @@ const tomorrow = getTomorrowInRome();
 const schemas = buildHubChannelJsonLd({ channel, programs, today });
 const stream = getChannelStream(channel.id);
 
-const title       = `Programmi ${channel.name} stasera — ${dateLabel} | 123ProgrammiTV`;
-const description = `Guida TV ${channel.name}: scopri tutti i programmi in onda stasera e oggi. Orari, palinsesti e generi aggiornati.`;
+const title       = `Programmi ${channel.name} Stasera | Guida TV — 123ProgrammiTV`;
+const description = `Tutti i programmi ${channel.name} stasera: palinsesto completo con orari, film e serie TV in onda questa sera.`;
+const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
 
 // OG image: usa il logo canale se disponibile, altrimenti default
@@ -51,7 +52,7 @@ const ogImage     = channel.logo?.startsWith('http') ? channel.logo : `/og/defau
 const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
 ---
 
-<HubLayout {title} {description} {canonicalPath} {schemas} {ogImage} {ogImageAlt} ogType="website">
+<HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} ogType="website">
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[

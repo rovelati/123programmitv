@@ -22,14 +22,15 @@ const channelsWithPrograms = channels.filter(ch =>
 
 const schemas = buildHubHomeJsonLd({ channels, today });
 
-const title = `Programmi TV Ora — ${dateLabel} | 123ProgrammiTV`;
-const description = `Guida TV in tempo reale: scopri cosa c'è in onda adesso su RAI, Mediaset, La7 e tutti i canali italiani.`;
+const title       = `Programmi Stasera in TV | Guida TV Completa — 123ProgrammiTV`;
+const description = `Guida TV completa: tutti i programmi stasera su RAI, Mediaset, La7 e tutti i canali italiani. Orari aggiornati ogni giorno.`;
+const keywords    = `programmi stasera, programmi tv stasera, guida tv stasera, cosa c'è stasera in tv, programmi televisivi stasera`;
 
 // Serializza i channel_id per il conteggio live lato client
 const channelIds = JSON.stringify(channelsWithPrograms.map(ch => ch.id));
 ---
 
-<HubLayout {title} {description} canonicalPath="/" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/" {schemas}>
 
   <!-- ─── HERO ─── -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">

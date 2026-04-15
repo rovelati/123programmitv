@@ -145,11 +145,12 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Film stasera in TV — ${dateLabel} | 123ProgrammiTV`;
-const description = `Tutti i film stasera in TV: titoli e orari dei film in onda questa sera su RAI, Mediaset, La7 e canali tematici.`;
+const title       = `Film Stasera in TV | Programmazione Cinema — 123ProgrammiTV`;
+const description = `Tutti i film stasera in TV: titoli, orari e trame dei film in onda su RAI, Mediaset, La7 e canali tematici italiani.`;
+const keywords    = `film stasera, film stasera in tv, cinema stasera, film questa sera, programmazione cinema tv`;
 ---
 
-<HubLayout {title} {description} canonicalPath="/film-stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/film-stasera" {schemas}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[

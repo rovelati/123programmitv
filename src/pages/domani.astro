@@ -29,11 +29,12 @@ const channelsWithPrograms = channels.filter(ch =>
 
 const schemas = buildHubHomeJsonLd({ channels, today: tomorrow });
 
-const title = `Programmi TV Domani — ${dateLabel} | 123ProgrammiTV`;
-const description = `Guida TV di domani: tutti i programmi in onda dalle 06:00 su RAI, Mediaset, La7 e altri canali italiani. Orari e palinsesti.`;
+const title       = `Programmi TV Domani | Guida TV Canali Italiani — 123ProgrammiTV`;
+const description = `Guida TV di domani: palinsesto completo di RAI, Mediaset, La7 e tutti i canali italiani. Orari e programmi aggiornati.`;
+const keywords    = `programmi tv domani, guida tv domani, programmi domani sera, palinsesto tv domani`;
 ---
 
-<HubLayout {title} {description} canonicalPath="/domani" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/domani" {schemas}>
 
   <!-- HERO -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">

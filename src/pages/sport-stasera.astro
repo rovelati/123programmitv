@@ -92,11 +92,12 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title = `Sport stasera in TV — ${dateLabel} | 123ProgrammiTV`;
-const description = `Tutti gli eventi sportivi in onda stasera: calcio, tennis, basket e altro ancora. Orari e canali aggiornati.`;
+const title       = `Sport Stasera in TV | Calcio, Tennis e Altro — 123ProgrammiTV`;
+const description = `Sport stasera in TV: calcio, tennis, basket, Formula 1 e altri eventi sportivi. Orari e canali italiani aggiornati.`;
+const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi stasera, partite stasera in tv`;
 ---
 
-<HubLayout {title} {description} canonicalPath="/sport-stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/sport-stasera" {schemas}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
