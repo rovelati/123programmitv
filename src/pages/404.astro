@@ -1,0 +1,76 @@
+---
+export const prerender = true;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { fetchChannels } from '../lib/epg';
+import { HUB_CHANNELS } from '../utils/channelSlug';
+
+// Fetch dei canali principali per i link utili nella pagina 404
+let channels: Awaited<ReturnType<typeof fetchChannels>> = [];
+try {
+  channels = await fetchChannels();
+} catch {
+  // fallback silenzioso: usa HUB_CHANNELS
+}
+
+const topChannels = (channels.length > 0 ? channels : HUB_CHANNELS).slice(0, 8);
+---
+
+<BaseLayout
+  title="Pagina non trovata — 123ProgrammiTV"
+  description="La pagina che stai cercando non esiste. Torna alla guida TV per trovare tutti i programmi stasera."
+  canonicalPath="/404"
+  noindex={true}
+>
+  <main class="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16 text-center">
+    <div class="max-w-lg mx-auto">
+      <!-- Icona 404 -->
+      <div class="text-8xl font-black text-slate-200 dark:text-slate-700 select-none mb-2">404</div>
+
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">
+        Pagina non trovata
+      </h1>
+      <p class="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+        La pagina che cerchi non esiste o è stata rimossa.
+        Puoi tornare alla guida TV per scoprire cosa c'è stasera in televisione.
+      </p>
+
+      <!-- CTA principale -->
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl transition-colors shadow-sm text-sm mb-10"
+      >
+        <!-- home icon -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Programmi stasera in TV
+      </a>
+
+      <!-- Link canali principali -->
+      <div class="border-t border-slate-200 dark:border-slate-700 pt-8">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
+          Vai direttamente a un canale
+        </p>
+        <nav class="flex flex-wrap gap-2 justify-center" aria-label="Canali TV principali">
+          {topChannels.map(ch => (
+            <a
+              href={`/${('id' in ch ? ch.id : (ch as {id: string}).id)}`}
+              class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors"
+            >
+              {'name' in ch ? ch.name : String(ch)}
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <!-- Categorie -->
+      <div class="mt-6 flex flex-wrap gap-2 justify-center">
+        <a href="/film-stasera"   class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors">Film stasera</a>
+        <a href="/serie-stasera" class="px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-800/40 transition-colors">Serie TV stasera</a>
+        <a href="/sport-stasera" class="px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-medium hover:bg-orange-200 dark:hover:bg-orange-800/40 transition-colors">Sport stasera</a>
+        <a href="/domani"        class="px-3 py-1.5 rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 text-xs font-medium hover:bg-sky-200 dark:hover:bg-sky-800/40 transition-colors">Programmi domani</a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
