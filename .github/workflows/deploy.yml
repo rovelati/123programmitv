@@ -35,13 +35,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (Cloudflare adapter)
-        run: npm run build
+      - name: Build (Node adapter — genera file statici in dist/client/)
+        # Il Cloudflare adapter fallisce in CI per un bug del Workers runner di
+        # @cloudflare/vite-plugin (require_dist). Il Node adapter produce gli
+        # stessi file statici in dist/client/ che vengono deployati su CF Pages.
+        # Le pagine /programma/ SSR vengono gestite da una CF Function separata.
+        run: npm run build:node
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SITE_URL: ${{ secrets.SITE_URL }}
-          ASTRO_ADAPTER: cloudflare
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -49,7 +52,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 123programmitv
-          directory: dist
+          directory: dist/client
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Done
