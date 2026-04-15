@@ -194,7 +194,7 @@ function broadcastServiceEntity(channel: Channel, siteUrl = SITE_URL): Record<st
 function broadcastEventEntity(
   program: Program,
   channel: Channel,
-  eventUrl: string,
+  eventId: string,   // usato solo per @id univoco, NON come url navigabile
   siteUrl = SITE_URL,
 ): Record<string, unknown> {
   const type       = workType(program);
@@ -202,18 +202,29 @@ function broadcastEventEntity(
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];
   const channelUrl = `${siteUrl}/${channel.id}`;
 
-  // workPerformed: Movie / TVEpisode / Event
+  // url navigabile = hub canale (esiste sempre), non la scheda programma
+  const liveUrl = streamUrl ?? channelUrl;
+
+  // workPerformed: Movie / TVEpisode / Event (SportsEvent)
   const workPerformed: Record<string, unknown> = {
-    '@type': type,
-    '@id': `${eventUrl}#work`,
+    '@type': type === 'Event' ? 'SportsEvent' : type,
+    '@id': `${eventId}#work`,
     name: program.title,
     inLanguage: 'it',
     ...(program.description ? { description: program.description }  : {}),
     ...(program.category    ? { genre: program.category }           : {}),
     ...(program.poster_url  ? { image: program.poster_url }         : {}),
     ...(year                ? { dateCreated: year }                 : {}),
-    url: eventUrl,
+    // url punta all'hub canale (pagina esistente), non a /programma/
+    url: channelUrl,
   };
+
+  // SportsEvent richiede startDate + location (campi obbligatori Google)
+  if (type === 'Event') {
+    workPerformed['startDate'] = program.startTime;
+    workPerformed['endDate']   = program.endTime;
+    workPerformed['location']  = { '@type': 'VirtualLocation', url: liveUrl };
+  }
 
   if (type === 'TVEpisode') {
     workPerformed['partOfSeries'] = {
@@ -232,22 +243,22 @@ function broadcastEventEntity(
 
   return {
     '@type': 'BroadcastEvent',
-    '@id': `${eventUrl}#event`,
+    '@id': `${eventId}#event`,
     name: program.title,
     ...(program.description ? { description: program.description } : {}),
     startDate: program.startTime,
     endDate:   program.endTime,
     duration:  isoDuration(program.startTime, program.endTime),
     isLiveBroadcast: false,
-    // videoFormat: campo confermato dal Google leak come segnale per schedule-aware indexing
     videoFormat: 'HD',
     eventStatus: 'https://schema.org/EventScheduled',
     inLanguage: 'it',
-    url: eventUrl,
+    // url navigabile = hub canale (evita che Google associ l'evento a /programma/)
+    url: channelUrl,
     ...(program.poster_url ? { image: program.poster_url } : {}),
     location: {
       '@type': 'VirtualLocation',
-      url: streamUrl ?? channelUrl,
+      url: liveUrl,
     },
     publishedOn: { '@id': `${channelUrl}#channel` },
     workPerformed,
@@ -284,11 +295,12 @@ export function buildHubChannelJsonLd({
 
   const broadcastService = broadcastServiceEntity(channel, siteUrl);
 
-  // BroadcastEvent per i programmi prime time (max 10 per non appesantire)
+  // BroadcastEvent per i programmi prime time (max 10)
+  // @id usa anchor univoco sull'hub (es: /rai-1#event-abc123), non /programma/
   const broadcastEvents = primeTime.slice(0, 10).map(p =>
     broadcastEventEntity(
       p, channel,
-      p.slug ? `${siteUrl}/programma/${channel.id}/${p.slug}` : channelUrl,
+      `${channelUrl}#prog-${p.id ?? p.slug}`,
       siteUrl,
     ),
   );
@@ -311,11 +323,12 @@ export function buildHubChannelJsonLd({
     name: `${pageTitle} — ${today}`,
     url: channelUrl,
     numberOfItems: primeTime.length,
+    // url punta all'hub, non a /programma/ (pagine inesistenti → 410)
     itemListElement: primeTime.slice(0, 20).map((p, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: p.title,
-      url: p.slug ? `${siteUrl}/programma/${channel.id}/${p.slug}` : channelUrl,
+      url: channelUrl,
       ...(p.description ? { description: p.description.slice(0, 160) } : {}),
     })),
   };
@@ -485,7 +498,7 @@ export function buildProgramJsonLd({
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];
 
   const broadcastService = broadcastServiceEntity(channel, siteUrl);
-  const broadcastEvent   = broadcastEventEntity(program, channel, programUrl, siteUrl);
+  const broadcastEvent   = broadcastEventEntity(program, channel, `${programUrl}`, siteUrl);
 
   // Entità principale del contenuto (Movie / TVEpisode / Event)
   const workEntity: Record<string, unknown> = {
