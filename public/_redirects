@@ -46,6 +46,11 @@ https://www.123programmitv.it/*  https://123programmitv.it/:splat  301
 # Radio (redirect alla home per ora, non priorità SEO)
 /radio/*                    /           301
 
+# Admin dashboard e report operativi
+/admin-url-inspection       /admin-url-inspection/index.html              200
+/admin-url-inspection/      /admin-url-inspection/index.html              200
+/search-console/:report     /search-console/:report                       200
+
 # Catch-all: pagine non trovate → 404 (DEVE essere ultima riga)
 # Senza questo, CF Pages serve index.html con HTTP 200 per ogni URL sconosciuto
 /*                          /404.html   404
