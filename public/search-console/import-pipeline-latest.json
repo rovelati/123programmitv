@@ -1,0 +1,25 @@
+{
+  "siteUrl": "https://123programmitv.it",
+  "generatedAt": "2026-04-17T00:00:00+02:00",
+  "status": "running",
+  "stage": "waiting_first_run",
+  "run": {
+    "startedAt": null,
+    "finishedAt": null,
+    "durationSeconds": null
+  },
+  "sourceUrl": null,
+  "retentionDays": 1,
+  "counts": {
+    "channelsFound": 0,
+    "channelsProcessed": 0,
+    "programsFound": 0,
+    "programsInserted": 0,
+    "programsDeleted": 0
+  },
+  "sitemaps": [],
+  "warnings": [],
+  "notes": [
+    "Il report verrà aggiornato dal prossimo run dell'importer."
+  ]
+}

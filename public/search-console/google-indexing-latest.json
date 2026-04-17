@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-04-17T00:00:00+02:00",
+  "siteUrl": "https://123programmitv.it",
+  "status": "running",
+  "run": {
+    "startedAt": null,
+    "finishedAt": null,
+    "durationSeconds": null
+  },
+  "quota": {
+    "dailyLimit": 200,
+    "requestDelayMs": 200
+  },
+  "summary": {
+    "attempted": 0,
+    "success": 0,
+    "failed": 0,
+    "hubUrls": 0,
+    "filmUrls": 0
+  },
+  "urls": {
+    "sample": [],
+    "failed": []
+  },
+  "notes": [
+    "Il report verrà aggiornato dal prossimo run di notify-indexing.js."
+  ]
+}

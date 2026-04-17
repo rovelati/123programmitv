@@ -16,7 +16,8 @@
 
 import { google } from 'googleapis';
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import path from 'path';
 import { config } from 'dotenv';
 
 config(); // carica .env
@@ -24,6 +25,33 @@ config(); // carica .env
 const SITE_URL = process.env.SITE_URL || 'https://www.123programmitv.it';
 const MAX_URLS_PER_DAY = 200; // Google Indexing API daily quota
 const RATE_LIMIT_MS = 200;    // 200ms tra richieste per evitare 429
+const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';
+
+function getSearchConsoleDir() {
+  const configured = (process.env.SEARCH_CONSOLE_PUBLIC_DIR || '').trim();
+  if (configured) {
+    mkdirSync(configured, { recursive: true });
+    return configured;
+  }
+
+  const serverDir = path.join(SERVER_PUBLIC_DIR, 'search-console');
+  if (existsSync(SERVER_PUBLIC_DIR)) {
+    mkdirSync(serverDir, { recursive: true });
+    return serverDir;
+  }
+
+  const localDir = path.resolve(process.cwd(), 'public', 'search-console');
+  mkdirSync(localDir, { recursive: true });
+  return localDir;
+}
+
+function writeReport(payload) {
+  const targetDir = getSearchConsoleDir();
+  const finalPath = path.join(targetDir, 'google-indexing-latest.json');
+  const tempPath = `${finalPath}.tmp`;
+  writeFileSync(tempPath, JSON.stringify(payload, null, 2), 'utf8');
+  renameSync(tempPath, finalPath);
+}
 
 // Hub sempre notificate dopo ogni rebuild
 const HUB_URLS = [
@@ -92,7 +120,7 @@ async function notifyUrl(indexing, url) {
       requestBody: { url, type: 'URL_UPDATED' },
     });
     console.log(`  ✓ ${url}`);
-    return true;
+    return { ok: true, url };
   } catch (err) {
     const status = err?.response?.status;
     if (status === 429) {
@@ -101,14 +129,15 @@ async function notifyUrl(indexing, url) {
       return notifyUrl(indexing, url); // una sola retry
     }
     console.warn(`  ✗ ${url} → ${err.message}`);
-    return false;
+    return { ok: false, url, error: err.message, status: status || null };
   }
 }
 
 async function main() {
+  const startedAt = new Date();
   console.log('=== Google Indexing API Notifier ===');
   console.log(`Site: ${SITE_URL}`);
-  console.log(`Date: ${new Date().toISOString()}`);
+  console.log(`Date: ${startedAt.toISOString()}`);
 
   const [auth, filmUrls] = await Promise.all([
     getGoogleAuth(),
@@ -123,18 +152,86 @@ async function main() {
 
   let ok = 0;
   let fail = 0;
+  const failures = [];
 
   for (const url of allUrls) {
-    const success = await notifyUrl(indexing, url);
-    if (success) ok++; else fail++;
+    const result = await notifyUrl(indexing, url);
+    if (result.ok) {
+      ok++;
+    } else {
+      fail++;
+      failures.push(result);
+    }
     await new Promise(r => setTimeout(r, RATE_LIMIT_MS));
   }
+
+  const finishedAt = new Date();
+  const reportPayload = {
+    generatedAt: finishedAt.toISOString(),
+    siteUrl: SITE_URL,
+    status: fail > 0 && ok === 0 ? 'error' : fail > 0 ? 'success_with_warnings' : 'success',
+    run: {
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationSeconds: Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000),
+    },
+    quota: {
+      dailyLimit: MAX_URLS_PER_DAY,
+      requestDelayMs: RATE_LIMIT_MS,
+    },
+    summary: {
+      attempted: allUrls.length,
+      success: ok,
+      failed: fail,
+      hubUrls: HUB_URLS.length,
+      filmUrls: filmUrls.length,
+    },
+    urls: {
+      sample: allUrls.slice(0, 20),
+      failed: failures.slice(0, 20),
+    },
+    notes: [
+      'Questo report copre le notifiche Google Indexing API, non la conferma di indicizzazione effettiva in Search Console.',
+      '123ProgrammiTV non usa attualmente un report social in questa dashboard.',
+    ],
+  };
+  writeReport(reportPayload);
 
   console.log(`\nDone: ${ok} notified, ${fail} failed.`);
   process.exit(fail > 0 && ok === 0 ? 1 : 0);
 }
 
 main().catch(err => {
+  const failedAt = new Date();
+  writeReport({
+    generatedAt: failedAt.toISOString(),
+    siteUrl: SITE_URL,
+    status: 'error',
+    run: {
+      startedAt: null,
+      finishedAt: failedAt.toISOString(),
+      durationSeconds: null,
+    },
+    quota: {
+      dailyLimit: MAX_URLS_PER_DAY,
+      requestDelayMs: RATE_LIMIT_MS,
+    },
+    summary: {
+      attempted: 0,
+      success: 0,
+      failed: 0,
+      hubUrls: HUB_URLS.length,
+      filmUrls: 0,
+    },
+    urls: {
+      sample: HUB_URLS.slice(0, 20),
+      failed: [],
+    },
+    error: err.message,
+    notes: [
+      'Errore fatale prima dell\'invio delle notifiche Google Indexing API.',
+    ],
+  });
   console.error('Fatal error:', err.message);
   process.exit(1);
 });
