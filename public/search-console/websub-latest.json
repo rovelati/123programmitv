@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-04-18T15:51:06.283Z",
+  "status": "success",
+  "run": {
+    "startedAt": "2026-04-18T15:51:02.560Z",
+    "finishedAt": "2026-04-18T15:51:06.283Z",
+    "durationSeconds": 4
+  },
+  "summary": {
+    "attemptedUrls": 13,
+    "successfulHubs": 2,
+    "failedHubs": 0
+  },
+  "hubs": [
+    "https://websub.superfeedr.com/",
+    "https://pubsubhubbub.appspot.com/"
+  ],
+  "sampleUrls": [
+    "https://123programmitv.it/",
+    "https://123programmitv.it/stasera",
+    "https://123programmitv.it/domani",
+    "https://123programmitv.it/film-stasera",
+    "https://123programmitv.it/serie-stasera",
+    "https://123programmitv.it/sport-stasera",
+    "https://123programmitv.it/rai-1",
+    "https://123programmitv.it/canale-5",
+    "https://123programmitv.it/italia-1",
+    "https://123programmitv.it/rete-4",
+    "https://123programmitv.it/la7",
+    "https://123programmitv.it/tv8",
+    "https://123programmitv.it/nove"
+  ],
+  "warnings": []
+}

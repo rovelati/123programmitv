@@ -15,7 +15,6 @@
  */
 
 import { google } from 'googleapis';
-import { createClient } from '@supabase/supabase-js';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
@@ -23,9 +22,13 @@ import { config } from 'dotenv';
 config(); // carica .env
 
 const SITE_URL = process.env.SITE_URL || 'https://www.123programmitv.it';
-const MAX_URLS_PER_DAY = 200; // Google Indexing API daily quota
+const MAX_URLS_PER_DAY = 30;
 const RATE_LIMIT_MS = 200;    // 200ms tra richieste per evitare 429
 const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';
+const GOOGLE_JSON_CANDIDATES = [
+  path.resolve(process.cwd(), '..', 'programmitv-974f34f03606.json'),
+  path.resolve(process.cwd(), '..', 'fernsehheute-8840739e2dc1.json'),
+];
 
 function getSearchConsoleDir() {
   const configured = (process.env.SEARCH_CONSOLE_PUBLIC_DIR || '').trim();
@@ -53,8 +56,7 @@ function writeReport(payload) {
   renameSync(tempPath, finalPath);
 }
 
-// Hub sempre notificate dopo ogni rebuild
-const HUB_URLS = [
+const HEAD_URLS = [
   '/',
   '/domani',
   '/film-stasera',
@@ -68,32 +70,6 @@ const HUB_URLS = [
   '/mediaset-extra',
 ].map(p => `${SITE_URL}${p}`);
 
-async function getIndexableFilmUrls() {
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY,
-    { auth: { persistSession: false } }
-  );
-
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-  const { data, error } = await supabase
-    .from('programs')
-    .select('channel_id, slug')
-    .eq('indexable', true)
-    .gte('created_at', since)
-    .limit(MAX_URLS_PER_DAY);
-
-  if (error) {
-    console.warn('Warning: could not fetch indexable films:', error.message);
-    return [];
-  }
-
-  return (data || [])
-    .filter(p => p.channel_id && p.slug)
-    .map(p => `${SITE_URL}/programma/${p.channel_id}/${p.slug}`);
-}
-
 async function getGoogleAuth() {
   let credentials;
 
@@ -102,10 +78,14 @@ async function getGoogleAuth() {
   } else if (process.env.GOOGLE_SA_KEY_FILE) {
     credentials = JSON.parse(readFileSync(process.env.GOOGLE_SA_KEY_FILE, 'utf8'));
   } else {
-    throw new Error(
-      'Missing Google service account credentials. ' +
-      'Set GOOGLE_SA_KEY_JSON or GOOGLE_SA_KEY_FILE in .env'
-    );
+    const candidate = GOOGLE_JSON_CANDIDATES.find((value) => existsSync(value));
+    if (!candidate) {
+      throw new Error(
+        'Missing Google service account credentials. ' +
+        'Set GOOGLE_SA_KEY_JSON or GOOGLE_SA_KEY_FILE in .env'
+      );
+    }
+    credentials = JSON.parse(readFileSync(candidate, 'utf8'));
   }
 
   return new google.auth.GoogleAuth({
@@ -139,16 +119,13 @@ async function main() {
   console.log(`Site: ${SITE_URL}`);
   console.log(`Date: ${startedAt.toISOString()}`);
 
-  const [auth, filmUrls] = await Promise.all([
-    getGoogleAuth(),
-    getIndexableFilmUrls(),
-  ]);
+  const auth = await getGoogleAuth();
 
   const indexing = google.indexing({ version: 'v3', auth });
 
   // Deduplicazione + limit giornaliero
-  const allUrls = [...new Set([...HUB_URLS, ...filmUrls])].slice(0, MAX_URLS_PER_DAY);
-  console.log(`\nNotifying ${allUrls.length} URLs (${HUB_URLS.length} hub + ${filmUrls.length} film)\n`);
+  const allUrls = [...new Set(HEAD_URLS)].slice(0, MAX_URLS_PER_DAY);
+  console.log(`\nNotifying ${allUrls.length} head URLs\n`);
 
   let ok = 0;
   let fail = 0;
@@ -183,16 +160,16 @@ async function main() {
       attempted: allUrls.length,
       success: ok,
       failed: fail,
-      hubUrls: HUB_URLS.length,
-      filmUrls: filmUrls.length,
+      hubUrls: HEAD_URLS.length,
+      filmUrls: 0,
     },
     urls: {
       sample: allUrls.slice(0, 20),
       failed: failures.slice(0, 20),
     },
     notes: [
+      'Report focalizzato sulle head page, non sulle foglie programma.',
       'Questo report copre le notifiche Google Indexing API, non la conferma di indicizzazione effettiva in Search Console.',
-      '123ProgrammiTV non usa attualmente un report social in questa dashboard.',
     ],
   };
   writeReport(reportPayload);
@@ -220,11 +197,11 @@ main().catch(err => {
       attempted: 0,
       success: 0,
       failed: 0,
-      hubUrls: HUB_URLS.length,
+      hubUrls: HEAD_URLS.length,
       filmUrls: 0,
     },
     urls: {
-      sample: HUB_URLS.slice(0, 20),
+      sample: HEAD_URLS.slice(0, 20),
       failed: [],
     },
     error: err.message,

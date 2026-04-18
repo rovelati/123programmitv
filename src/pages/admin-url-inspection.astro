@@ -3,55 +3,55 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 
-const title = 'Admin import e indicizzazione - 123ProgrammiTV';
-const description = 'Dashboard interna per monitorare import EPG, sitemap e notifiche di indicizzazione.';
+const title = 'Dashboard SEO admin - 123ProgrammiTV';
+const description = 'Console SEO interna con import, Search Console, URL Inspection e azioni prioritarie per le head page.';
 ---
 
 <HubLayout title={title} description={description} canonicalPath="/admin-url-inspection" noindex={true}>
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+  <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
     <div class="max-w-3xl">
-      <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-        Dashboard interna
+      <span class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-orange-700">
+        SEO cockpit
       </span>
-      <h1 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-        Import, sitemap e indicizzazione
+      <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+        Dashboard SEO e indicizzazione
       </h1>
-      <p class="mt-3 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-        Console operativa di 123ProgrammiTV. Mostra lo stato dell’import EPG, la freschezza delle sitemap
-        e l’ultimo esito delle notifiche Google Indexing.
+      <p class="mt-3 text-base leading-7 text-slate-600 sm:text-lg">
+        Vista unica su import EPG, Search Console, URL Inspection e azioni concrete per spingere le pagine head
+        di 123ProgrammiTV.
       </p>
     </div>
 
-    <div id="auth-panel" class="mt-8 max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Accesso admin</h2>
-      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Accesso protetto con le stesse credenziali usate su programmecesoir.fr.
+    <div id="auth-panel" class="mt-8 max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-xl font-bold text-slate-900">Accesso admin</h2>
+      <p class="mt-2 text-sm text-slate-500">
+        Stesse credenziali applicative di programmecesoir.fr.
       </p>
       <form id="auth-form" class="mt-6 space-y-4">
         <label class="block">
-          <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Login</span>
+          <span class="mb-2 block text-sm font-medium text-slate-700">Login</span>
           <input
             id="auth-username"
             type="text"
             autocomplete="username"
-            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-orange-500"
           />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Password</span>
+          <span class="mb-2 block text-sm font-medium text-slate-700">Password</span>
           <input
             id="auth-password"
             type="password"
             autocomplete="current-password"
-            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-orange-500"
           />
         </label>
-        <p id="auth-error" class="hidden text-sm font-medium text-rose-600 dark:text-rose-400"></p>
+        <p id="auth-error" class="hidden text-sm font-medium text-rose-600"></p>
         <button
           type="submit"
-          class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+          class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
-          Entrare nella console
+          Apri la dashboard
         </button>
       </form>
     </div>
@@ -59,86 +59,123 @@ const description = 'Dashboard interna per monitorare import EPG, sitemap e noti
     <div id="dashboard-shell" class="hidden mt-8 space-y-8">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Panoramica operativa</h2>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Monitoraggio sintetico di import, sitemap e notifiche Google.
+          <h2 class="text-2xl font-bold text-slate-900">Panoramica SEO operativa</h2>
+          <p class="mt-2 text-sm text-slate-500">
+            Finestra attuale: ultimi 7 giorni Search Console, con stato live delle head page.
           </p>
         </div>
         <div class="flex flex-wrap gap-3">
           <button
             id="refresh-dashboard"
             type="button"
-            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
           >
-            Rafraîchir
+            Aggiorna
           </button>
           <button
             id="logout-dashboard"
             type="button"
-            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
           >
             Logout
           </button>
         </div>
       </div>
 
-      <div id="dashboard-loading" class="rounded-3xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-        Chargement des rapports…
+      <div id="dashboard-loading" class="rounded-[28px] border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500 shadow-sm">
+        Caricamento dati SEO in corso…
       </div>
 
-      <div id="dashboard-content" class="hidden space-y-8">
-        <section>
-          <div id="summary-grid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4"></div>
-        </section>
+      <div id="dashboard-error" class="hidden rounded-[28px] border border-rose-200 bg-rose-50 px-6 py-5 text-sm text-rose-700"></div>
 
-        <section class="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-          <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div id="dashboard-content" class="hidden space-y-8">
+        <section id="summary-grid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4"></section>
+
+        <section class="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Pipeline import</h3>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Dernier import EPG, compteurs de chargement et état des sitemap.
+                <h3 class="text-lg font-bold text-slate-900">Import e freschezza contenuti</h3>
+                <p class="mt-1 text-sm text-slate-500">
+                  Ultimo sync EPG, canali/processati e stato della pipeline dati.
                 </p>
               </div>
               <div id="import-status-badge"></div>
             </div>
             <div id="import-metadata" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
-            <div id="import-warnings" class="mt-6"></div>
           </article>
 
-          <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Notifiche Google</h3>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Esito dell’ultimo run di Google Indexing API. Nessun blocco social in questa installazione.
-            </p>
-            <div id="indexing-status-badge" class="mt-4"></div>
-            <div id="indexing-summary" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">Google Search Console</h3>
+                <p class="mt-1 text-sm text-slate-500">
+                  Click, impression, CTR e posizione media negli ultimi 7 giorni rispetto ai 7 precedenti.
+                </p>
+              </div>
+              <div id="search-window-badge"></div>
+            </div>
+            <div id="search-summary" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
           </article>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-          <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <section class="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Sitemap pubblicate</h3>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Verifica rapida dei file che dovrebbero guidare il crawling delle head page.
+                <h3 class="text-lg font-bold text-slate-900">Stato indicizzazione head page</h3>
+                <p class="mt-1 text-sm text-slate-500">
+                  URL Inspection live sulle pagine che contano davvero: home, hub e canali principali.
                 </p>
               </div>
+              <div id="inspection-summary-badge"></div>
             </div>
-            <div id="sitemap-table" class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700"></div>
+            <div id="inspection-table" class="mt-6 overflow-hidden rounded-3xl border border-slate-200"></div>
           </article>
 
-          <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Note operative</h3>
-            <div id="notes-list" class="mt-4 space-y-3"></div>
-            <div class="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">
-              <p class="font-semibold text-slate-900 dark:text-slate-100">Search Console traffic</p>
-              <p class="mt-2">
-                Per 123ProgrammiTV non c’è ancora un report Search Console traffic integrato. La console
-                evidenzia quindi lo stato operativo dell’import e delle notifiche, non la crescita click/impressions.
-              </p>
-            </div>
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">Insight e action</h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Lettura sintetica per decidere dove spingere l’indicizzazione e dove intervenire sui title.
+            </p>
+            <div id="actions-list" class="mt-5 space-y-3"></div>
+            <div id="insights-list" class="mt-6 space-y-3"></div>
+          </article>
+        </section>
+
+        <section class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">Top pagine da Search Console</h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Le URL che stanno già generando segnali. Quelle head devono salire qui in modo stabile.
+            </p>
+            <div id="top-pages-table" class="mt-6 overflow-hidden rounded-3xl border border-slate-200"></div>
+          </article>
+
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">Query search attive</h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Query che stanno già facendo apparire il sito. Utili per rifinire copy e linking interno.
+            </p>
+            <div id="top-queries-table" class="mt-6 overflow-hidden rounded-3xl border border-slate-200"></div>
+          </article>
+        </section>
+
+        <section class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">Segnali di distribuzione</h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Stato tecnico dei job che spingono le head page verso i motori.
+            </p>
+            <div id="indexing-panel" class="mt-5"></div>
+          </article>
+
+          <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900">GA4 / analytics layer</h3>
+            <p class="mt-1 text-sm text-slate-500">
+              Stato dell’integrazione server-side GA4. Se manca qualcosa, qui compare l’azione precisa da fare.
+            </p>
+            <div id="ga4-panel" class="mt-5"></div>
           </article>
         </section>
       </div>
@@ -149,11 +186,13 @@ const description = 'Dashboard interna per monitorare import EPG, sitemap e noti
     const ADMIN_USER = 'bruno';
     const ADMIN_PASS = 'baumicio';
     const AUTH_KEY = '123programmitv_admin_dashboard_auth';
+    const AUTH_HEADER = btoa(`${ADMIN_USER}:${ADMIN_PASS}`);
 
     const authPanel = document.getElementById('auth-panel');
     const dashboardShell = document.getElementById('dashboard-shell');
     const dashboardLoading = document.getElementById('dashboard-loading');
     const dashboardContent = document.getElementById('dashboard-content');
+    const dashboardError = document.getElementById('dashboard-error');
     const authError = document.getElementById('auth-error');
     const authForm = document.getElementById('auth-form');
     const usernameInput = document.getElementById('auth-username');
@@ -162,11 +201,16 @@ const description = 'Dashboard interna per monitorare import EPG, sitemap e noti
     const summaryGrid = document.getElementById('summary-grid');
     const importStatusBadge = document.getElementById('import-status-badge');
     const importMetadata = document.getElementById('import-metadata');
-    const importWarnings = document.getElementById('import-warnings');
-    const indexingStatusBadge = document.getElementById('indexing-status-badge');
-    const indexingSummary = document.getElementById('indexing-summary');
-    const sitemapTable = document.getElementById('sitemap-table');
-    const notesList = document.getElementById('notes-list');
+    const searchWindowBadge = document.getElementById('search-window-badge');
+    const searchSummary = document.getElementById('search-summary');
+    const inspectionSummaryBadge = document.getElementById('inspection-summary-badge');
+    const inspectionTable = document.getElementById('inspection-table');
+    const actionsList = document.getElementById('actions-list');
+    const insightsList = document.getElementById('insights-list');
+    const topPagesTable = document.getElementById('top-pages-table');
+    const topQueriesTable = document.getElementById('top-queries-table');
+    const indexingPanel = document.getElementById('indexing-panel');
+    const ga4Panel = document.getElementById('ga4-panel');
 
     const refreshButton = document.getElementById('refresh-dashboard');
     const logoutButton = document.getElementById('logout-dashboard');
@@ -186,223 +230,366 @@ const description = 'Dashboard interna per monitorare import EPG, sitemap e noti
       return typeof value === 'number' && !Number.isNaN(value) ? value.toLocaleString('it-IT') : '—';
     }
 
-    function formatBytes(value) {
-      if (typeof value !== 'number' || Number.isNaN(value)) return '—';
-      if (value === 0) return '0 B';
-      const units = ['B', 'KB', 'MB', 'GB'];
-      let current = value;
-      let unit = 0;
-      while (current >= 1024 && unit < units.length - 1) {
-        current /= 1024;
-        unit += 1;
-      }
-      return `${current.toLocaleString('it-IT', { maximumFractionDigits: current >= 100 ? 0 : 1 })} ${units[unit]}`;
+    function formatPercent(value) {
+      return typeof value === 'number' && !Number.isNaN(value) ? `${value.toLocaleString('it-IT', { maximumFractionDigits: 2 })}%` : '—';
     }
 
-    function getStatusMeta(status) {
+    function getTone(status) {
       const normalized = String(status || '').toLowerCase();
-      if (normalized === 'success') return { label: 'Succès', tone: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' };
-      if (normalized === 'success_with_warnings') return { label: 'Succès avec alertes', tone: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' };
-      if (normalized === 'running') return { label: 'En cours', tone: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' };
-      if (normalized === 'error') return { label: 'Erreur', tone: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' };
-      return { label: status || 'Inconnu', tone: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200' };
+      if (normalized === 'success' || normalized === 'ok') return 'bg-emerald-100 text-emerald-700';
+      if (normalized === 'success_with_warnings' || normalized === 'warning') return 'bg-amber-100 text-amber-700';
+      if (normalized === 'running') return 'bg-sky-100 text-sky-700';
+      if (normalized === 'error') return 'bg-rose-100 text-rose-700';
+      return 'bg-slate-100 text-slate-700';
     }
 
-    function badgeHtml(status) {
-      const meta = getStatusMeta(status);
-      return `<span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${meta.tone}">${meta.label}</span>`;
+    function getPriorityTone(priority) {
+      if (priority === 'high') return 'bg-rose-100 text-rose-700';
+      if (priority === 'medium') return 'bg-amber-100 text-amber-700';
+      return 'bg-sky-100 text-sky-700';
+    }
+
+    function badge(label, tone) {
+      return `<span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] ${tone}">${label}</span>`;
     }
 
     function infoCard(label, value, help) {
       return `
-        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">${label}</p>
-          <p class="mt-3 text-2xl font-extrabold text-slate-900 dark:text-slate-100">${value}</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">${help}</p>
+        <div class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">${label}</p>
+          <p class="mt-3 text-3xl font-extrabold text-slate-900">${value}</p>
+          <p class="mt-2 text-sm text-slate-500">${help}</p>
         </div>
       `;
     }
 
-    async function fetchJson(url, force = false) {
-      const suffix = force ? `?ts=${Date.now()}` : '';
-      const response = await fetch(`${url}${suffix}`, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Impossible de charger ${url} (${response.status})`);
+    async function fetchDashboard(force = false) {
+      const response = await fetch(`/api/admin/seo-dashboard.json${force ? `?ts=${Date.now()}` : ''}`, {
+        headers: {
+          'x-admin-auth': AUTH_HEADER,
+          'cache-control': 'no-store',
+        },
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || `Dashboard error ${response.status}`);
       }
-      return response.json();
+      return payload;
     }
 
-    function renderImportReport(report) {
-      importStatusBadge.innerHTML = badgeHtml(report.status);
+    function renderImport(importStatus) {
+      const latest = importStatus?.latestRun || {};
+      importStatusBadge.innerHTML = badge(latest.status || 'unknown', getTone(latest.status));
       importMetadata.innerHTML = `
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Dernier run</p>
-          <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">${formatDateTime(report.run?.finishedAt || report.run?.startedAt)}</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Durée: ${formatNumber(report.run?.durationSeconds)} s</p>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Ultimo run</p>
+          <p class="mt-2 text-sm font-semibold text-slate-900">${formatDateTime(latest.completed_at || latest.started_at)}</p>
+          <p class="mt-2 text-sm text-slate-500">Fonte: ${latest.trigger_source || '—'}</p>
         </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Compteurs</p>
-          <div class="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
-            <p>Canaux trouvés: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.counts?.channelsFound)}</strong></p>
-            <p>Canaux upsertés: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.counts?.channelsProcessed)}</strong></p>
-            <p>Programmes trouvés: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.counts?.programsFound)}</strong></p>
-            <p>Programmes insérés: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.counts?.programsInserted)}</strong></p>
-            <p>Programmes purgés: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.counts?.programsDeleted)}</strong></p>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Volumi</p>
+          <div class="mt-2 space-y-1 text-sm text-slate-600">
+            <p>Canali: <strong class="text-slate-900">${formatNumber(latest.total_channels)}</strong></p>
+            <p>Programmi: <strong class="text-slate-900">${formatNumber(latest.total_programs)}</strong></p>
+            <p>Nuovi canali: <strong class="text-slate-900">${formatNumber(latest.new_channels)}</strong></p>
           </div>
         </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Source</p>
-          <p class="mt-2 break-all text-sm font-medium text-slate-900 dark:text-slate-100">${report.sourceUrl || '—'}</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Retention: ${formatNumber(report.retentionDays)} giorno/i</p>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Feed</p>
+          <div class="mt-2 space-y-1 text-sm text-slate-600">
+            <p>TVIT: <strong class="text-slate-900">${formatNumber(latest.primary_channels)}</strong></p>
+            <p>IPTV-EPG: <strong class="text-slate-900">${formatNumber(latest.secondary_channels)}</strong></p>
+            <p>Canali aggiunti: <strong class="text-slate-900">${formatNumber(latest.secondary_channels_added)}</strong></p>
+          </div>
         </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Finestra dati</p>
-          <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">${report.dateRange?.startDate || '—'} → ${report.dateRange?.endDate || '—'}</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Stage: ${report.stage || '—'}</p>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Rigenerazione sito</p>
+          <p class="mt-2 text-sm font-semibold text-slate-900">${latest.metadata?.site_regeneration?.github?.ok ? 'GitHub deploy trigger OK' : 'Da verificare'}</p>
+          <p class="mt-2 text-sm text-slate-500">${latest.message || '—'}</p>
         </div>
       `;
+    }
 
-      const warnings = Array.isArray(report.warnings) ? report.warnings : [];
-      importWarnings.innerHTML = warnings.length
-        ? `<div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
-            <p class="font-semibold">Alertes import</p>
-            <ul class="mt-3 space-y-2">${warnings.map((warning) => `<li>• ${warning}</li>`).join('')}</ul>
-          </div>`
-        : `<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-200">
-            Nessuna anomalia import nell’ultimo report.
-          </div>`;
+    function renderSearch(searchPerformance) {
+      const current = searchPerformance.currentPeriod || {};
+      const deltas = searchPerformance.deltas || {};
+      searchWindowBadge.innerHTML = badge(`${searchPerformance.windowDays || 7} giorni`, 'bg-sky-100 text-sky-700');
+      searchSummary.innerHTML = `
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Click</p>
+          <p class="mt-2 text-2xl font-extrabold text-slate-900">${formatNumber(current.clicks)}</p>
+          <p class="mt-2 text-sm text-slate-500">Delta: ${formatPercent(deltas.clicks)}</p>
+        </div>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Impression</p>
+          <p class="mt-2 text-2xl font-extrabold text-slate-900">${formatNumber(current.impressions)}</p>
+          <p class="mt-2 text-sm text-slate-500">Delta: ${formatPercent(deltas.impressions)}</p>
+        </div>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">CTR</p>
+          <p class="mt-2 text-2xl font-extrabold text-slate-900">${formatPercent(current.ctr)}</p>
+          <p class="mt-2 text-sm text-slate-500">Delta: ${formatPercent(deltas.ctr)}</p>
+        </div>
+        <div class="rounded-3xl bg-slate-50 p-4">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Posizione media</p>
+          <p class="mt-2 text-2xl font-extrabold text-slate-900">${typeof current.position === 'number' ? current.position.toFixed(2) : '—'}</p>
+          <p class="mt-2 text-sm text-slate-500">Delta: ${typeof deltas.position === 'number' ? deltas.position.toFixed(2) : '—'}</p>
+        </div>
+      `;
+    }
 
-      sitemapTable.innerHTML = `
-        <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-700">
-          <thead class="bg-slate-50 dark:bg-slate-800/70">
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-300">Fichier</th>
-              <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-300">Statut</th>
-              <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-300">Dernière mise à jour</th>
-              <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-300">Poids</th>
+    function renderInspection(inspection, searchPerformance) {
+      inspectionSummaryBadge.innerHTML = badge(
+        `${inspection.summary.indexed}/${inspection.summary.total} indicizzate`,
+        inspection.summary.indexed > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
+      );
+
+      const perfByUrl = new Map((searchPerformance.headTargets || []).map((row) => [row.url, row]));
+      const rows = (inspection.results || []).map((row) => {
+        const perf = perfByUrl.get(row.url);
+        const stateTone = row.indexed ? 'bg-emerald-100 text-emerald-700' : row.status === 'error' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700';
+        const stateLabel = row.indexed ? 'Indicizzata' : row.status === 'error' ? 'Errore API' : 'Non riconosciuta';
+        return `
+          <tr class="border-b border-slate-200 last:border-b-0">
+            <td class="px-4 py-3 align-top">
+              <div class="font-semibold text-slate-900">${row.label}</div>
+              <a href="${row.url}" target="_blank" rel="noopener" class="mt-1 inline-block text-xs text-slate-500 hover:text-slate-700">${row.url}</a>
+            </td>
+            <td class="px-4 py-3 align-top">${badge(stateLabel, stateTone)}</td>
+            <td class="px-4 py-3 align-top text-sm text-slate-600">${row.coverageState || row.error || '—'}</td>
+            <td class="px-4 py-3 align-top text-sm text-slate-600">${formatNumber(perf?.impressions || 0)}</td>
+            <td class="px-4 py-3 align-top text-sm text-slate-600">${formatPercent(perf?.ctr || 0)}</td>
+            <td class="px-4 py-3 align-top text-sm text-slate-600">${formatDateTime(row.lastCrawlTime)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      inspectionTable.innerHTML = `
+        <table class="min-w-full divide-y divide-slate-200 text-left">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+              <th class="px-4 py-3">URL</th>
+              <th class="px-4 py-3">Stato</th>
+              <th class="px-4 py-3">Coverage</th>
+              <th class="px-4 py-3">Impr.</th>
+              <th class="px-4 py-3">CTR</th>
+              <th class="px-4 py-3">Ultimo crawl</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
-            ${(report.sitemaps || []).map((row) => `
-              <tr>
-                <td class="px-4 py-3">
-                  <a class="font-semibold text-blue-600 hover:underline dark:text-blue-400" href="${row.url}" target="_blank" rel="noopener noreferrer">${row.label}</a>
-                  <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">${row.filename}</p>
-                </td>
-                <td class="px-4 py-3">${badgeHtml(row.exists ? 'success' : 'error')}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">${formatDateTime(row.lastModified)}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">${formatBytes(row.sizeBytes)}</td>
-              </tr>
-            `).join('')}
+          <tbody class="divide-y divide-slate-200 bg-white">${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderItems(container, items, emptyLabel) {
+      if (!items?.length) {
+        container.innerHTML = `<div class="rounded-3xl bg-slate-50 px-4 py-3 text-sm text-slate-500">${emptyLabel}</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map((item) => `
+        <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">${item.title}</h4>
+              <p class="mt-2 text-sm leading-6 text-slate-600">${item.detail}</p>
+            </div>
+            ${badge(item.priority || 'info', getPriorityTone(item.priority))}
+          </div>
+          ${item.target ? `<p class="mt-3 text-xs text-slate-500">${Array.isArray(item.target) ? item.target.join(' · ') : item.target}</p>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderTable(container, columns, rows, emptyLabel) {
+      if (!rows?.length) {
+        container.innerHTML = `<div class="px-4 py-6 text-sm text-slate-500">${emptyLabel}</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table class="min-w-full divide-y divide-slate-200 text-left">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+              ${columns.map((column) => `<th class="px-4 py-3">${column}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            ${rows.join('')}
           </tbody>
         </table>
       `;
     }
 
-    function renderIndexingReport(report) {
-      indexingStatusBadge.innerHTML = badgeHtml(report.status);
-      indexingSummary.innerHTML = `
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Dernier run</p>
-          <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">${formatDateTime(report.run?.finishedAt || report.generatedAt)}</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Durée: ${formatNumber(report.run?.durationSeconds)} s</p>
-        </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Quota / pacing</p>
-          <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">${formatNumber(report.quota?.dailyLimit)} URLs / giorno</p>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Delay: ${formatNumber(report.quota?.requestDelayMs)} ms</p>
-        </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Résultat</p>
-          <div class="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
-            <p>Tentate: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.summary?.attempted)}</strong></p>
-            <p>OK: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.summary?.success)}</strong></p>
-            <p>KO: <strong class="text-slate-900 dark:text-slate-100">${formatNumber(report.summary?.failed)}</strong></p>
+    function renderTopTables(searchPerformance) {
+      const toDisplayPath = (value) => {
+        try {
+          const parsed = new URL(value);
+          return parsed.pathname || '/';
+        } catch {
+          return value || '/';
+        }
+      };
+
+      renderTable(
+        topPagesTable,
+        ['Pagina', 'Click', 'Impression', 'CTR', 'Pos.'],
+        (searchPerformance.topPages || []).slice(0, 12).map((row) => `
+          <tr>
+            <td class="px-4 py-3">
+              <a href="${row.key}" target="_blank" rel="noopener" class="text-sm font-medium text-slate-900 hover:text-orange-700">${toDisplayPath(row.key)}</a>
+            </td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatNumber(row.clicks)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatNumber(row.impressions)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatPercent(row.ctr)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${typeof row.position === 'number' ? row.position.toFixed(2) : '—'}</td>
+          </tr>
+        `),
+        'Nessuna pagina rilevata nella finestra attuale.',
+      );
+
+      renderTable(
+        topQueriesTable,
+        ['Query', 'Click', 'Impression', 'CTR', 'Pos.'],
+        (searchPerformance.topQueries || []).slice(0, 12).map((row) => `
+          <tr>
+            <td class="px-4 py-3 text-sm font-medium text-slate-900">${row.key || '—'}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatNumber(row.clicks)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatNumber(row.impressions)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${formatPercent(row.ctr)}</td>
+            <td class="px-4 py-3 text-sm text-slate-600">${typeof row.position === 'number' ? row.position.toFixed(2) : '—'}</td>
+          </tr>
+        `),
+        'Nessuna query rilevata nella finestra attuale.',
+      );
+    }
+
+    function renderIndexingPanel(googleIndexing) {
+      const { googleIndexing: indexing, websub } = googleIndexing;
+
+      const indexingCard = indexing.status !== 'ok' || !indexing.payload
+        ? `<div class="rounded-3xl bg-amber-50 px-4 py-4 text-sm text-amber-700">Google Indexing: report non disponibile in modo affidabile.</div>`
+        : `
+          <div class="rounded-3xl bg-slate-50 p-4">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Google Indexing API</p>
+            <div class="mt-2">${badge(indexing.payload.status || 'unknown', getTone(indexing.payload.status))}</div>
+            <p class="mt-2 text-sm text-slate-500">${formatDateTime(indexing.payload.generatedAt)}</p>
+            <p class="mt-2 text-sm text-slate-600">Success: <strong class="text-slate-900">${formatNumber(indexing.payload.summary?.success)}</strong> / ${formatNumber(indexing.payload.summary?.attempted)}</p>
           </div>
-        </div>
-        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
-          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">URL campione</p>
-          <div class="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-300">
-            ${(report.urls?.sample || []).slice(0, 5).map((url) => `<p class="truncate">${url}</p>`).join('') || '<p>—</p>'}
+        `;
+
+      const websubCard = websub.status !== 'ok' || !websub.payload
+        ? `<div class="rounded-3xl bg-amber-50 px-4 py-4 text-sm text-amber-700">WebSub: report non disponibile o job non ancora eseguito.</div>`
+        : `
+          <div class="rounded-3xl bg-slate-50 p-4">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">WebSub</p>
+            <div class="mt-2">${badge(websub.payload.status || 'unknown', getTone(websub.payload.status))}</div>
+            <p class="mt-2 text-sm text-slate-500">${formatDateTime(websub.payload.generatedAt)}</p>
+            <p class="mt-2 text-sm text-slate-600">Hub OK: <strong class="text-slate-900">${formatNumber(websub.payload.summary?.successfulHubs)}</strong></p>
           </div>
+        `;
+
+      indexingPanel.innerHTML = `
+        <div class="grid gap-4 sm:grid-cols-2">
+          ${indexingCard}
+          ${websubCard}
         </div>
       `;
     }
 
-    function renderSummary(importReport, indexingReport) {
+    function renderGa4Panel(ga4) {
+      if (ga4.status === 'ok') {
+        ga4Panel.innerHTML = `
+          <div class="rounded-3xl bg-emerald-50 px-4 py-4 text-sm text-emerald-700">
+            Data API GA4 attiva su property ${ga4.propertyId}. Measurement ID: ${ga4.measurementId}.
+          </div>
+        `;
+        return;
+      }
+
+      const tone = ga4.status === 'error' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700';
+      ga4Panel.innerHTML = `
+        <div class="rounded-3xl ${tone} px-4 py-4 text-sm">
+          <p class="font-semibold">${ga4.message || 'Layer GA4 non pronto.'}</p>
+          <p class="mt-2">Measurement ID: ${ga4.measurementId || '—'}</p>
+          <p class="mt-2">${ga4.action || ''}</p>
+          ${ga4.activationUrl ? `<p class="mt-2"><a class="underline" href="${ga4.activationUrl}" target="_blank" rel="noopener">Apri pagina di attivazione API</a></p>` : ''}
+        </div>
+      `;
+    }
+
+    function renderSummary(payload) {
+      const current = payload.searchPerformance.currentPeriod || {};
+      const latestImport = payload.importStatus.latestRun || {};
       summaryGrid.innerHTML = [
-        infoCard('Import EPG', getStatusMeta(importReport.status).label, `Ultimo run: ${formatDateTime(importReport.run?.finishedAt || importReport.run?.startedAt)}`),
-        infoCard('Programmi inseriti', formatNumber(importReport.counts?.programsInserted), `Purgati: ${formatNumber(importReport.counts?.programsDeleted)}`),
-        infoCard('Google Indexing', formatNumber(indexingReport.summary?.success), `${formatNumber(indexingReport.summary?.attempted)} URLs tentate`),
-        infoCard('Sitemap valide', formatNumber((importReport.sitemaps || []).filter((row) => row.exists).length), 'File presenti nel public_html'),
+        infoCard('Impression 7g', formatNumber(current.impressions), 'Visibilità organica osservata in Search Console.'),
+        infoCard('Click 7g', formatNumber(current.clicks), 'Click organici reali negli ultimi 7 giorni.'),
+        infoCard('Head indicizzate', `${formatNumber(payload.inspection.summary.indexed)}/${formatNumber(payload.inspection.summary.total)}`, 'Pagine head riconosciute da Google.'),
+        infoCard('Ultimo import', formatDateTime(latestImport.completed_at || latestImport.started_at), 'Freschezza dell’ultimo caricamento EPG.'),
       ].join('');
     }
 
-    function renderNotes(importReport, indexingReport) {
-      const notes = [...(importReport.notes || []), ...(indexingReport.notes || [])];
-      notesList.innerHTML = notes.length
-        ? notes.map((note) => `<div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">${note}</div>`).join('')
-        : '<div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">Nessuna nota disponibile.</div>';
+    function renderDashboard(payload) {
+      renderSummary(payload);
+      renderImport(payload.importStatus);
+      renderSearch(payload.searchPerformance);
+      renderInspection(payload.inspection, payload.searchPerformance);
+      renderItems(actionsList, payload.actions, 'Nessuna action prioritaria generata.');
+      renderItems(insightsList, payload.insights, 'Nessun insight disponibile.');
+      renderTopTables(payload.searchPerformance);
+      renderIndexingPanel({ googleIndexing: payload.googleIndexing, websub: payload.websub });
+      renderGa4Panel(payload.ga4);
     }
 
     async function loadDashboard(force = false) {
       dashboardLoading.classList.remove('hidden');
       dashboardContent.classList.add('hidden');
+      dashboardError.classList.add('hidden');
+      dashboardError.textContent = '';
+
       try {
-        const [importReport, indexingReport] = await Promise.all([
-          fetchJson('/search-console/import-pipeline-latest.json', force),
-          fetchJson('/search-console/google-indexing-latest.json', force),
-        ]);
-        renderSummary(importReport, indexingReport);
-        renderImportReport(importReport);
-        renderIndexingReport(indexingReport);
-        renderNotes(importReport, indexingReport);
+        const payload = await fetchDashboard(force);
+        renderDashboard(payload);
         dashboardContent.classList.remove('hidden');
-        dashboardLoading.classList.add('hidden');
       } catch (error) {
-        dashboardLoading.innerHTML = `
-          <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-300">
-            ${error.message}
-          </div>
-        `;
+        dashboardError.textContent = error.message || 'Errore durante il caricamento della dashboard.';
+        dashboardError.classList.remove('hidden');
+      } finally {
+        dashboardLoading.classList.add('hidden');
       }
     }
 
-    function showDashboard() {
-      authPanel.classList.add('hidden');
-      dashboardShell.classList.remove('hidden');
-      loadDashboard();
+    function setAuthed(value) {
+      if (value) {
+        window.sessionStorage.setItem(AUTH_KEY, '1');
+        authPanel.classList.add('hidden');
+        dashboardShell.classList.remove('hidden');
+        loadDashboard();
+        return;
+      }
+      window.sessionStorage.removeItem(AUTH_KEY);
+      authPanel.classList.remove('hidden');
+      dashboardShell.classList.add('hidden');
+      dashboardContent.classList.add('hidden');
+      dashboardError.classList.add('hidden');
     }
 
     authForm?.addEventListener('submit', (event) => {
       event.preventDefault();
-      const username = usernameInput?.value?.trim() || '';
-      const password = passwordInput?.value || '';
-      if (username === ADMIN_USER && password === ADMIN_PASS) {
-        sessionStorage.setItem(AUTH_KEY, '1');
-        authError?.classList.add('hidden');
-        showDashboard();
+      if (usernameInput.value === ADMIN_USER && passwordInput.value === ADMIN_PASS) {
+        authError.classList.add('hidden');
+        setAuthed(true);
         return;
       }
-      if (authError) {
-        authError.textContent = 'Identifiants incorrects.';
-        authError.classList.remove('hidden');
-      }
+      authError.textContent = 'Identificativi non validi.';
+      authError.classList.remove('hidden');
     });
 
     refreshButton?.addEventListener('click', () => loadDashboard(true));
-    logoutButton?.addEventListener('click', () => {
-      sessionStorage.removeItem(AUTH_KEY);
-      dashboardShell.classList.add('hidden');
-      dashboardContent.classList.add('hidden');
-      dashboardLoading.classList.remove('hidden');
-      authPanel.classList.remove('hidden');
-      if (usernameInput) usernameInput.value = '';
-      if (passwordInput) passwordInput.value = '';
-    });
+    logoutButton?.addEventListener('click', () => setAuthed(false));
 
-    if (sessionStorage.getItem(AUTH_KEY) === '1') {
-      showDashboard();
+    if (typeof window !== 'undefined' && window.sessionStorage.getItem(AUTH_KEY) === '1') {
+      setAuthed(true);
     }
   </script>
 </HubLayout>

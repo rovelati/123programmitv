@@ -1,28 +1,50 @@
 {
-  "generatedAt": "2026-04-17T00:00:00+02:00",
+  "generatedAt": "2026-04-18T15:51:16.034Z",
   "siteUrl": "https://123programmitv.it",
-  "status": "running",
+  "status": "success",
   "run": {
-    "startedAt": null,
-    "finishedAt": null,
-    "durationSeconds": null
+    "startedAt": "2026-04-18T15:51:03.360Z",
+    "finishedAt": "2026-04-18T15:51:16.034Z",
+    "durationSeconds": 13
   },
   "quota": {
-    "dailyLimit": 200,
+    "dailyLimit": 30,
     "requestDelayMs": 200
   },
   "summary": {
-    "attempted": 0,
-    "success": 0,
+    "attempted": 28,
+    "success": 28,
     "failed": 0,
-    "hubUrls": 0,
+    "hubUrls": 28,
     "filmUrls": 0
   },
   "urls": {
-    "sample": [],
+    "sample": [
+      "https://123programmitv.it/",
+      "https://123programmitv.it/domani",
+      "https://123programmitv.it/film-stasera",
+      "https://123programmitv.it/serie-stasera",
+      "https://123programmitv.it/sport-stasera",
+      "https://123programmitv.it/rai-1",
+      "https://123programmitv.it/rai-2",
+      "https://123programmitv.it/rai-3",
+      "https://123programmitv.it/rai-4",
+      "https://123programmitv.it/rai-5",
+      "https://123programmitv.it/canale-5",
+      "https://123programmitv.it/italia-1",
+      "https://123programmitv.it/rete-4",
+      "https://123programmitv.it/la7",
+      "https://123programmitv.it/la7d",
+      "https://123programmitv.it/tv8",
+      "https://123programmitv.it/nove",
+      "https://123programmitv.it/iris",
+      "https://123programmitv.it/focus",
+      "https://123programmitv.it/dmax"
+    ],
     "failed": []
   },
   "notes": [
-    "Il report verrà aggiornato dal prossimo run di notify-indexing.js."
+    "Report focalizzato sulle head page, non sulle foglie programma.",
+    "Questo report copre le notifiche Google Indexing API, non la conferma di indicizzazione effettiva in Search Console."
   ]
 }
