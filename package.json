@@ -6,13 +6,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "ASTRO_ADAPTER=cloudflare astro build",
-    "postbuild": "node scripts/generate-sitemap-film.js && node scripts/generate-seo-dashboard.js",
+    "postbuild": "node scripts/generate-sitemap-film.js && node scripts/generate-seo-dashboard.js && node scripts/sync-search-console-assets.js",
     "preview": "astro preview",
     "typecheck": "astro check --no-watch",
     "notify-indexing": "node scripts/notify-indexing.js",
     "notify-websub": "node scripts/notify-websub.js",
     "generate-seo-dashboard": "node scripts/generate-seo-dashboard.js",
-    "build:node": "astro build"
+    "build:node": "astro build && npm run postbuild"
   },
   "engines": {
     "node": ">=22.12.0"
