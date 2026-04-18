@@ -27,6 +27,8 @@ const GOOGLE_JSON_CANDIDATES = [
   path.join(ROOT_DIR, 'fernsehheute-8840739e2dc1.json'),
 ];
 const PRODUCTION_MD_PATH = path.join(ROOT_DIR, 'production.md');
+const LOCAL_GOOGLE_INDEXING_REPORT = path.join(process.cwd(), 'public', 'search-console', 'google-indexing-latest.json');
+const LOCAL_WEBSUB_REPORT = path.join(process.cwd(), 'public', 'search-console', 'websub-latest.json');
 const GA4_MEASUREMENT_ID_FALLBACK = 'G-824117SV8J';
 const SEARCH_CONSOLE_SITE_FALLBACK = 'sc-domain:123programmitv.it';
 const SITE_URL_FALLBACK = 'https://123programmitv.it';
@@ -390,6 +392,21 @@ async function loadImportStatus(context: APIContext) {
 }
 
 async function loadGoogleIndexingReport(context: APIContext) {
+  try {
+    if (existsSync(LOCAL_GOOGLE_INDEXING_REPORT)) {
+      return {
+        status: 'ok',
+        payload: JSON.parse(readFileSync(LOCAL_GOOGLE_INDEXING_REPORT, 'utf8')),
+      };
+    }
+  } catch (error) {
+    return {
+      status: 'warning',
+      payload: null,
+      error: String((error as Error)?.message || error),
+    };
+  }
+
   const requestUrl = new URL(context.request.url);
   const reportUrl = new URL('/search-console/google-indexing-latest.json', requestUrl.origin);
   try {
@@ -412,6 +429,21 @@ async function loadGoogleIndexingReport(context: APIContext) {
 }
 
 async function loadWebSubReport(context: APIContext) {
+  try {
+    if (existsSync(LOCAL_WEBSUB_REPORT)) {
+      return {
+        status: 'ok',
+        payload: JSON.parse(readFileSync(LOCAL_WEBSUB_REPORT, 'utf8')),
+      };
+    }
+  } catch (error) {
+    return {
+      status: 'warning',
+      payload: null,
+      error: String((error as Error)?.message || error),
+    };
+  }
+
   const requestUrl = new URL(context.request.url);
   const reportUrl = new URL('/search-console/websub-latest.json', requestUrl.origin);
   try {

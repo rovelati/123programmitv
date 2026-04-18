@@ -264,9 +264,8 @@ const description = 'Console SEO interna con import, Search Console, URL Inspect
     }
 
     async function fetchDashboard(force = false) {
-      const response = await fetch(`/api/admin/seo-dashboard.json${force ? `?ts=${Date.now()}` : ''}`, {
+      const response = await fetch(`/search-console/seo-dashboard-latest.json${force ? `?ts=${Date.now()}` : ''}`, {
         headers: {
-          'x-admin-auth': AUTH_HEADER,
           'cache-control': 'no-store',
         },
       });
