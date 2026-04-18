@@ -110,7 +110,6 @@ const staseraOverlayJson = displayProgram
 
       {/* ── MODE: ORA → placeholder, aggiornato da JS ── */}
       {mode === 'ora' && (
-        /* data-programs: Astro valuta le espressioni negli attributi (non nei tag <script>) */
         <div class="ora-program-content" data-programs={programsJson}>
           <!-- Scheletro iniziale — JS lo sostituisce subito -->
           <div class="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1.5"></div>
@@ -124,7 +123,6 @@ const staseraOverlayJson = displayProgram
       {mode !== 'ora' && (
         <>
           {displayProgram ? (
-            /* data-program: attiva l'overlay quando si clicca sul contenuto del programma */
             <div
               data-program={staseraOverlayJson}
               class="cursor-pointer"
