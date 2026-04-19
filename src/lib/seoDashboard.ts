@@ -574,7 +574,7 @@ function buildInsights(payload: {
     actions.push({
       priority: 'medium',
       title: `${highPosTarGets.length} pagine indicizzate ma in posizione > 20`,
-      detail: 'Pagine presenti in SERP ma lontane dalla prima pagina. Aumenta l'autorità con internal linking da home e hub, aggiungi schema.org BroadcastEvent aggiornato, verifica la freschezza del contenuto.',
+      detail: "Pagine presenti in SERP ma lontane dalla prima pagina. Aumenta l'autorità con internal linking da home e hub, aggiungi schema.org BroadcastEvent aggiornato, verifica la freschezza del contenuto.",
       target: highPosTarGets.slice(0, 4).map((row) => row.label),
     });
   }
