@@ -45,6 +45,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SITE_URL: ${{ secrets.SITE_URL }}
+          # Google SA key per generate-seo-dashboard.js (postbuild).
+          # Se assente, lo script scrive un placeholder e il build continua.
+          GOOGLE_SA_KEY_JSON: ${{ secrets.GOOGLE_SA_KEY_JSON }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1

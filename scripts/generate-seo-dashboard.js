@@ -23,7 +23,19 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('Failed to generate SEO dashboard JSON');
-  console.error(error);
-  process.exit(1);
+  console.warn('⚠️  SEO dashboard generation skipped (likely missing credentials in CI):');
+  console.warn(error?.message || error);
+  // Write a placeholder so the dashboard page loads without crashing
+  try {
+    const { mkdirSync } = await import('node:fs');
+    const dir = path.dirname(outputPath);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(outputPath, JSON.stringify({
+      ok: false,
+      generatedAt: new Date().toISOString(),
+      error: error?.message || 'Credentials not available at build time',
+    }, null, 2));
+    console.warn(`Placeholder written to ${outputPath}`);
+  } catch (_) { /* ignore */ }
+  process.exit(0); // non-fatal: don't break the build
 });
