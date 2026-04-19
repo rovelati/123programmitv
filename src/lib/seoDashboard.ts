@@ -204,15 +204,16 @@ async function runSearchAnalytics(context: APIContext) {
   const auth = getGoogleAuth(context, ['https://www.googleapis.com/auth/webmasters.readonly']);
   const searchConsole = google.searchconsole({ version: 'v1', auth });
   const siteUrl = getSearchConsoleSiteUrl(context);
+  const WINDOW_DAYS = 14;
   const today = new Date();
   const end = new Date(today);
-  end.setDate(end.getDate() - 1);
+  end.setDate(end.getDate() - 2); // delay 2gg per dati GSC stabili
   const start = new Date(end);
-  start.setDate(start.getDate() - 6);
+  start.setDate(start.getDate() - (WINDOW_DAYS - 1));
   const previousEnd = new Date(start);
   previousEnd.setDate(previousEnd.getDate() - 1);
   const previousStart = new Date(previousEnd);
-  previousStart.setDate(previousStart.getDate() - 6);
+  previousStart.setDate(previousStart.getDate() - (WINDOW_DAYS - 1));
 
   const dateString = (value: Date) => value.toISOString().slice(0, 10);
   const commonBody = {
@@ -246,7 +247,7 @@ async function runSearchAnalytics(context: APIContext) {
         startDate: dateString(start),
         endDate: dateString(end),
         dimensions: ['page'],
-        rowLimit: 50,
+        rowLimit: 100,
       },
     }),
     searchConsole.searchanalytics.query({
@@ -256,7 +257,7 @@ async function runSearchAnalytics(context: APIContext) {
         startDate: dateString(start),
         endDate: dateString(end),
         dimensions: ['query'],
-        rowLimit: 30,
+        rowLimit: 50,
       },
     }),
   ]);
@@ -273,7 +274,7 @@ async function runSearchAnalytics(context: APIContext) {
     source: 'Google Search Console Search Analytics',
     siteUrl,
     sitePublicUrl: siteUrlPublic,
-    windowDays: 7,
+    windowDays: WINDOW_DAYS,
     currentPeriod: {
       startDate: dateString(start),
       endDate: dateString(end),
@@ -541,38 +542,77 @@ function buildInsights(payload: {
     });
   }
 
+  const siteUrlPublic = payload.searchPerformance.sitePublicUrl || 'https://123programmitv.it';
+  const scResource = encodeURIComponent('sc-domain:123programmitv.it');
+
   if (unknownTargets.length > 0) {
     actions.push({
       priority: 'high',
-      title: 'Concentrare i segnali sulle head page non ancora riconosciute',
-      detail: `${unknownTargets.length} URL head risultano ancora sconosciute a Google. Sono le candidate prioritarie per sitemap, internal linking e Indexing API.`,
+      title: `${unknownTargets.length} head page non ancora riconosciute da Google`,
+      detail: 'Sono le candidate prioritarie per sitemap, internal linking e Google Indexing API. Usa il link "Ispeziona in GSC" nella tabella per richiedere la scansione manuale.',
       target: unknownTargets.slice(0, 6).map((row) => row.label),
+      gscLinks: unknownTargets.slice(0, 6).map((row) => ({
+        label: row.label,
+        url: `https://search.google.com/search-console/inspect?resource_id=${scResource}&url=${encodeURIComponent(row.url)}`,
+      })),
     });
   }
 
   if (lowCtrTargets.length > 0) {
     actions.push({
       priority: 'medium',
-      title: 'Rifinire i title delle head page con impression ma CTR debole',
-      detail: 'Ci sono URL head che iniziano a comparire ma non convertono click. Vale la pena intervenire su title e meta description.',
-      target: lowCtrTargets.slice(0, 5).map((row) => `${row.label} (${row.ctr}% CTR)`),
+      title: 'CTR basso su pagine con buona visibilità',
+      detail: `${lowCtrTargets.length} head page hanno impressioni ma CTR < 2.5%. Ottimizza title (includi "stasera" / canale / ora) e meta description (aggiungi call-to-action: "scopri cosa va in onda").`,
+      target: lowCtrTargets.slice(0, 5).map((row) => `${row.label} — ${row.ctr}% CTR, pos. ${row.position > 0 ? row.position.toFixed(1) : '—'}`),
+    });
+  }
+
+  const highPosTarGets = payload.inspection.results.filter(
+    (row) => row.indexed && (payload.searchPerformance.headTargets.find((h) => h.url === row.url)?.position ?? 0) > 20,
+  );
+  if (highPosTarGets.length > 0) {
+    actions.push({
+      priority: 'medium',
+      title: `${highPosTarGets.length} pagine indicizzate ma in posizione > 20`,
+      detail: 'Pagine presenti in SERP ma lontane dalla prima pagina. Aumenta l'autorità con internal linking da home e hub, aggiungi schema.org BroadcastEvent aggiornato, verifica la freschezza del contenuto.',
+      target: highPosTarGets.slice(0, 4).map((row) => row.label),
     });
   }
 
   if (zeroImpressionTargets.length > 0) {
     actions.push({
       priority: 'medium',
-      title: 'Spingere con linking interno le head page ancora senza impression',
-      detail: 'Alcune head page non hanno ancora segnali di visibilità. Vanno legate meglio da home, hub e sitemap.',
+      title: `${zeroImpressionTargets.length} head page senza impression nei ${payload.searchPerformance.windowDays} giorni`,
+      detail: 'Nessun segnale di visibilità: indica scarso crawl budget o pagine non ancora scoperte. Collega esplicitamente dalla homepage, aggiorna la sitemap XML e verifica robots.txt.',
       target: zeroImpressionTargets.slice(0, 5).map((row) => row.label),
     });
   }
 
-  if (payload.searchPerformance.currentPeriod.impressions > 0) {
+  const topPages = payload.searchPerformance.topPages || [];
+  const nonHeadPages = topPages.filter((row) => {
+    const isHead = HEAD_TARGETS.some((t) => row.key.endsWith(t.path) || row.key.endsWith(t.path + '/'));
+    return !isHead && row.impressions > 10;
+  });
+  if (nonHeadPages.length > 0) {
     insights.push({
       priority: 'info',
-      title: 'Traffico search osservabile negli ultimi 7 giorni',
-      detail: `${payload.searchPerformance.currentPeriod.impressions} impression e ${payload.searchPerformance.currentPeriod.clicks} click rilevati in Search Console.`,
+      title: 'Pagine long-tail con traffico emergente',
+      detail: `${nonHeadPages.length} pagine al di fuori delle head page stanno già generando impression. Valuta di potenziarle con internal linking dalla pagina canale e meta description più specifici.`,
+      target: nonHeadPages.slice(0, 4).map((row) => {
+        try { return new URL(row.key).pathname; } catch { return row.key; }
+      }),
+    });
+  }
+
+  const sp = payload.searchPerformance;
+  if (sp.currentPeriod.impressions > 0) {
+    const deltaStr = sp.deltas?.impressions != null
+      ? ` (${sp.deltas.impressions > 0 ? '+' : ''}${sp.deltas.impressions}% vs periodo precedente)`
+      : '';
+    insights.push({
+      priority: 'info',
+      title: `${sp.windowDays} giorni: ${sp.currentPeriod.impressions.toLocaleString('it-IT')} impression, ${sp.currentPeriod.clicks.toLocaleString('it-IT')} click`,
+      detail: `CTR medio ${sp.currentPeriod.ctr}%, posizione media ${typeof sp.currentPeriod.position === 'number' ? sp.currentPeriod.position.toFixed(1) : '—'}${deltaStr}.`,
     });
   }
 
