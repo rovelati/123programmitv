@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { buildSeoDashboardPayload } from '../src/lib/seoDashboard.ts';
 
@@ -27,7 +27,6 @@ main().catch((error) => {
   console.warn(error?.message || error);
   // Write a placeholder so the dashboard page loads without crashing
   try {
-    const { mkdirSync } = await import('node:fs');
     const dir = path.dirname(outputPath);
     mkdirSync(dir, { recursive: true });
     writeFileSync(outputPath, JSON.stringify({
