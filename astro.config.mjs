@@ -19,7 +19,7 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/programma/'),
+      filter: (page) => !page.includes('/programma/') && !page.includes('/admin-url-inspection'),
       serialize(item) {
         if (item.url === 'https://123programmitv.it/') {
           return { ...item, priority: 1.0, changefreq: 'hourly' }

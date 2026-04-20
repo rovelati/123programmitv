@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "generatedAt": "2026-04-18T16:20:09.644Z",
+  "generatedAt": "2026-04-20T09:56:10.426Z",
   "timeZone": "Europe/Rome",
   "siteUrl": "https://123programmitv.it",
   "searchConsoleSiteUrl": "sc-domain:123programmitv.it",
@@ -8,24 +8,60 @@
     "status": "ok",
     "source": "Supabase epg_sync_logs",
     "latestRun": {
-      "id": 421,
-      "started_at": "2026-04-18T16:00:03.474396+00:00",
-      "completed_at": "2026-04-18T16:01:03.628203+00:00",
-      "status": "error",
+      "id": 462,
+      "started_at": "2026-04-20T09:00:03.964292+00:00",
+      "completed_at": "2026-04-20T09:00:47.421612+00:00",
+      "status": "success",
       "trigger_source": "cron",
       "triggered_by": null,
-      "message": "Hybrid sync failed",
-      "error_details": "504 Server Error: Gateway Time-out for url: https://tvit.leicaflorianrobert.dev/epg/list.json",
-      "primary_channels": 0,
-      "secondary_channels": 0,
-      "secondary_channels_added": 0,
+      "message": "Hybrid sync completed successfully",
+      "error_details": null,
+      "primary_channels": 37,
+      "secondary_channels": 134,
+      "secondary_channels_added": 107,
       "new_channels": 0,
       "missing_channels": 0,
-      "total_channels": 0,
-      "total_programs": 0,
+      "total_channels": 144,
+      "total_programs": 19700,
       "excluded_removed": 0,
       "old_programs_deleted": 0,
-      "metadata": {}
+      "metadata": {
+        "tvit": {
+          "status": "ok",
+          "channels": 37
+        },
+        "iptv_epg": {
+          "error": null,
+          "status": "ok",
+          "channels": 134
+        },
+        "total_channels": 144,
+        "total_programs": 19700,
+        "site_regeneration": {
+          "github": {
+            "ok": true,
+            "enabled": true,
+            "response": "",
+            "status_code": 204
+          },
+          "verify": {
+            "reason": "missing Last-Modified on verify_url",
+            "skipped": true,
+            "attempted": true,
+            "elapsed_sec": 0,
+            "last_modified_before": null
+          },
+          "cloudflare": {
+            "enabled": false
+          },
+          "verify_url": "https://www.123programmitv.it/",
+          "verify_poll_sec": 15,
+          "verify_timeout_sec": 180
+        },
+        "local_logos_synced": 1,
+        "stale_channels_removed": 0,
+        "secondary_channels_added": 107
+      }
     }
   },
   "googleIndexing": {
@@ -123,43 +159,92 @@
     "source": "Google Search Console Search Analytics",
     "siteUrl": "sc-domain:123programmitv.it",
     "sitePublicUrl": "https://123programmitv.it",
-    "windowDays": 7,
+    "windowDays": 14,
     "currentPeriod": {
-      "startDate": "2026-04-11",
-      "endDate": "2026-04-17",
-      "clicks": 1,
-      "impressions": 7,
-      "ctr": 1428.57,
-      "position": 40.714285714285715
+      "startDate": "2026-04-05",
+      "endDate": "2026-04-18",
+      "clicks": 3,
+      "impressions": 18,
+      "ctr": 1666.67,
+      "position": 23.77777777777778
     },
     "previousPeriod": {
-      "startDate": "2026-04-04",
-      "endDate": "2026-04-10",
-      "clicks": 2,
-      "impressions": 12,
-      "ctr": 1666.67,
-      "position": 5
+      "startDate": "2026-03-22",
+      "endDate": "2026-04-04",
+      "clicks": 0,
+      "impressions": 41,
+      "ctr": 0,
+      "position": 8.682926829268293
     },
     "deltas": {
-      "clicks": -50,
-      "impressions": -41.67,
-      "ctr": -14.29,
-      "position": 35.71
+      "clicks": null,
+      "impressions": -56.1,
+      "ctr": null,
+      "position": 15.09
     },
     "topPages": [
       {
         "key": "https://123programmitv.it/programma/top-crime/csi-new-york-st-7-ep-16",
-        "clicks": 1,
-        "impressions": 1,
+        "clicks": 2,
+        "impressions": 2,
         "ctr": 10000,
-        "position": 2
+        "position": 16.5
       },
       {
         "key": "https://123programmitv.it/",
+        "clicks": 1,
+        "impressions": 5,
+        "ctr": 2000,
+        "position": 4
+      },
+      {
+        "key": "https://123programmitv.it/programma/dmax/affari-in-valigia-st-2-ep-13",
+        "clicks": 1,
+        "impressions": 1,
+        "ctr": 10000,
+        "position": 4
+      },
+      {
+        "key": "https://123programmitv.it/programma/twenty-seven/la-casa-nella-prateria-st-2-ep-11",
+        "clicks": 1,
+        "impressions": 1,
+        "ctr": 10000,
+        "position": 7
+      },
+      {
+        "key": "https://123programmitv.it/programma/20/the-big-bang-theory-st-10-ep-15",
         "clicks": 0,
         "impressions": 1,
         "ctr": 0,
-        "position": 1
+        "position": 5
+      },
+      {
+        "key": "https://123programmitv.it/programma/20/the-flash-st-8-ep-9",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 10
+      },
+      {
+        "key": "https://123programmitv.it/programma/canale-5/beautiful-st-35-ep-31",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 8
+      },
+      {
+        "key": "https://123programmitv.it/programma/cielo/friends-st-4-ep-14",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 5
+      },
+      {
+        "key": "https://123programmitv.it/programma/cielo/friends-st-4-ep-16",
+        "clicks": 0,
+        "impressions": 2,
+        "ctr": 0,
+        "position": 6.5
       },
       {
         "key": "https://123programmitv.it/programma/cielo/masterchef-italia",
@@ -176,6 +261,62 @@
         "position": 9
       },
       {
+        "key": "https://123programmitv.it/programma/frisbee/piggy-builders-maialini-costruttori",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 2
+      },
+      {
+        "key": "https://123programmitv.it/programma/giallo/disappeared-st-1-ep-3",
+        "clicks": 0,
+        "impressions": 2,
+        "ctr": 0,
+        "position": 5.5
+      },
+      {
+        "key": "https://123programmitv.it/programma/italia-2/camera-cafe-st-5-ep-7",
+        "clicks": 0,
+        "impressions": 2,
+        "ctr": 0,
+        "position": 6
+      },
+      {
+        "key": "https://123programmitv.it/programma/italia-2/one-piece-st-1-ep-12",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 9
+      },
+      {
+        "key": "https://123programmitv.it/programma/italia-2/one-piece-st-15-ep-80",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 10
+      },
+      {
+        "key": "https://123programmitv.it/programma/k2/i-dalton",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 2
+      },
+      {
+        "key": "https://123programmitv.it/programma/la-5/beautiful-st-35-ep-2",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 10
+      },
+      {
+        "key": "https://123programmitv.it/programma/la-5/una-mamma-per-amica-st-1-ep-6",
+        "clicks": 0,
+        "impressions": 3,
+        "ctr": 0,
+        "position": 5
+      },
+      {
         "key": "https://123programmitv.it/programma/rai-3/quante-storie",
         "clicks": 0,
         "impressions": 1,
@@ -183,21 +324,77 @@
         "position": 18
       },
       {
-        "key": "https://123programmitv.it/programma/rete-4/la-signora-in-giallo-st-5-ep-2",
+        "key": "https://123programmitv.it/programma/rai-4/elementary-st-5-ep-19",
         "clicks": 0,
         "impressions": 1,
         "ctr": 0,
-        "position": 3
+        "position": 6
+      },
+      {
+        "key": "https://123programmitv.it/programma/rai-4/hawaii-five-0-st-5-ep-11",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 33
+      },
+      {
+        "key": "https://123programmitv.it/programma/rete-4/la-signora-in-giallo-st-5-ep-2",
+        "clicks": 0,
+        "impressions": 2,
+        "ctr": 0,
+        "position": 18.5
+      },
+      {
+        "key": "https://123programmitv.it/programma/tv8/alessandro-borghese-4-ristoranti-st-8-ep-13",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 6
+      },
+      {
+        "key": "https://123programmitv.it/programma/tv8/quattro-matrimoni-st-6-ep-2",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 7
+      },
+      {
+        "key": "https://123programmitv.it/programma/twenty-seven/la-casa-nella-prateria-st-3-ep-1",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 35
+      },
+      {
+        "key": "https://123programmitv.it/programma/warner-tv/come-e-fatto-st-14-ep-5",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 32
+      },
+      {
+        "key": "https://123programmitv.it/programmi-tv/rai-3",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 1
       },
       {
         "key": "https://www.123programmitv.it/",
         "clicks": 0,
-        "impressions": 3,
+        "impressions": 4,
         "ctr": 0,
-        "position": 82
+        "position": 83.75
       }
     ],
     "topQueries": [
+      {
+        "key": "programmazione canale",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 89
+      },
       {
         "key": "programmazione tv",
         "clicks": 0,
@@ -219,10 +416,10 @@
         "label": "Home",
         "category": "hub",
         "url": "https://123programmitv.it/",
-        "clicks": 0,
-        "impressions": 1,
-        "ctr": 0,
-        "position": 1
+        "clicks": 1,
+        "impressions": 5,
+        "ctr": 2000,
+        "position": 4
       },
       {
         "path": "/stasera",
@@ -361,8 +558,8 @@
         "coverageState": "Inviata e indicizzata",
         "indexingState": "INDEXING_ALLOWED",
         "pageFetchState": "SUCCESSFUL",
-        "lastCrawlTime": "2026-04-13T18:24:13Z",
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=3YFYikozkcr3OylZrE8XsQ&utm_medium=link&utm_source=api",
+        "lastCrawlTime": "2026-04-18T16:46:03Z",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=PxoJWb24DT4mU1bF2navtQ&utm_medium=link&utm_source=api",
         "indexed": true
       },
       {
@@ -376,7 +573,7 @@
         "indexingState": "INDEXING_ALLOWED",
         "pageFetchState": "SUCCESSFUL",
         "lastCrawlTime": "2026-02-27T10:14:52Z",
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=pnjHq1z9SjDqEqm1j2KJsQ&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=c6yED7cHUwS5HzBDLoOzNA&utm_medium=link&utm_source=api",
         "indexed": true
       },
       {
@@ -390,7 +587,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=M1P5JcnS8ThbU21erz5sCw&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=xzJ3CmpKJG3TFOpHQ4RooQ&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -404,7 +601,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=vC3zd5MFbBaNbv0rHhz3Jg&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=Ds-cp04XP5GxfVY_93ZR9g&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -418,7 +615,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=nyO33YWhQY_KwG2dQiE5CQ&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=W10l8ah2Nrb4m6WzN-dj4A&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -432,7 +629,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=fjjJDMW34pd3gesBxL5x7w&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=LH6gGfBxVg2UO5nROGgMRA&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -446,7 +643,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=idrpCLD-7Gxh4gdrZFDbIw&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=jAk0p5JVb2YstIQPO0Zuow&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -460,7 +657,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=urH4-KF-JwW7tCv45VLRyw&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=A7hF3_YjMAK-L1U37lTsYg&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -474,7 +671,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=8mamfy6WiAV9xPi0bc6SIQ&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=N72ca2VBGzRfgyWCR4fLMQ&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -488,7 +685,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=SIECUQ68z62SdsJdgxnmnA&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=_wltc3rgqOL4fhC3CCj1eg&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -502,7 +699,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=DHU79IVpFvs2pWOyeVUnXw&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=Nm9Wkm3i28Lv_iu5qkN4jw&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -516,7 +713,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=9dyAoWgZutW0bUc84GWmTQ&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=gC5ssrIl__hLgHcTO6dmTg&utm_medium=link&utm_source=api",
         "indexed": false
       },
       {
@@ -530,7 +727,7 @@
         "indexingState": "INDEXING_STATE_UNSPECIFIED",
         "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
         "lastCrawlTime": null,
-        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=rfmfz-d351fBcmcA6q1QEw&utm_medium=link&utm_source=api",
+        "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:123programmitv.it&id=YYi3zLYT4HJ4GOclzyBaSg&utm_medium=link&utm_source=api",
         "indexed": false
       }
     ],
@@ -551,21 +748,20 @@
   "insights": [
     {
       "priority": "info",
-      "title": "Traffico search osservabile negli ultimi 7 giorni",
-      "detail": "7 impression e 1 click rilevati in Search Console."
+      "title": "Import EPG regolare",
+      "detail": "Ultimo import chiuso con successo. 144 canali e 19700 programmi caricati."
+    },
+    {
+      "priority": "info",
+      "title": "14 giorni: 18 impression, 3 click",
+      "detail": "CTR medio 1666.67%, posizione media 23.8 (-56.1% vs periodo precedente)."
     }
   ],
   "actions": [
     {
       "priority": "high",
-      "title": "Verificare l’ultimo import EPG",
-      "detail": "La pipeline import non risulta in stato success. Prima di lavorare sul SEO va stabilizzata la freschezza dei dati.",
-      "target": "2026-04-18T16:00:03.474396+00:00"
-    },
-    {
-      "priority": "high",
-      "title": "Concentrare i segnali sulle head page non ancora riconosciute",
-      "detail": "11 URL head risultano ancora sconosciute a Google. Sono le candidate prioritarie per sitemap, internal linking e Indexing API.",
+      "title": "11 head page non ancora riconosciute da Google",
+      "detail": "Sono le candidate prioritarie per sitemap, internal linking e Google Indexing API. Usa il link \"Ispeziona in GSC\" nella tabella per richiedere la scansione manuale.",
       "target": [
         "Programmi domani",
         "Film stasera",
@@ -573,12 +769,38 @@
         "Sport stasera",
         "Rai 1",
         "Canale 5"
+      ],
+      "gscLinks": [
+        {
+          "label": "Programmi domani",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Fdomani"
+        },
+        {
+          "label": "Film stasera",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Ffilm-stasera"
+        },
+        {
+          "label": "Serie stasera",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Fserie-stasera"
+        },
+        {
+          "label": "Sport stasera",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Fsport-stasera"
+        },
+        {
+          "label": "Rai 1",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Frai-1"
+        },
+        {
+          "label": "Canale 5",
+          "url": "https://search.google.com/search-console/inspect?resource_id=sc-domain%3A123programmitv.it&url=https%3A%2F%2F123programmitv.it%2Fcanale-5"
+        }
       ]
     },
     {
       "priority": "medium",
-      "title": "Spingere con linking interno le head page ancora senza impression",
-      "detail": "Alcune head page non hanno ancora segnali di visibilità. Vanno legate meglio da home, hub e sitemap.",
+      "title": "12 head page senza impression nei 14 giorni",
+      "detail": "Nessun segnale di visibilità: indica scarso crawl budget o pagine non ancora scoperte. Collega esplicitamente dalla homepage, aggiorna la sitemap XML e verifica robots.txt.",
       "target": [
         "Programmi stasera",
         "Programmi domani",

@@ -1,3 +1,12 @@
+# Admin dashboard — noindex a livello HTTP (rinforza il meta robots della pagina)
+/admin-url-inspection
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/admin-url-inspection/
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
 # Cache-Control per pagine hub (prerenderate)
 # max-age=1800 (30 min) + stale-while-revalidate=3600 (1h) = zero downtime durante rebuild
 
