@@ -568,9 +568,9 @@ const description = 'Console SEO interna con import, Search Console, URL Inspect
       summaryGrid.innerHTML = [
         infoCard(`Impression ${windowDays}g`, formatNumber(current.impressions), `Visibilità organica ${windowDays} giorni. ${formatDelta(deltas.impressions)} vs periodo prec.`),
         infoCard(`Click ${windowDays}g`, formatNumber(current.clicks), `Click organici reali negli ultimi ${windowDays} giorni. ${formatDelta(deltas.clicks)} vs periodo prec.`),
-        infoCard(‘Head indicizzate’, `${formatNumber(payload.inspection.summary.indexed)}/${formatNumber(payload.inspection.summary.total)}`, ‘Pagine head riconosciute da Google URL Inspection API.’),
-        infoCard(‘Ultimo import’, formatDateTime(latestImport.completed_at || latestImport.started_at), `Stato: <strong>${latestImport.status || ‘—‘}</strong>. Freschezza ultima pipeline EPG.`),
-      ].join(‘’);
+        infoCard('Head indicizzate', `${formatNumber(payload.inspection.summary.indexed)}/${formatNumber(payload.inspection.summary.total)}`, 'Pagine head riconosciute da Google URL Inspection API.'),
+        infoCard('Ultimo import', formatDateTime(latestImport.completed_at || latestImport.started_at), `Stato: <strong>${latestImport.status || '—'}</strong>. Freschezza ultima pipeline EPG.`),
+      ].join('');
     }
 
     function renderDashboard(payload) {
