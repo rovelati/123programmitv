@@ -166,6 +166,13 @@ function resolvePosterUrl(url: string | null): string | null {
   return url;                                      // altri relativi: lasciamo stare
 }
 
+function cleanProgramTitle(title: string): string {
+  return title
+    .replace(/\s*(?:ᴺᵉʷ|🆕)\s*$/u, '')
+    .replace(/\s+\bnew\b\s*$/iu, '')
+    .trim();
+}
+
 function mapProgram(raw: RawProgram): Program {
   const startTime = raw.start_time instanceof Date ? raw.start_time.toISOString() : raw.start_time;
   const endTime = raw.end_time instanceof Date ? raw.end_time.toISOString() : raw.end_time;
@@ -173,7 +180,7 @@ function mapProgram(raw: RawProgram): Program {
 
   return {
     id: String(raw.id),
-    title: raw.title,
+    title: cleanProgramTitle(raw.title),
     startTime,
     endTime,
     date,

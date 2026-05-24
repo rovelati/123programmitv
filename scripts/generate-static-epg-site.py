@@ -122,6 +122,12 @@ def slugify(value: str) -> str:
     return value.strip("-")
 
 
+def clean_program_title(value: str) -> str:
+    value = re.sub(r"\s*(?:ᴺᵉʷ|🆕)\s*$", "", value or "")
+    value = re.sub(r"\s+\bnew\b\s*$", "", value, flags=re.IGNORECASE)
+    return value.strip()
+
+
 def normalize_name(value: str) -> str:
     value = re.sub(r"^IT\s*-\s*", "", value or "").strip()
     value = value.strip("- ").replace("  ", " ")
@@ -199,7 +205,7 @@ def load_programs(path: Path, channels: dict[str, Channel], start_day: datetime,
             if end < min_dt or start >= max_dt:
                 elem.clear()
                 continue
-            title = elem.findtext("title") or "Programma TV"
+            title = clean_program_title(elem.findtext("title") or "Programma TV")
             category = elem.findtext("category") or ""
             description = elem.findtext("desc") or ""
             programs.append(Program(channel_id, title.strip(), start, end, category.strip(), description.strip()))
