@@ -5,9 +5,6 @@ permissions:
   deployments: write
 
 on:
-  schedule:
-    # 06:10 Europe/Rome during DST. Runs after nightly EPG source refreshes.
-    - cron: '10 4 * * *'
   workflow_dispatch:
 
 jobs:
