@@ -1,0 +1,73 @@
+---
+import { HUB_CHANNELS } from '../utils/channelSlug';
+import type { Channel } from '../types';
+
+interface Props {
+  channels?: Channel[];
+  currentChannelId?: string;
+  title?: string;
+  intro?: string;
+  maxChannels?: number;
+}
+
+const {
+  channels,
+  currentChannelId,
+  title = 'Guida TV: pagine principali',
+  intro = 'Scopri rapidamente i programmi TV per fascia oraria, categoria e canale.',
+  maxChannels = 36,
+} = Astro.props;
+
+const seen = new Set<string>();
+const channelLinks = (channels ?? HUB_CHANNELS)
+  .filter(ch => {
+    if (!ch.id || ch.id === currentChannelId || seen.has(ch.id)) return false;
+    seen.add(ch.id);
+    return true;
+  })
+  .slice(0, maxChannels);
+
+const primaryLinks = [
+  { href: '/', label: 'Programmi TV ora' },
+  { href: '/stasera', label: 'Programmi TV stasera' },
+  { href: '/domani', label: 'Programmi TV domani' },
+  { href: '/film-stasera', label: 'Film stasera in TV' },
+  { href: '/serie-stasera', label: 'Serie TV stasera' },
+  { href: '/sport-stasera', label: 'Sport stasera in TV' },
+];
+---
+
+<aside class="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 sm:p-5 shadow-sm" aria-labelledby="seo-hub-links-title">
+  <h2 id="seo-hub-links-title" class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-slate-100 mb-1">
+    {title}
+  </h2>
+  <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{intro}</p>
+
+  <nav aria-label="Guide TV principali" class="mb-4">
+    <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
+      Guide principali
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      {primaryLinks.map(link => (
+        <a href={link.href} class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 text-slate-600 dark:text-slate-200 text-xs font-semibold transition-colors">
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </nav>
+
+  {channelLinks.length > 0 && (
+    <nav aria-label="Programmi TV per canale">
+      <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
+        Programmi per canale
+      </h3>
+      <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+        {channelLinks.map(ch => (
+          <a href={`/${ch.id}`} class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors">
+            Programmi {ch.name} stasera
+          </a>
+        ))}
+      </div>
+    </nav>
+  )}
+</aside>

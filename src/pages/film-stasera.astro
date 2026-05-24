@@ -5,6 +5,7 @@ import HubLayout from '../layouts/HubLayout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
@@ -145,8 +146,8 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Film Stasera in TV | Programmazione Cinema — 123ProgrammiTV`;
-const description = `Tutti i film stasera in TV: titoli, orari e trame dei film in onda su RAI, Mediaset, La7 e canali tematici italiani.`;
+const title       = `Film Stasera in TV | Tutti i Film di Oggi — 123ProgrammiTV`;
+const description = `Film stasera in TV: tutti i titoli di oggi, orari, canali e trame dei film in onda su RAI, Mediaset, Sky e canali italiani.`;
 const keywords    = `film stasera, film stasera in tv, cinema stasera, film questa sera, programmazione cinema tv`;
 ---
 
@@ -218,6 +219,13 @@ const keywords    = `film stasera, film stasera in tv, cinema stasera, film ques
         </div>
       ))
     )}
+
+    <SeoHubLinks
+      channels={filmGroups.map(group => group.channel)}
+      title="Film stasera: canali e altre guide TV"
+      intro="Approfondisci i canali che trasmettono film oppure passa alle altre guide short-tail della serata."
+      maxChannels={48}
+    />
   </div>
 
 </HubLayout>

@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function — /programma/*
  *
- * Le schede programma non esistono come pagine statiche (build SSG).
+ * Le schede programma non fanno parte dell'indice SEO short-tail.
  * Restituisce 410 Gone invece di lasciare che Cloudflare Pages serva
  * la home (200) come fallback, evitando che Google associ queste URL
  * alla home page e sprecandone il crawl budget.

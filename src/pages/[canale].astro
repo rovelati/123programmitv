@@ -5,8 +5,9 @@ import HubLayout from '../layouts/HubLayout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
@@ -36,16 +37,22 @@ interface Props {
   today: string;
 }
 
-const { channel, programs, today } = Astro.props;
+const { channel, programs, allChannels, today } = Astro.props;
 const dateLabel = formatDateIT(today);
-const tomorrow = getTomorrowInRome();
-const schemas = buildHubChannelJsonLd({ channel, programs, today });
 const stream = getChannelStream(channel.id);
 
-const title       = `Programmi ${channel.name} Stasera | Guida TV — 123ProgrammiTV`;
-const description = `Tutti i programmi ${channel.name} stasera: palinsesto completo con orari, film e serie TV in onda questa sera.`;
+const title       = `Programmi ${channel.name} Stasera | Palinsesto e Guida TV — 123ProgrammiTV`;
+const description = `Programmi ${channel.name} stasera: palinsesto completo di oggi con orari, prima serata, film, serie TV e programmi in onda.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
+const schemas = buildHubChannelJsonLd({
+  channel,
+  programs,
+  today,
+  canonicalPath,
+  pageTitle: `Programmi ${channel.name} stasera`,
+  pageDescription: description,
+});
 
 // OG image: usa il logo canale se disponibile, altrimenti default
 const ogImage     = channel.logo?.startsWith('http') ? channel.logo : `/og/default.png`;
@@ -157,6 +164,14 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
         </a>
       </nav>
     </div>
+
+    <SeoHubLinks
+      channels={allChannels}
+      currentChannelId={channel.id}
+      title={`Altri programmi TV oltre ${channel.name}`}
+      intro={`Continua la navigazione tra gli hub indicizzabili della guida TV e confronta ${channel.name} con gli altri canali.`}
+      maxChannels={48}
+    />
   </div>
 
 </HubLayout>

@@ -277,15 +277,22 @@ export function buildHubChannelJsonLd({
   programs,
   today,
   siteUrl = SITE_URL,
+  canonicalPath,
+  pageTitle,
+  pageDescription,
 }: {
   channel: Channel;
   programs: Program[];
   today: string;
   siteUrl?: string;
+  canonicalPath?: string;
+  pageTitle?: string;
+  pageDescription?: string;
 }): object[] {
   const channelUrl = `${siteUrl}/${channel.id}`;
-  const pageTitle  = `Programmi ${channel.name} stasera`;
-  const pageDesc   = `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
+  const pageUrl = canonicalPath ? `${siteUrl}${canonicalPath}` : channelUrl;
+  const resolvedTitle = pageTitle ?? `Programmi ${channel.name} stasera`;
+  const pageDesc = pageDescription ?? `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
 
   // Solo prime time negli eventi strutturati (18-21 UTC = 20-23 Roma)
   const primeTime = programs.filter(p => {
@@ -319,9 +326,9 @@ export function buildHubChannelJsonLd({
   const itemList: object = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    '@id': `${channelUrl}#list`,
-    name: `${pageTitle} — ${today}`,
-    url: channelUrl,
+    '@id': `${pageUrl}#list`,
+    name: `${resolvedTitle} — ${today}`,
+    url: pageUrl,
     numberOfItems: primeTime.length,
     // url punta all'hub, non a /programma/ (pagine inesistenti → 410)
     itemListElement: primeTime.slice(0, 20).map((p, i) => ({
@@ -336,16 +343,16 @@ export function buildHubChannelJsonLd({
   const breadcrumb: object = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    '@id': `${channelUrl}#breadcrumb`,
+    '@id': `${pageUrl}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home',         item: siteUrl },
-      { '@type': 'ListItem', position: 2, name: channel.name,   item: channelUrl },
+      { '@type': 'ListItem', position: 2, name: channel.name,   item: pageUrl },
     ],
   };
 
   const webPage: object = {
     '@context': 'https://schema.org',
-    ...webPageEntity(channelUrl, pageTitle, pageDesc),
+    ...webPageEntity(pageUrl, resolvedTitle, pageDesc),
   };
 
   return [
@@ -365,20 +372,30 @@ export function buildHubHomeJsonLd({
   channels,
   today,
   siteUrl = SITE_URL,
+  canonicalPath = '/',
+  pageTitle,
+  pageDescription,
 }: {
   channels: Channel[];
   today: string;
   siteUrl?: string;
+  canonicalPath?: string;
+  pageTitle?: string;
+  pageDescription?: string;
 }): object[] {
+  const pageUrl = `${siteUrl}${canonicalPath === '/' ? '/' : canonicalPath}`;
+  const title = pageTitle ?? `Programmi TV stasera — ${today}`;
+  const description = pageDescription ?? 'Guida TV italiana: tutti i programmi stasera su RAI, Mediaset, La7 e canali tematici.';
+
   return [
     { '@context': 'https://schema.org', ...websiteEntity() },
     { '@context': 'https://schema.org', ...orgEntity() },
     {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      '@id': `${siteUrl}/#list`,
-      name: `Programmi TV stasera — ${today}`,
-      url: siteUrl,
+      '@id': `${pageUrl}#list`,
+      name: `${title} — ${today}`,
+      url: pageUrl,
       numberOfItems: channels.length,
       itemListElement: channels.slice(0, 15).map((ch, i) => ({
         '@type': 'ListItem',
@@ -390,7 +407,7 @@ export function buildHubHomeJsonLd({
     {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      '@id': `${siteUrl}/#breadcrumb`,
+      '@id': `${pageUrl}#breadcrumb`,
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
       ],
@@ -398,9 +415,9 @@ export function buildHubHomeJsonLd({
     {
       '@context': 'https://schema.org',
       ...webPageEntity(
-        siteUrl,
-        `Programmi TV stasera — ${today}`,
-        'Guida TV italiana: tutti i programmi stasera su RAI, Mediaset, La7 e canali tematici.',
+        pageUrl,
+        title,
+        description,
       ),
     },
   ];
@@ -426,6 +443,7 @@ export function buildHubCategoryJsonLd({
   const isFilmPage = categorySlug === 'film-stasera';
 
   const itemListElements = programs.slice(0, 20).map((p, i) => {
+    const channelUrl = p.channel_id ? `${siteUrl}/${p.channel_id}` : pageUrl;
     if (isFilmPage) {
       const year = extractYear(p.title);
       return {
@@ -438,6 +456,7 @@ export function buildHubCategoryJsonLd({
           ...(p.poster_url  ? { image: p.poster_url }  : {}),
           ...(year          ? { dateCreated: year }     : {}),
           inLanguage: 'it',
+          url: channelUrl,
         },
       };
     }
@@ -445,6 +464,7 @@ export function buildHubCategoryJsonLd({
       '@type': 'ListItem',
       position: i + 1,
       name: p.title,
+      url: channelUrl,
       ...(p.description ? { description: p.description.slice(0, 160) } : {}),
     };
   });

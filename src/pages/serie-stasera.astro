@@ -5,6 +5,7 @@ import HubLayout from '../layouts/HubLayout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
@@ -94,8 +95,8 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Serie TV Stasera in TV | Programmazione Canali Italiani — 123ProgrammiTV`;
-const description = `Tutte le serie TV stasera sui canali italiani: episodi, orari e palinsesti aggiornati su RAI, Mediaset, La7 e altro.`;
+const title       = `Serie TV Stasera in TV | Episodi e Fiction di Oggi — 123ProgrammiTV`;
+const description = `Serie TV stasera in TV: episodi, fiction, telefilm, orari e canali italiani aggiornati per la programmazione di oggi.`;
 const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fiction stasera, episodi stasera`;
 ---
 
@@ -162,6 +163,13 @@ const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fi
         </div>
       ))
     )}
+
+    <SeoHubLinks
+      channels={serieGroups.map(group => group.channel)}
+      title="Serie TV stasera: canali e guide correlate"
+      intro="Naviga tra i canali con serie in onda oggi e le altre pagine principali della guida TV."
+      maxChannels={48}
+    />
   </div>
 
 </HubLayout>

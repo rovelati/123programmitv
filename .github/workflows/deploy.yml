@@ -44,6 +44,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SITE_URL: ${{ secrets.SITE_URL }}
           # Google SA key per generate-seo-dashboard.js (postbuild).
           # Se assente, lo script scrive un placeholder e il build continua.
@@ -57,6 +58,13 @@ jobs:
           projectName: 123programmitv
           directory: dist/client
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate live SEO
+        run: npm run validate:seo
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          SEO_VALIDATE_ATTEMPTS: 3
+          SEO_VALIDATE_RETRY_MS: 30000
 
       - name: Done
         run: echo "✅ Deploy completato — $(date '+%Y-%m-%d %H:%M:%S UTC')"

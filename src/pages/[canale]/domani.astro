@@ -5,6 +5,7 @@ import HubLayout from '../../layouts/HubLayout.astro';
 import HubGrid from '../../components/HubGrid.astro';
 import ChannelNav from '../../components/ChannelNav.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import SeoHubLinks from '../../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../../utils/jsonld';
@@ -35,14 +36,21 @@ interface Props {
   tomorrow: string;
 }
 
-const { channel, programs, tomorrow } = Astro.props;
+const { channel, programs, allChannels, tomorrow } = Astro.props;
 const dateLabel = formatDateIT(tomorrow);
-const schemas = buildHubChannelJsonLd({ channel, programs, today: tomorrow });
 
-const title       = `Programmi ${channel.name} Domani | Guida TV — 123ProgrammiTV`;
-const description = `Tutti i programmi ${channel.name} domani: palinsesto completo con orari, film e serie TV in onda domani sera.`;
+const title       = `Programmi ${channel.name} Domani | Palinsesto e Guida TV — 123ProgrammiTV`;
+const description = `Programmi ${channel.name} domani: palinsesto completo con orari, prima serata, film, serie TV e programmi in onda.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} domani, ${channel.name.toLowerCase()} domani, guida tv ${channel.name.toLowerCase()} domani`;
 const canonicalPath = `/${channel.id}/domani`;
+const schemas = buildHubChannelJsonLd({
+  channel,
+  programs,
+  today: tomorrow,
+  canonicalPath,
+  pageTitle: `Programmi ${channel.name} domani`,
+  pageDescription: description,
+});
 
 const ogImage    = channel.logo?.startsWith('http') ? channel.logo : `/og/default.png`;
 const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
@@ -133,6 +141,14 @@ const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
         </a>
       </nav>
     </div>
+
+    <SeoHubLinks
+      channels={allChannels}
+      currentChannelId={channel.id}
+      title={`Altri programmi TV domani oltre ${channel.name}`}
+      intro={`Confronta il palinsesto di ${channel.name} con gli altri canali e torna alle guide principali della TV italiana.`}
+      maxChannels={48}
+    />
   </div>
 
 </HubLayout>

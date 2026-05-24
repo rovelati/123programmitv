@@ -2,8 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /programma/
 
-# Sitemap principale (hub + categorie)
+# Sitemap principale: solo hub indicizzabili e pagine canale.
 Sitemap: https://123programmitv.it/sitemap-index.xml
-
-# Sitemap film indicizzabili (generata post-build)
-Sitemap: https://123programmitv.it/sitemap-film.xml

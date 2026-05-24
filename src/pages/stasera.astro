@@ -4,6 +4,7 @@ export const prerender = true;
 import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
@@ -30,13 +31,19 @@ const primeTimeCount = channelsWithPrograms.filter(ch =>
   })
 ).length;
 
-const schemas = buildHubHomeJsonLd({ channels, today });
-
-const title = `Programmi TV Stasera — ${dateLabel} | 123ProgrammiTV`;
-const description = `Guida TV di stasera: scopri il prime time dalle 20:30 su RAI, Mediaset, La7 e tutti i canali italiani. Orari aggiornati.`;
+const title = `Programmi TV Stasera | Prime Time di Oggi — 123ProgrammiTV`;
+const description = `Programmi TV stasera: prime time di oggi dalle 20:30 su RAI, Mediaset, La7, Sky e canali italiani con orari aggiornati.`;
+const keywords = `programmi tv stasera, programmi stasera, guida tv stasera, prime time tv, stasera in tv`;
+const schemas = buildHubHomeJsonLd({
+  channels,
+  today,
+  canonicalPath: '/stasera',
+  pageTitle: 'Programmi TV stasera',
+  pageDescription: description,
+});
 ---
 
-<HubLayout {title} {description} canonicalPath="/stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/stasera" {schemas}>
 
   <!-- ─── HERO ─── -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">
@@ -94,6 +101,13 @@ const description = `Guida TV di stasera: scopri il prime time dalle 20:30 su RA
         return <ChannelCard {channel} programs={channelPrograms} mode="stasera" />;
       })}
     </div>
+
+    <SeoHubLinks
+      channels={channelsWithPrograms}
+      title="Approfondisci i programmi TV stasera"
+      intro="Link interni verso categorie, guida di domani e palinsesti canale per trovare rapidamente cosa vedere questa sera."
+      maxChannels={48}
+    />
 
   </section>
 

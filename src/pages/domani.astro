@@ -4,6 +4,7 @@ export const prerender = true;
 import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
@@ -27,11 +28,16 @@ const channelsWithPrograms = channels.filter(ch =>
   })
 );
 
-const schemas = buildHubHomeJsonLd({ channels, today: tomorrow });
-
-const title       = `Programmi TV Domani | Guida TV Canali Italiani — 123ProgrammiTV`;
-const description = `Guida TV di domani: palinsesto completo di RAI, Mediaset, La7 e tutti i canali italiani. Orari e programmi aggiornati.`;
-const keywords    = `programmi tv domani, guida tv domani, programmi domani sera, palinsesto tv domani`;
+const title       = `Programmi TV Domani | Palinsesto TV Completo — 123ProgrammiTV`;
+const description = `Programmi TV domani: palinsesto completo dei canali italiani con prima serata, film, serie, sport e orari aggiornati.`;
+const keywords    = `programmi tv domani, guida tv domani, programmi domani sera, palinsesto tv domani, prima serata domani`;
+const schemas = buildHubHomeJsonLd({
+  channels,
+  today: tomorrow,
+  canonicalPath: '/domani',
+  pageTitle: 'Programmi TV domani',
+  pageDescription: description,
+});
 ---
 
 <HubLayout {title} {description} {keywords} canonicalPath="/domani" {schemas}>
@@ -90,6 +96,13 @@ const keywords    = `programmi tv domani, guida tv domani, programmi domani sera
         return <ChannelCard {channel} programs={channelPrograms} mode="domani" />;
       })}
     </div>
+
+    <SeoHubLinks
+      channels={channelsWithPrograms}
+      title="Guida TV domani per canale"
+      intro="Consulta i programmi di domani sui principali canali oppure torna alle guide di oggi e della prima serata."
+      maxChannels={48}
+    />
 
   </section>
 

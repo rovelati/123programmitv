@@ -5,6 +5,7 @@ import HubLayout from '../layouts/HubLayout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
@@ -92,8 +93,8 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Sport Stasera in TV | Calcio, Tennis e Altro — 123ProgrammiTV`;
-const description = `Sport stasera in TV: calcio, tennis, basket, Formula 1 e altri eventi sportivi. Orari e canali italiani aggiornati.`;
+const title       = `Sport Stasera in TV | Calcio, Tennis e Motori — 123ProgrammiTV`;
+const description = `Sport stasera in TV: eventi di oggi, calcio, tennis, basket, Formula 1, MotoGP, orari e canali italiani aggiornati.`;
 const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi stasera, partite stasera in tv`;
 ---
 
@@ -160,6 +161,13 @@ const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi 
         </div>
       ))
     )}
+
+    <SeoHubLinks
+      channels={sportGroups.map(group => group.channel)}
+      title="Sport stasera: canali e guide correlate"
+      intro="Trova gli eventi sportivi per canale e raggiungi le altre pagine principali della guida TV."
+      maxChannels={48}
+    />
   </div>
 
 </HubLayout>

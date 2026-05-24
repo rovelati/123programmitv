@@ -4,6 +4,7 @@ export const prerender = true;
 import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
@@ -20,11 +21,16 @@ const channelsWithPrograms = channels.filter(ch =>
   programs.some(p => p.channel_id === ch.id)
 );
 
-const schemas = buildHubHomeJsonLd({ channels, today });
+const title       = `Programmi TV Stasera e Ora | Guida TV Completa — 123ProgrammiTV`;
+const description = `Programmi TV stasera e ora: guida completa di RAI, Mediaset, La7, Sky e canali italiani con orari aggiornati ogni giorno.`;
+const keywords    = `programmi tv, programmi tv stasera, programmi stasera, guida tv, cosa c'è in tv ora`;
 
-const title       = `Programmi Stasera in TV | Guida TV Completa — 123ProgrammiTV`;
-const description = `Guida TV completa: tutti i programmi stasera su RAI, Mediaset, La7 e tutti i canali italiani. Orari aggiornati ogni giorno.`;
-const keywords    = `programmi stasera, programmi tv stasera, guida tv stasera, cosa c'è stasera in tv, programmi televisivi stasera`;
+const schemas = buildHubHomeJsonLd({
+  channels,
+  today,
+  pageTitle: 'Programmi TV stasera e ora',
+  pageDescription: description,
+});
 
 // Serializza i channel_id per il conteggio live lato client
 const channelIds = JSON.stringify(channelsWithPrograms.map(ch => ch.id));
@@ -84,6 +90,13 @@ const channelIds = JSON.stringify(channelsWithPrograms.map(ch => ch.id));
         return <ChannelCard {channel} programs={channelPrograms} mode="ora" />;
       })}
     </div>
+
+    <SeoHubLinks
+      channels={channelsWithPrograms}
+      title="Guida TV italiana per ora, stasera e canale"
+      intro="Da qui puoi raggiungere le pagine short-tail principali e i palinsesti dei canali più aggiornati."
+      maxChannels={48}
+    />
 
   </section>
 

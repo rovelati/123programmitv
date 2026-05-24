@@ -1,9 +1,8 @@
 ---
 /**
- * Scheda singolo programma — SSR on-demand (mai prerenderizzata).
- * - Se program.indexable = false → noindex, nofollow
- * - Se program.indexable = true (film con synopsis >300 parole) → index, follow + JSON-LD
- * Sempre: linka con anchor text esatto alla hub canale e alla home.
+ * Scheda singolo programma — route legacy non indicizzabile.
+ * La strategia SEO punta sugli hub short-tail, mentre /programma/*
+ * resta fuori dall'indice per evitare contenuti effimeri e thin page.
  */
 export const prerender = false;
 
@@ -34,7 +33,7 @@ if (!channel) {
   return Astro.redirect('/', 302);
 }
 
-const isIndexable = program.indexable === true;
+const isIndexable = false;
 const startLabel = formatTime(program.startTime);
 const endLabel = formatTime(program.endTime);
 const dateLabel = program.date ? formatDateIT(program.date) : '';

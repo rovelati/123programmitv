@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+static-epg-dist/
 
 # Variabili d'ambiente — MAI committare
 .env
@@ -23,3 +24,6 @@ wrangler.toml.bak
 
 # Log
 *.log
+
+# Python
+__pycache__/
