@@ -49,7 +49,8 @@ const overlayData = JSON.stringify({
   role="button"
   tabindex="0"
   class:list={[
-    'grid grid-cols-[52px_1fr] gap-3 px-4 py-3 cursor-pointer',
+    'grid gap-3 px-4 py-3.5 cursor-pointer',
+    program.poster_url ? 'grid-cols-[52px_48px_1fr] sm:grid-cols-[52px_56px_1fr]' : 'grid-cols-[52px_1fr]',
     'hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
     isLive && 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/10',
@@ -58,34 +59,42 @@ const overlayData = JSON.stringify({
 >
   <!-- Orario -->
   <div class="text-right pt-0.5 flex-shrink-0">
-    <span class="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums block">{startLabel}</span>
-    <span class="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums block">{endLabel}</span>
+    <span class="text-[15px] font-extrabold text-slate-950 dark:text-slate-100 tabular-nums block">{startLabel}</span>
+    <span class="text-[12px] font-medium text-slate-500 dark:text-slate-400 tabular-nums block">{endLabel}</span>
   </div>
+
+  {program.poster_url && (
+    <div class="w-12 h-16 sm:w-14 sm:h-20 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm">
+      <img
+        src={program.poster_url}
+        alt={`Poster ${program.title}`}
+        width="56"
+        height="80"
+        class="w-full h-full object-cover"
+        loading="lazy"
+        onerror="this.closest('div').style.display='none'"
+      />
+    </div>
+  )}
 
   <!-- Contenuto programma -->
   <div class="min-w-0">
     <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
-      {isLive && (
-        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 px-1.5 py-0.5 rounded-full">
-          <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block"></span>
-          Live
-        </span>
-      )}
-      {showChannel && <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{showChannel}</span>}
+      {showChannel && <span class="text-[12px] text-slate-500 dark:text-slate-400 font-semibold">{showChannel}</span>}
     </div>
 
-    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug truncate">{program.title}</p>
+    <p class="text-[15px] font-extrabold text-slate-950 dark:text-slate-100 leading-snug line-clamp-2">{program.title}</p>
 
     <div class="flex items-center gap-2 mt-0.5">
       {program.category && (
-        <span class:list={['text-[10px] px-1.5 py-0.5 rounded-full font-semibold', badgeClass]}>
+        <span class:list={['text-[11px] px-1.5 py-0.5 rounded-full font-bold', badgeClass]}>
           {program.category}
         </span>
       )}
     </div>
 
     {program.description && (
-      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-2 leading-relaxed">{program.description}</p>
+      <p class="text-[13px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-snug">{program.description}</p>
     )}
   </div>
 

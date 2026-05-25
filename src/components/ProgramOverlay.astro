@@ -419,6 +419,8 @@
     // ── Poster ──────────────────────────────────────────────────────────────
     const posterEl = $('overlay-poster');
     if (data.poster_url && posterEl) {
+      posterEl.onerror = () => hidden('overlay-poster-wrap', true);
+      posterEl.onload = () => hidden('overlay-poster-wrap', false);
       posterEl.src = data.poster_url;
       posterEl.alt = data.title || '';
     }

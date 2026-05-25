@@ -85,11 +85,11 @@ const staseraOverlayJson = displayProgram
   data-channel-name={mode === 'ora' ? channel.name : undefined}
   aria-label={`Vai ai programmi ${channel.name}`}
 >
-  <div class="grid grid-cols-[72px_1fr] sm:grid-cols-[88px_1fr_20px] gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
+  <div class="grid grid-cols-[72px_1fr] sm:grid-cols-[88px_1fr_20px] gap-3 px-3 py-3 sm:px-4 sm:py-3.5">
 
     <!-- Colonna sinistra: logo + nome + numero -->
     <div class="flex flex-col items-start gap-1.5">
-      <div class="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center overflow-hidden rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-sm">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-sm">
         <img
           src={channel.logo}
           alt={`Logo ${channel.name}`}
@@ -100,8 +100,8 @@ const staseraOverlayJson = displayProgram
         />
       </div>
       <div class="min-w-0 w-full">
-        <p class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">{channel.name}</p>
-        {channel.number > 0 && <p class="text-[10px] text-slate-400 dark:text-slate-500">CH {channel.number}</p>}
+        <p class="text-xs sm:text-sm font-extrabold text-slate-950 dark:text-slate-100 leading-tight truncate">{channel.name}</p>
+        {channel.number > 0 && <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">CH {channel.number}</p>}
       </div>
     </div>
 
@@ -128,22 +128,44 @@ const staseraOverlayJson = displayProgram
               class="cursor-pointer"
               title="Clicca per i dettagli"
             >
-              <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mb-0.5 flex items-center gap-1.5 flex-wrap">
-                <span class="tabular-nums">{formatTime(displayProgram.startTime)} – {formatTime(displayProgram.endTime)}</span>
-                {displayProgram.category && (
-                  <span class="uppercase tracking-wide font-semibold">{displayProgram.category}</span>
+              <div class="flex gap-2.5">
+                {displayProgram.poster_url && (
+                  <div class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-sm">
+                    <img
+                      src={displayProgram.poster_url}
+                      alt={`Poster ${displayProgram.title}`}
+                      width="48"
+                      height="64"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                      onerror="this.closest('div').style.display='none'"
+                    />
+                  </div>
                 )}
-              </p>
-              <p class="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                {displayProgram.title}
-              </p>
+                <div class="min-w-0 flex-1">
+                  <p class="text-[12px] text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5 flex-wrap">
+                    <span class="tabular-nums font-medium">{formatTime(displayProgram.startTime)} – {formatTime(displayProgram.endTime)}</span>
+                    {displayProgram.category && (
+                      <span class="uppercase tracking-wide font-bold text-slate-500 dark:text-slate-400">{displayProgram.category}</span>
+                    )}
+                  </p>
+                  <p class="text-[15px] sm:text-base font-extrabold text-slate-950 dark:text-slate-100 leading-snug mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                    {displayProgram.title}
+                  </p>
+                  {displayProgram.description && (
+                    <p class="text-[13px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2 mb-2">
+                      {displayProgram.description}
+                    </p>
+                  )}
+                </div>
+              </div>
               <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-600 mb-2">
                 <div class="h-full rounded-full bg-slate-300 dark:bg-slate-500" style="width:0%"></div>
               </div>
               {nextProgram && (
-                <p class="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+                <p class="text-[12px] text-slate-500 dark:text-slate-400 truncate">
                   <span class="tabular-nums">{formatTime(nextProgram.startTime)}</span>{' — '}
-                  <span class="text-slate-600 dark:text-slate-400">{nextProgram.title}</span>
+                  <span class="text-slate-700 dark:text-slate-300">{nextProgram.title}</span>
                 </p>
               )}
             </div>
@@ -175,20 +197,33 @@ function fmtTime(iso) {
   });
 }
 
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programDataJson) {
   if (!prog) return '<p class="text-xs text-slate-400 italic">Nessun programma</p>';
 
-  const liveBadge = isLive
-    ? `<span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block"></span>Live</span>`
-    : isUpcoming
+  const liveBadge = isUpcoming
     ? `<span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">Prossimo</span>`
     : '';
 
   const barPct = progress + '%';
   const barColor = isLive ? '#3b82f6' : '#cbd5e1';
-  const catHTML = prog.category ? `<span class="uppercase tracking-wide font-semibold">${prog.category}</span>` : '';
+  const catHTML = prog.category ? `<span class="uppercase tracking-wide font-bold text-slate-500">${esc(prog.category)}</span>` : '';
+  const posterHTML = prog.poster_url
+    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 border border-slate-200 flex-shrink-0 shadow-sm" onerror="this.style.display='none'">`
+    : '';
+  const descriptionHTML = prog.description
+    ? `<p class="text-[13px] text-slate-600 leading-snug line-clamp-2 mt-1">${esc(prog.description)}</p>`
+    : '';
   const nextHTML = nextProg
-    ? `<p class="text-[11px] text-slate-400 truncate"><span class="tabular-nums">${fmtTime(nextProg.startTime)}</span> — <span class="text-slate-600">${nextProg.title}</span></p>`
+    ? `<p class="text-[12px] text-slate-500 truncate"><span class="tabular-nums">${fmtTime(nextProg.startTime)}</span> — <span class="text-slate-700">${esc(nextProg.title)}</span></p>`
     : '';
 
   // data-program attiva l'overlay; escapiamo le virgolette per l'attributo HTML
@@ -197,12 +232,18 @@ function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programData
 
   return `
     <div${overlayAttr}>
-      <p class="text-[10px] text-slate-400 mb-0.5 flex items-center gap-1.5 flex-wrap">
-        ${liveBadge}
-        <span class="tabular-nums">${fmtTime(prog.startTime)} – ${fmtTime(prog.endTime)}</span>
-        ${catHTML}
-      </p>
-      <p class="text-[13px] font-bold text-slate-900 leading-snug mb-2 line-clamp-2 group-hover:text-blue-600">${prog.title}</p>
+      <div class="flex gap-2.5">
+        ${posterHTML}
+        <div class="min-w-0 flex-1">
+          <p class="text-[12px] text-slate-500 mb-0.5 flex items-center gap-1.5 flex-wrap">
+            ${liveBadge}
+            <span class="tabular-nums font-medium">${fmtTime(prog.startTime)} – ${fmtTime(prog.endTime)}</span>
+            ${catHTML}
+          </p>
+          <p class="text-[15px] font-extrabold text-slate-950 leading-snug mb-1 line-clamp-2 group-hover:text-blue-600">${esc(prog.title)}</p>
+          ${descriptionHTML}
+        </div>
+      </div>
       <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 mb-2">
         <div class="h-full rounded-full transition-all" style="width:${barPct};background:${barColor}"></div>
       </div>

@@ -50,6 +50,24 @@ jobs:
           # Se assente, lo script scrive un placeholder e il build continua.
           GOOGLE_SA_KEY_JSON: ${{ secrets.GOOGLE_SA_KEY_JSON }}
 
+      - name: Sync locally stored program images
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -z "$DEPLOY_SSH_KEY" ]; then
+            echo "DEPLOY_SSH_KEY secret is required to sync local program images." >&2
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh dist/client/images/programs
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 65002 89.116.147.83 >> ~/.ssh/known_hosts 2>/dev/null || true
+          rsync -az --checksum \
+            -e "ssh -p 65002 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            u914016995@89.116.147.83:/home/u914016995/domains/123programmitv.it/public_html/images/programs/ \
+            dist/client/images/programs/
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
