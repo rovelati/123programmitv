@@ -10,6 +10,7 @@ const useCloudflare = process.env.ASTRO_ADAPTER === 'cloudflare'
 
 export default defineConfig({
   site: 'https://123programmitv.it',
+  trailingSlash: 'always',
   output: 'static',
   adapter: useCloudflare
     ? cloudflare({ prerenderEnvironment: 'node', imageService: 'compile', platformProxy: { enabled: false }, sessions: false })
@@ -24,10 +25,10 @@ export default defineConfig({
         if (item.url === 'https://123programmitv.it/') {
           return { ...item, priority: 1.0, changefreq: 'hourly' }
         }
-        if (/\/(rai-1|canale-5|italia-1|la7|rete-4|rai-2|rai-3)$/.test(item.url)) {
+        if (/\/(rai-1|canale-5|italia-1|la7|rete-4|rai-2|rai-3)\/$/.test(item.url)) {
           return { ...item, priority: 0.9, changefreq: 'daily' }
         }
-        if (/\/(film-stasera|serie-stasera|sport-stasera|domani)$/.test(item.url)) {
+        if (/\/(film-stasera|serie-stasera|sport-stasera|domani)\/$/.test(item.url)) {
           return { ...item, priority: 0.85, changefreq: 'daily' }
         }
         return { ...item, priority: 0.7, changefreq: 'daily' }

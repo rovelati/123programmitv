@@ -137,7 +137,9 @@ function getSupabaseAdmin(context: APIContext) {
 }
 
 function buildAbsoluteUrl(siteUrl: string, routePath: string): string {
-  return new URL(routePath, `${siteUrl.replace(/\/$/, '')}/`).toString();
+  const base = `${siteUrl.replace(/\/$/, '')}/`;
+  const path = routePath === '/' ? '/' : `${routePath.replace(/\/$/, '')}/`;
+  return new URL(path, base).toString();
 }
 
 function parseGoogleError(error: unknown): { message: string; activationUrl?: string; raw?: unknown } {

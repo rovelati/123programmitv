@@ -15,8 +15,9 @@
  * - Publisher/Organization come entità root riutilizzata via @id
  */
 import type { Channel, Program } from '../types';
+import { absoluteUrl, SITE_ORIGIN } from './urls';
 
-const SITE_URL   = 'https://123programmitv.it';
+const SITE_URL   = SITE_ORIGIN;
 const SITE_NAME  = '123ProgrammiTV';
 const ORG_ID     = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -207,7 +208,7 @@ function webPageEntity(url: string, name: string, description: string): Record<s
 
 /** BroadcastService completo con Wikidata sameAs per entity disambiguation */
 function broadcastServiceEntity(channel: Channel, siteUrl = SITE_URL): Record<string, unknown> {
-  const channelUrl = `${siteUrl}/${channel.id}`;
+  const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
   const wikidata   = CHANNEL_WIKIDATA[channel.id];
 
   return {
@@ -246,7 +247,7 @@ function broadcastEventEntity(
   const type       = workType(program);
   const year       = extractYear(program.title);
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];
-  const channelUrl = `${siteUrl}/${channel.id}`;
+  const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
 
   // workPerformed: Movie / TVEpisode / SportsEvent
   const workPerformed: Record<string, unknown> = {
@@ -349,8 +350,8 @@ export function buildHubChannelJsonLd({
   pageTitle?: string;
   pageDescription?: string;
 }): object[] {
-  const channelUrl = `${siteUrl}/${channel.id}`;
-  const pageUrl = canonicalPath ? `${siteUrl}${canonicalPath}` : channelUrl;
+  const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
+  const pageUrl = canonicalPath ? absoluteUrl(canonicalPath, siteUrl) : channelUrl;
   const resolvedTitle = pageTitle ?? `Programmi ${channel.name} stasera`;
   const pageDesc = pageDescription ?? `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
 
@@ -443,7 +444,7 @@ export function buildHubHomeJsonLd({
   pageTitle?: string;
   pageDescription?: string;
 }): object[] {
-  const pageUrl = `${siteUrl}${canonicalPath === '/' ? '/' : canonicalPath}`;
+  const pageUrl = absoluteUrl(canonicalPath, siteUrl);
   const title = pageTitle ?? `Programmi TV stasera — ${today}`;
   const description = pageDescription ?? 'Guida TV italiana: tutti i programmi stasera su RAI, Mediaset, La7 e canali tematici.';
 
@@ -461,7 +462,7 @@ export function buildHubHomeJsonLd({
         '@type': 'ListItem',
         position: i + 1,
         name: `Programmi ${ch.name} stasera`,
-        url: `${siteUrl}/${ch.id}`,
+        url: absoluteUrl(`/${ch.id}`, siteUrl),
       })),
     },
     {
@@ -499,11 +500,11 @@ export function buildHubCategoryJsonLd({
   today: string;
   siteUrl?: string;
 }): object[] {
-  const pageUrl    = `${siteUrl}/${categorySlug}`;
+  const pageUrl    = absoluteUrl(`/${categorySlug}`, siteUrl);
   const isFilmPage = categorySlug === 'film-stasera';
 
   const itemListElements = programs.slice(0, 20).map((p, i) => {
-    const channelUrl = p.channel_id ? `${siteUrl}/${p.channel_id}` : pageUrl;
+    const channelUrl = p.channel_id ? absoluteUrl(`/${p.channel_id}`, siteUrl) : pageUrl;
     if (isFilmPage) {
       const year = extractYear(p.title);
       return {
@@ -571,8 +572,8 @@ export function buildProgramJsonLd({
   channel: Channel;
   siteUrl?: string;
 }): object[] {
-  const programUrl = `${siteUrl}/programma/${channel.id}/${program.slug ?? program.id}`;
-  const channelUrl = `${siteUrl}/${channel.id}`;
+  const programUrl = absoluteUrl(`/programma/${channel.id}/${program.slug ?? program.id}`, siteUrl);
+  const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
   const type       = workType(program);
   const year       = extractYear(program.title);
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];

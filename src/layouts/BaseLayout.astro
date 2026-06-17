@@ -1,6 +1,7 @@
 ---
 import SchemaInjector from '../components/SchemaInjector.astro';
 import '../styles/global.css';
+import { absoluteUrl } from '../utils/urls';
 
 interface Props {
   title: string;
@@ -49,7 +50,7 @@ const {
 } = Astro.props;
 
 const SITE_URL    = 'https://123programmitv.it';
-const canonicalUrl = `${SITE_URL}${canonicalPath}`;
+const canonicalUrl = absoluteUrl(canonicalPath);
 const ogImageUrl   = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
 const imageAlt     = ogImageAlt ?? title;
 

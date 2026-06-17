@@ -10,16 +10,22 @@ const RETRY_DELAY_MS = Number.parseInt(process.env.SEO_VALIDATE_RETRY_MS || '300
 
 const HUB_PATHS = [
   '/',
-  '/stasera',
-  '/domani',
-  '/film-stasera',
-  '/serie-stasera',
-  '/sport-stasera',
-  '/rai-1',
-  '/canale-5',
-  '/italia-1',
-  '/la7',
+  '/stasera/',
+  '/domani/',
+  '/film-stasera/',
+  '/serie-stasera/',
+  '/sport-stasera/',
+  '/rai-1/',
+  '/rai-movie/',
+  '/canale-5/',
+  '/italia-1/',
+  '/la7/',
 ];
+
+function extractMeta(html, pattern) {
+  const match = html.match(pattern);
+  return match?.[1] ?? null;
+}
 
 async function fetchText(path, method = 'GET') {
   const url = `${SITE_URL}${path}`;
@@ -68,7 +74,14 @@ async function runValidation() {
     const page = await fetchText(path);
     console.log(`${page.status} ${page.url}`);
     assert(page.ok, `${path} is not reachable`, failures);
-    assert(page.text.includes('rel="canonical"') || page.text.includes('canonical'), `${path} should expose a canonical URL`, failures);
+    const canonical = extractMeta(page.text, /<link rel="canonical" href="([^"]+)"/);
+    const ogUrl = extractMeta(page.text, /<meta property="og:url" content="([^"]+)"/);
+    assert(canonical, `${path} should expose a canonical URL`, failures);
+    if (path !== '/') {
+      assert(canonical.endsWith('/'), `${path} canonical should end with trailing slash (${canonical})`, failures);
+      assert(ogUrl?.endsWith('/'), `${path} og:url should end with trailing slash (${ogUrl})`, failures);
+    }
+    assert(canonical === ogUrl, `${path} canonical and og:url should match`, failures);
   }
 
   const program = await fetchText('/programma/rai-1/test-seo-smoke', 'HEAD');
