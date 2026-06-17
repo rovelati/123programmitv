@@ -51,12 +51,13 @@ jobs:
           GOOGLE_SA_KEY_JSON: ${{ secrets.GOOGLE_SA_KEY_JSON }}
 
       - name: Sync locally stored program images
+        continue-on-error: true
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
           if [ -z "$DEPLOY_SSH_KEY" ]; then
-            echo "DEPLOY_SSH_KEY secret is required to sync local program images." >&2
-            exit 1
+            echo "DEPLOY_SSH_KEY not set — skipping program image sync."
+            exit 0
           fi
 
           mkdir -p ~/.ssh dist/client/images/programs
@@ -66,7 +67,8 @@ jobs:
           rsync -az --checksum \
             -e "ssh -p 65002 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts" \
             u914016995@89.116.147.83:/home/u914016995/domains/123programmitv.it/public_html/images/programs/ \
-            dist/client/images/programs/
+            dist/client/images/programs/ \
+            || echo "WARNING: program image sync failed — continuing deploy without updated posters."
 
       - name: Bundle Cloudflare Functions
         run: cp -R functions dist/client/functions
