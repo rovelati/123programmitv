@@ -92,13 +92,59 @@ function extractYear(title: string): string | null {
 }
 
 /** Determina il tipo schema.org del contenuto trasmesso */
-function workType(program: Program): 'Movie' | 'TVEpisode' | 'Event' {
+function workType(program: Program): 'Movie' | 'TVEpisode' | 'SportsEvent' {
   const cat   = (program.category ?? '').toLowerCase();
   const hasYear = !!extractYear(program.title);
 
   if (cat.includes('film') || cat.includes('movie') || cat.includes('cinema') || hasYear) return 'Movie';
-  if (cat.includes('sport') || cat.includes('calcio') || cat.includes('tennis') || cat.includes('formula')) return 'Event';
+  if (cat.includes('sport') || cat.includes('calcio') || cat.includes('tennis') || cat.includes('formula')) return 'SportsEvent';
   return 'TVEpisode';
+}
+
+const EVENT_SCHEDULED = 'https://schema.org/EventScheduled';
+const ONLINE_ATTENDANCE = 'https://schema.org/OnlineEventAttendanceMode';
+
+/** Location per eventi TV trasmessi online (VirtualLocation richiede eventAttendanceMode). */
+function onlineEventLocation(streamUrl: string): Record<string, unknown> {
+  return { '@type': 'VirtualLocation', url: streamUrl };
+}
+
+/** Campi Event/SportsEvent richiesti da Google quando location è VirtualLocation. */
+function onlineEventExtras(
+  channel: Channel,
+  channelUrl: string,
+  streamUrl?: string,
+  program?: Program,
+): Record<string, unknown> {
+  return {
+    eventStatus: EVENT_SCHEDULED,
+    eventAttendanceMode: ONLINE_ATTENDANCE,
+    organizer: {
+      '@type': 'Organization',
+      name: channel.name,
+      url: channelUrl,
+    },
+    ...(program ? {
+      description: program.description ?? `${program.title} in onda su ${channel.name}`,
+    } : {}),
+    ...(program?.poster_url ? { image: program.poster_url } : {}),
+    ...(streamUrl ? {
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'EUR',
+        availability: 'https://schema.org/InStock',
+        url: streamUrl,
+      },
+    } : {}),
+  };
+}
+
+function watchAction(streamUrl: string): Record<string, unknown> {
+  return {
+    '@type': 'WatchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: streamUrl },
+  };
 }
 
 /** Entità Organization root — referenziata via @id in tutti gli schemi */
@@ -202,12 +248,9 @@ function broadcastEventEntity(
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];
   const channelUrl = `${siteUrl}/${channel.id}`;
 
-  // url navigabile = hub canale (esiste sempre), non la scheda programma
-  const liveUrl = streamUrl ?? channelUrl;
-
-  // workPerformed: Movie / TVEpisode / Event (SportsEvent)
+  // workPerformed: Movie / TVEpisode / SportsEvent
   const workPerformed: Record<string, unknown> = {
-    '@type': type === 'Event' ? 'SportsEvent' : type,
+    '@type': type,
     '@id': `${eventId}#work`,
     name: program.title,
     inLanguage: 'it',
@@ -215,15 +258,22 @@ function broadcastEventEntity(
     ...(program.category    ? { genre: program.category }           : {}),
     ...(program.poster_url  ? { image: program.poster_url }         : {}),
     ...(year                ? { dateCreated: year }                 : {}),
-    // url punta all'hub canale (pagina esistente), non a /programma/
     url: channelUrl,
   };
 
-  // SportsEvent richiede startDate + location (campi obbligatori Google)
-  if (type === 'Event') {
+  if (type === 'SportsEvent') {
     workPerformed['startDate'] = program.startTime;
     workPerformed['endDate']   = program.endTime;
-    workPerformed['location']  = { '@type': 'VirtualLocation', url: liveUrl };
+    Object.assign(workPerformed, onlineEventExtras(channel, channelUrl, streamUrl, program));
+    if (streamUrl) {
+      workPerformed['location'] = onlineEventLocation(streamUrl);
+    } else {
+      workPerformed['location'] = {
+        '@type': 'Place',
+        name: channel.name,
+        address: { '@type': 'PostalAddress', addressCountry: 'IT' },
+      };
+    }
   }
 
   if (type === 'TVEpisode') {
@@ -235,13 +285,10 @@ function broadcastEventEntity(
   }
 
   if (streamUrl) {
-    workPerformed['potentialAction'] = {
-      '@type': 'WatchAction',
-      target: streamUrl,
-    };
+    workPerformed['potentialAction'] = watchAction(streamUrl);
   }
 
-  return {
+  const broadcastEvent: Record<string, unknown> = {
     '@type': 'BroadcastEvent',
     '@id': `${eventId}#event`,
     name: program.title,
@@ -251,18 +298,31 @@ function broadcastEventEntity(
     duration:  isoDuration(program.startTime, program.endTime),
     isLiveBroadcast: false,
     videoFormat: 'HD',
-    eventStatus: 'https://schema.org/EventScheduled',
+    eventStatus: EVENT_SCHEDULED,
     inLanguage: 'it',
-    // url navigabile = hub canale (evita che Google associ l'evento a /programma/)
     url: channelUrl,
     ...(program.poster_url ? { image: program.poster_url } : {}),
-    location: {
-      '@type': 'VirtualLocation',
-      url: liveUrl,
-    },
     publishedOn: { '@id': `${channelUrl}#channel` },
     workPerformed,
   };
+
+  if (streamUrl) {
+    broadcastEvent['eventAttendanceMode'] = ONLINE_ATTENDANCE;
+    broadcastEvent['location'] = onlineEventLocation(streamUrl);
+    broadcastEvent['organizer'] = {
+      '@type': 'Organization',
+      name: channel.name,
+      url: channelUrl,
+    };
+  } else {
+    broadcastEvent['location'] = {
+      '@type': 'Place',
+      name: channel.name,
+      address: { '@type': 'PostalAddress', addressCountry: 'IT' },
+    };
+  }
+
+  return broadcastEvent;
 }
 
 // ===========================================================================
@@ -520,7 +580,7 @@ export function buildProgramJsonLd({
   const broadcastService = broadcastServiceEntity(channel, siteUrl);
   const broadcastEvent   = broadcastEventEntity(program, channel, `${programUrl}`, siteUrl);
 
-  // Entità principale del contenuto (Movie / TVEpisode / Event)
+  // Entità principale del contenuto (Movie / TVEpisode / SportsEvent)
   const workEntity: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -541,6 +601,19 @@ export function buildProgramJsonLd({
       },
     } : {}),
   };
+
+  if (type === 'SportsEvent') {
+    workEntity['startDate'] = program.startTime;
+    workEntity['endDate'] = program.endTime;
+    Object.assign(workEntity, onlineEventExtras(channel, channelUrl, streamUrl, program));
+    workEntity['location'] = streamUrl
+      ? onlineEventLocation(streamUrl)
+      : {
+          '@type': 'Place',
+          name: channel.name,
+          address: { '@type': 'PostalAddress', addressCountry: 'IT' },
+        };
+  }
 
   if (type === 'TVEpisode') {
     workEntity['partOfSeries'] = {

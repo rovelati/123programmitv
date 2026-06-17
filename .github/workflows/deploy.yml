@@ -68,6 +68,9 @@ jobs:
             u914016995@89.116.147.83:/home/u914016995/domains/123programmitv.it/public_html/images/programs/ \
             dist/client/images/programs/
 
+      - name: Bundle Cloudflare Functions
+        run: cp -R functions dist/client/functions
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:

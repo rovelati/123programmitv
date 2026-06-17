@@ -21,15 +21,22 @@ const HUB_PATHS = [
   '/la7',
 ];
 
-async function fetchText(path) {
+async function fetchText(path, method = 'GET') {
   const url = `${SITE_URL}${path}`;
   const response = await fetch(url, {
+    method,
     headers: {
       'User-Agent': '123ProgrammiTV SEO validator',
     },
   });
-  const text = await response.text();
-  return { url, status: response.status, ok: response.ok, text };
+  const text = method === 'HEAD' ? '' : await response.text();
+  return {
+    url,
+    status: response.status,
+    ok: response.ok,
+    text,
+    headers: response.headers,
+  };
 }
 
 function assert(condition, message, failures) {
@@ -48,9 +55,9 @@ async function runValidation() {
   const robots = await fetchText('/robots.txt');
   console.log(`${robots.status} ${robots.url}`);
   assert(robots.ok, 'robots.txt is not reachable', failures);
-  assert(robots.text.includes('Disallow: /programma/'), 'robots.txt should keep /programma/ blocked for short-tail strategy', failures);
+  assert(!robots.text.includes('Disallow: /programma/'), 'robots.txt should allow crawling /programma/ for 410 de-indexing', failures);
   assert(robots.text.includes('Sitemap: https://123programmitv.it/sitemap-index.xml'), 'robots.txt should declare sitemap-index.xml', failures);
-  assert(!robots.text.includes('sitemap-film.xml'), 'robots.txt should not declare sitemap-film.xml while /programma/ is blocked', failures);
+  assert(!robots.text.includes('sitemap-film.xml'), 'robots.txt should not declare legacy sitemap-film.xml', failures);
 
   const sitemap = await fetchText('/sitemap-index.xml');
   console.log(`${sitemap.status} ${sitemap.url}`);
@@ -64,9 +71,10 @@ async function runValidation() {
     assert(page.text.includes('rel="canonical"') || page.text.includes('canonical'), `${path} should expose a canonical URL`, failures);
   }
 
-  const program = await fetchText('/programma/rai-1/test-seo-smoke');
+  const program = await fetchText('/programma/rai-1/test-seo-smoke', 'HEAD');
   console.log(`${program.status} ${program.url}`);
   assert([404, 410].includes(program.status), '/programma/* should not return indexable 200 responses', failures);
+  assert(!program.headers.get('x-robots-tag')?.includes('noindex'), '/programma/* 410 should not send X-Robots-Tag noindex', failures);
 
   if (failures.length > 0) {
     return failures;

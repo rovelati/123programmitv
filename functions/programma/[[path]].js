@@ -1,14 +1,9 @@
 /**
  * Cloudflare Pages Function — /programma/*
  *
- * Le schede programma non fanno parte dell'indice SEO short-tail.
- * Restituisce 410 Gone invece di lasciare che Cloudflare Pages serva
- * la home (200) come fallback, evitando che Google associ queste URL
- * alla home page e sprecandone il crawl budget.
- *
- * Il robots.txt ha già "Disallow: /programma/" per bloccare il crawling.
- * Il 410 (a differenza del 404) segnala a Google che l'URL è rimosso
- * definitivamente e velocizza la de-indicizzazione.
+ * Restituisce 410 Gone per segnalare a Google la rimozione permanente
+ * delle schede programma legacy. Senza noindex: Googlebot può crawlare
+ * l'URL, vedere il 410 e rimuoverlo dall'indice.
  */
 export async function onRequest() {
   return new Response(
@@ -17,7 +12,6 @@ export async function onRequest() {
       status: 410,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'X-Robots-Tag': 'noindex',
         'Cache-Control': 'public, max-age=86400',
       },
     },

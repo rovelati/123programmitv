@@ -75,10 +75,9 @@
 /mediaset-extra
   Cache-Control: public, max-age=1800, stale-while-revalidate=3600
 
-# Schede programma SSR — no cache, no index
+# Schede programma legacy — 410 Gone, crawlable per de-indicizzazione
 /programma/*
-  Cache-Control: no-store, no-cache
-  X-Robots-Tag: noindex, nofollow
+  Cache-Control: public, max-age=86400
 
 # Assets statici — cache lunga
 /og/*

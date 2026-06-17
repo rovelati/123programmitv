@@ -374,7 +374,7 @@ def render_category(path: str, title: str, heading: str, programs: list[Program]
 
 def write_static_files(urls: list[str]) -> None:
     (OUT_DIR / "robots.txt").write_text(
-        "User-agent: *\nAllow: /\nDisallow: /programma/\n\nSitemap: https://123programmitv.it/sitemap-index.xml\n",
+        "User-agent: *\nAllow: /\n\nSitemap: https://123programmitv.it/sitemap-index.xml\n",
         encoding="utf-8",
     )
     (OUT_DIR / "_redirects").write_text(
@@ -382,7 +382,7 @@ def write_static_files(urls: list[str]) -> None:
         encoding="utf-8",
     )
     (OUT_DIR / "_headers").write_text(
-        "/\n  Cache-Control: public, max-age=300, stale-while-revalidate=300\n/*.html\n  Cache-Control: public, max-age=1800, stale-while-revalidate=3600\n/programma/*\n  X-Robots-Tag: noindex, nofollow\n",
+        "/\n  Cache-Control: public, max-age=300, stale-while-revalidate=300\n/*.html\n  Cache-Control: public, max-age=1800, stale-while-revalidate=3600\n/programma/*\n  Cache-Control: public, max-age=86400\n",
         encoding="utf-8",
     )
     sitemap_urls = "\n".join(f"  <url><loc>{SITE_URL}{url}</loc></url>" for url in sorted(set(urls)))
