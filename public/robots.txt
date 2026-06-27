@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-# Sitemap principale: solo hub indicizzabili e pagine canale.
-Sitemap: https://123programmitv.it/sitemap-index.xml
+# Sitemap unica: hub principali + primi 50 canali.
+Sitemap: https://123programmitv.it/sitemap.xml

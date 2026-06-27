@@ -50,6 +50,11 @@ https://www.123programmitv.it/*  https://123programmitv.it/:splat  301
 # Legacy palinsesto
 /palinsesto/:canale         /:canale/    301
 
+# Sitemap legacy → sitemap unica
+/sitemap-index.xml          /sitemap.xml  301
+/sitemap-0.xml              /sitemap.xml  301
+/sitemap-film.xml           /sitemap.xml  301
+
 # Radio (redirect alla home per ora, non priorità SEO)
 /radio/*                    /           301
 

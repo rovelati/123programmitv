@@ -62,8 +62,8 @@ async function runValidation() {
   console.log(`${robots.status} ${robots.url}`);
   assert(robots.ok, 'robots.txt is not reachable', failures);
   assert(!robots.text.includes('Disallow: /programma/'), 'robots.txt should allow crawling /programma/ for 410 de-indexing', failures);
-  assert(robots.text.includes('Sitemap: https://123programmitv.it/sitemap-index.xml'), 'robots.txt should declare sitemap-index.xml', failures);
-  assert(!robots.text.includes('sitemap-film.xml'), 'robots.txt should not declare legacy sitemap-film.xml', failures);
+  assert(robots.text.includes('Sitemap: https://123programmitv.it/sitemap.xml'), 'robots.txt should declare sitemap.xml', failures);
+  assert(!robots.text.includes('sitemap-index.xml'), 'robots.txt should not declare nested sitemap-index.xml', failures);
   assert(!robots.text.includes('Disallow: /channel-logos/'), 'robots.txt should not block channel logo assets', failures);
 
   const logoAsset = await fetchText('/channel-logos/italia-1.svg', 'HEAD');
@@ -73,10 +73,14 @@ async function runValidation() {
   assert(logoCache.includes('max-age=') && !logoCache.includes('max-age=0'), 'channel logos should use long-lived cache headers', failures);
   assert(!logoAsset.headers.get('x-robots-tag')?.includes('noindex'), 'channel logos should not send X-Robots-Tag noindex', failures);
 
-  const sitemap = await fetchText('/sitemap-index.xml');
+  const sitemap = await fetchText('/sitemap.xml');
   console.log(`${sitemap.status} ${sitemap.url}`);
-  assert(sitemap.ok, 'sitemap-index.xml is not reachable', failures);
-  assert(!sitemap.text.includes('/programma/'), 'sitemap-index.xml should not include /programma/ URLs', failures);
+  assert(sitemap.ok, 'sitemap.xml is not reachable', failures);
+  assert(sitemap.text.includes('<urlset'), 'sitemap.xml should be a flat urlset', failures);
+  assert(!sitemap.text.includes('/programma/'), 'sitemap.xml should not include /programma/ URLs', failures);
+  assert(!sitemap.text.includes('/domani/'), 'sitemap.xml should not list every /canale/domani/ page', failures);
+  const urlCount = (sitemap.text.match(/<loc>/g) || []).length;
+  assert(urlCount >= 50 && urlCount <= 60, `sitemap.xml should list hub pages plus ~50 channels (found ${urlCount})`, failures);
 
   for (const path of HUB_PATHS) {
     const page = await fetchText(path);
@@ -102,7 +106,7 @@ async function runValidation() {
   }
 
   console.log('\nSEO validation passed.');
-  console.log('Search Console checklist: submit sitemap-index.xml, inspect /, /stasera, /film-stasera, /rai-1, /canale-5, then monitor Coverage and Performance for 7-14 days.');
+  console.log('Search Console checklist: submit sitemap.xml, inspect /, /stasera, /film-stasera, /rai-1, /canale-5, then monitor Coverage and Performance for 7-14 days.');
   return [];
 }
 
