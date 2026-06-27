@@ -1,5 +1,6 @@
 ---
 import ProgramRow from './ProgramRow.astro';
+import { filterStaseraPrograms, splitStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import type { Program, Channel } from '../types';
 
 interface Props {
@@ -7,64 +8,75 @@ interface Props {
   channel?: Channel;
   showChannel?: boolean;
   filterCategory?: string;
-  mode?: 'stasera' | 'domani';
+  mode?: 'stasera' | 'domani' | 'full';
 }
 
 const { programs, channel, showChannel = false, filterCategory, mode = 'stasera' } = Astro.props;
 
-// Helper: minuti UTC dall'inizio del giorno
-const toUTCMin = (t: string) => {
-  const d = new Date(t);
-  return d.getUTCHours() * 60 + d.getUTCMinutes();
-};
-
-// Soglie orarie (UTC, considerando CEST = UTC+2)
-const PRIME_START  = 18 * 60 + 30; // 18:30 UTC = 20:30 Roma CEST
-const PRIME_END    = 21 * 60;       // 21:00 UTC = 23:00 Roma CEST
-const MORNING_START = 4 * 60;       // 04:00 UTC = 06:00 Roma CEST
-const NOON         = 10 * 60;       // 10:00 UTC = 12:00 Roma CEST
+const MORNING_START = 6 * 60;   // 06:00 Roma
+const NOON = 12 * 60;           // 12:00 Roma
+const PRIME_START = 20 * 60 + 30; // 20:30 Roma
 
 const filtered = filterCategory
   ? programs.filter(p => p.category?.toLowerCase().includes(filterCategory.toLowerCase()))
   : programs;
 
-// Per domani: escludi programmi prima delle 06:00 (04:00 UTC)
-const base = mode === 'domani'
-  ? filtered.filter(p => toUTCMin(p.startTime) >= MORNING_START)
-  : filtered;
-
-const primeTime = base.filter(p => {
-  const m = toUTCMin(p.startTime);
-  return m >= PRIME_START && m < PRIME_END;
-});
-
-const afterPrimeTime = base.filter(p => toUTCMin(p.startTime) >= PRIME_END);
-
+let primeTime: Program[] = [];
+let secondaSerata: Program[] = [];
 let mattina: Program[] = [];
 let pomeriggio: Program[] = [];
 let beforePrimeTime: Program[] = [];
+let afterPrimeTime: Program[] = [];
+let fullDayCount = 0;
 
-if (mode === 'domani') {
-  mattina    = base.filter(p => { const m = toUTCMin(p.startTime); return m >= MORNING_START && m < NOON; });
-  pomeriggio = base.filter(p => { const m = toUTCMin(p.startTime); return m >= NOON && m < PRIME_START; });
+if (mode === 'stasera') {
+  const staseraPrograms = filterStaseraPrograms(filtered);
+  ({ primeTime, secondaSerata } = splitStaseraPrograms(staseraPrograms));
+} else if (mode === 'domani') {
+  const base = filtered.filter(p => toRomeMinutes(p.startTime) >= MORNING_START);
+  mattina = base.filter(p => {
+    const minutes = toRomeMinutes(p.startTime);
+    return minutes >= MORNING_START && minutes < NOON;
+  });
+  pomeriggio = base.filter(p => {
+    const minutes = toRomeMinutes(p.startTime);
+    return minutes >= NOON && minutes < PRIME_START;
+  });
+  primeTime = base.filter(p => {
+    const minutes = toRomeMinutes(p.startTime);
+    return minutes >= PRIME_START && minutes < 23 * 60;
+  });
+  secondaSerata = base.filter(p => toRomeMinutes(p.startTime) >= 23 * 60);
 } else {
-  beforePrimeTime = base.filter(p => toUTCMin(p.startTime) < PRIME_START);
+  const base = filtered;
+  fullDayCount = base.length;
+  primeTime = base.filter(p => {
+    const start = toRomeMinutes(p.startTime);
+    const end = toRomeMinutes(p.endTime);
+    return end > PRIME_START && start < 23 * 60;
+  });
+  beforePrimeTime = base.filter(p => toRomeMinutes(p.startTime) < PRIME_START);
+  afterPrimeTime = base.filter(p => toRomeMinutes(p.startTime) >= 23 * 60);
 }
+
+const hasPrograms = mode === 'stasera'
+  ? primeTime.length + secondaSerata.length > 0
+  : mode === 'domani'
+    ? mattina.length + pomeriggio.length + primeTime.length + secondaSerata.length > 0
+    : fullDayCount > 0;
 
 const channelName = channel?.name;
 ---
 
-{base.length === 0 ? (
+{!hasPrograms ? (
   <p class="text-slate-400 dark:text-slate-500 text-sm py-8 text-center">Nessun programma disponibile.</p>
 ) : (
   <div>
-
-    {/* Prime Time — sempre in cima */}
     {primeTime.length > 0 && (
       <section aria-label="Prime time">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-800/30 flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>
-          Prime Time · dalle 20:30
+          {mode === 'stasera' ? 'Stasera · dalle 20:30' : 'Prime Time · dalle 20:30'}
         </h3>
         <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
           {primeTime.map(program => <ProgramRow {program} showChannel={showChannel ? channelName : undefined} channelId={channel?.id} channelLogo={channel?.logo} channelName={channel?.name} />)}
@@ -72,7 +84,6 @@ const channelName = channel?.name;
       </section>
     )}
 
-    {/* Mattina (solo domani) */}
     {mode === 'domani' && mattina.length > 0 && (
       <section aria-label="Mattina">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-4 py-2 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/50">
@@ -84,7 +95,6 @@ const channelName = channel?.name;
       </section>
     )}
 
-    {/* Pomeriggio (solo domani) */}
     {mode === 'domani' && pomeriggio.length > 0 && (
       <section aria-label="Pomeriggio">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-4 py-2 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/50">
@@ -96,8 +106,7 @@ const channelName = channel?.name;
       </section>
     )}
 
-    {/* Pomeriggio / Sera (solo stasera) */}
-    {mode !== 'domani' && beforePrimeTime.length > 0 && (
+    {mode === 'full' && beforePrimeTime.length > 0 && (
       <section aria-label="Pomeriggio e sera">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-4 py-2 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/50">
           Pomeriggio / Sera
@@ -108,17 +117,15 @@ const channelName = channel?.name;
       </section>
     )}
 
-    {/* Seconda Serata */}
-    {afterPrimeTime.length > 0 && (
+    {(secondaSerata.length > 0 || afterPrimeTime.length > 0) && (
       <section aria-label="Seconda serata">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 px-4 py-2 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/50">
-          Seconda Serata · dopo le 23:00
+          Seconda serata · fino alle 02:00
         </h3>
         <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
-          {afterPrimeTime.map(program => <ProgramRow {program} showChannel={showChannel ? channelName : undefined} channelId={channel?.id} channelLogo={channel?.logo} channelName={channel?.name} />)}
+          {(mode === 'full' ? afterPrimeTime : secondaSerata).map(program => <ProgramRow {program} showChannel={showChannel ? channelName : undefined} channelId={channel?.id} channelLogo={channel?.logo} channelName={channel?.name} />)}
         </ul>
       </section>
     )}
-
   </div>
 )}

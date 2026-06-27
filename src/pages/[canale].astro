@@ -3,11 +3,12 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 import HubGrid from '../components/HubGrid.astro';
+import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
@@ -19,30 +20,59 @@ export async function getStaticPaths() {
     fetchChannels(),
     fetchProgramsForDate(today),
   ]);
-  return channels.map(channel => ({
-    params: { canale: channel.id },
-    props: {
-      channel,
-      programs: programs.filter(p => p.channel_id === channel.id),
-      allChannels: channels,
-      today,
-    },
-  }));
+
+  const programsByChannel = new Map<string, Program[]>();
+  for (const program of programs) {
+    const list = programsByChannel.get(program.channel_id ?? '') ?? [];
+    list.push(program);
+    programsByChannel.set(program.channel_id ?? '', list);
+  }
+
+  return channels.map(channel => {
+    const staseraPrograms = filterStaseraPrograms(programsByChannel.get(channel.id) ?? []);
+
+    const orderedRelated = HUB_CHANNELS
+      .map(hub => channels.find(item => item.id === hub.id))
+      .filter((item): item is Channel => Boolean(item) && item.id !== channel.id)
+      .map(item => ({
+        channel: item,
+        programs: filterStaseraPrograms(programsByChannel.get(item.id) ?? []),
+      }))
+      .filter(item => item.programs.length > 0)
+      .slice(0, 6);
+
+    return {
+      params: { canale: channel.id },
+      props: {
+        channel,
+        programs: staseraPrograms,
+        allChannels: channels,
+        relatedChannels: orderedRelated,
+        today,
+      },
+    };
+  });
+}
+
+interface RelatedChannelCard {
+  channel: Channel;
+  programs: Program[];
 }
 
 interface Props {
   channel: Channel;
   programs: Program[];
   allChannels: Channel[];
+  relatedChannels: RelatedChannelCard[];
   today: string;
 }
 
-const { channel, programs, allChannels, today } = Astro.props;
+const { channel, programs, allChannels, relatedChannels, today } = Astro.props;
 const dateLabel = formatDateIT(today);
 const stream = getChannelStream(channel.id);
 
-const title       = `Programmi ${channel.name} Stasera | Palinsesto e Guida TV — 123ProgrammiTV`;
-const description = `Programmi ${channel.name} stasera: palinsesto completo di oggi con orari, prima serata, film, serie TV e programmi in onda.`;
+const title       = `Programmi ${channel.name} Stasera | Guida TV dalle 20:30 — 123ProgrammiTV`;
+const description = `Programmi ${channel.name} stasera: guida TV della sera con prima serata e seconda serata, orari aggiornati fino alle 02:00.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
 const schemas = buildHubChannelJsonLd({
@@ -54,7 +84,6 @@ const schemas = buildHubChannelJsonLd({
   pageDescription: description,
 });
 
-// OG image: usa il logo canale se disponibile, altrimenti default
 const ogImage     = channel.logo?.startsWith('http') ? channel.logo : `/og/default.png`;
 const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
 ---
@@ -63,12 +92,11 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
-      { label: 'Programmi stasera', href: '/' },
+      { label: 'Programmi stasera', href: '/stasera' },
       { label: channel.name },
     ]} />
   </div>
 
-  <!-- Hero header canale -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-b border-slate-100 dark:border-slate-700">
     <div class="flex items-center gap-4 mb-3">
       <div class="w-16 h-16 flex-shrink-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
@@ -86,11 +114,11 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
           Programmi <span class="text-blue-600">{channel.name}</span> stasera
         </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{dateLabel}</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{dateLabel} · dalle 20:30 alle 02:00</p>
       </div>
     </div>
     <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">
-      Guida TV completa di {channel.name}: tutti i programmi in onda oggi e stasera con orari precisi.
+      Palinsesto serale di {channel.name}: prima serata, seconda serata e programmi fino alle 02:00.
     </p>
 
     {stream && (
@@ -100,7 +128,6 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
         rel="noopener noreferrer"
         class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
       >
-        <!-- play icon -->
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <polygon points="5,3 19,12 5,21"/>
         </svg>
@@ -115,19 +142,20 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
     )}
   </section>
 
-  <!-- Navigazione canali -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
     <ChannelNav currentChannelId={channel.id} />
   </div>
 
-  <!-- Link rapidi -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
     <nav class="flex flex-wrap gap-2 text-xs" aria-label="Navigazione rapida">
-      <a href="/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
-        Tutti i programmi stasera in TV
+      <a href="/stasera" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
+        Tutti i canali stasera
       </a>
       <a href="/film-stasera" class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 transition-colors font-medium">
         Film stasera
+      </a>
+      <a href="/serie-stasera" class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white text-blue-700 dark:text-blue-300 transition-colors font-medium">
+        Serie TV stasera
       </a>
       <a href={`/${channel.id}/domani`} class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
         {channel.name} domani
@@ -135,42 +163,53 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
     </nav>
   </div>
 
-  <!-- Griglia programmi -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
     {programs.length === 0 ? (
       <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-slate-400 dark:text-slate-500">Nessun programma disponibile per {channel.name} oggi.</p>
-        <a href="/" class="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm transition-colors">
-          ← Tutti i programmi stasera in TV
+        <p class="text-slate-400 dark:text-slate-500">Nessun programma serale disponibile per {channel.name} stasera.</p>
+        <a href="/stasera" class="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm transition-colors">
+          ← Tutti i canali stasera
         </a>
       </div>
     ) : (
       <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
-        <HubGrid {programs} {channel} />
+        <HubGrid {programs} {channel} mode="stasera" />
       </div>
     )}
 
-    <!-- Internal links -->
-    <div class="mt-8 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-3 font-medium">Esplora gli altri canali:</p>
-      <nav class="flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label="Altri canali TV">
-        {HUB_CHANNELS.filter(c => c.id !== channel.id).slice(0, 10).map(ch => (
-          <a href={`/${ch.id}`} class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors">
-            Programmi {ch.name} stasera
+    {relatedChannels.length > 0 && (
+      <section class="mt-10" aria-labelledby="related-channel-cards-title">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+          <div>
+            <h2 id="related-channel-cards-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              Cosa c'è stasera sulle altre reti
+            </h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Confronta subito film, serie e programmi in prima serata sugli altri canali principali.
+            </p>
+          </div>
+          <a href="/stasera" class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline shrink-0">
+            Vedi tutti i canali stasera →
           </a>
-        ))}
-        <a href="/" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors font-semibold">
-          Tutti i programmi stasera in TV →
-        </a>
-      </nav>
-    </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {relatedChannels.map(({ channel: relatedChannel, programs: relatedPrograms }) => (
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+              <ChannelCard channel={relatedChannel} programs={relatedPrograms} mode="stasera" />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
 
     <SeoHubLinks
       channels={allChannels}
       currentChannelId={channel.id}
-      title={`Altri programmi TV oltre ${channel.name}`}
-      intro={`Continua la navigazione tra gli hub indicizzabili della guida TV e confronta ${channel.name} con gli altri canali.`}
-      maxChannels={48}
+      title="Altre guide TV"
+      intro="Collegamenti utili per esplorare la guida TV per fascia oraria, categoria e canale."
+      maxChannels={8}
+      compact={true}
     />
   </div>
 

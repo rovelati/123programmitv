@@ -16,6 +16,7 @@
  */
 import type { Channel, Program } from '../types';
 import { absoluteUrl, SITE_ORIGIN } from './urls';
+import { filterStaseraPrograms } from './timeSlots';
 
 const SITE_URL   = SITE_ORIGIN;
 const SITE_NAME  = '123ProgrammiTV';
@@ -355,11 +356,8 @@ export function buildHubChannelJsonLd({
   const resolvedTitle = pageTitle ?? `Programmi ${channel.name} stasera`;
   const pageDesc = pageDescription ?? `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
 
-  // Solo prime time negli eventi strutturati (18-21 UTC = 20-23 Roma)
-  const primeTime = programs.filter(p => {
-    const h = new Date(p.startTime).getUTCHours();
-    return h >= 18 && h <= 21;
-  });
+  // Solo programmi serali coerenti con la pagina canale
+  const primeTime = filterStaseraPrograms(programs);
 
   const broadcastService = broadcastServiceEntity(channel, siteUrl);
 
@@ -406,8 +404,8 @@ export function buildHubChannelJsonLd({
     '@type': 'BreadcrumbList',
     '@id': `${pageUrl}#breadcrumb`,
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home',         item: siteUrl },
-      { '@type': 'ListItem', position: 2, name: channel.name,   item: pageUrl },
+      { '@type': 'ListItem', position: 1, name: 'Programmi stasera', item: absoluteUrl('/stasera', siteUrl) },
+      { '@type': 'ListItem', position: 2, name: channel.name, item: pageUrl },
     ],
   };
 

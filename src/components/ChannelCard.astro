@@ -5,7 +5,7 @@
  * mode = 'stasera' → server-side: prime time 20:30+ (statico, corretto)
  * mode = 'domani'  → server-side: prime time domani o primo dalle 06:00
  */
-import { formatTime, isProgramLive } from '../utils/timeSlots';
+import { formatTime, isProgramLive, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import type { Channel, Program } from '../types';
 
 interface Props {
@@ -14,19 +14,20 @@ interface Props {
   mode?: 'ora' | 'stasera' | 'domani';
 }
 
-const { channel, programs, mode = 'stasera' } = Astro.props;
+const { channel, programs: rawPrograms, mode = 'stasera' } = Astro.props;
 
-// ─── Soglie UTC (CEST = UTC+2) ────────────────────────────────────────────
-const toUTCMin = (t: string) => { const d = new Date(t); return d.getUTCHours() * 60 + d.getUTCMinutes(); };
-const PRIME_START   = 18 * 60 + 30; // 20:30 Roma
-const PRIME_END     = 21 * 60;       // 23:00 Roma
-const MORNING_START = 4 * 60;        // 06:00 Roma
-const EVENING_START = 16 * 60;       // 18:00 Roma
+const programs = mode === 'stasera' ? filterStaseraPrograms(rawPrograms) : rawPrograms;
+
+// ─── Soglie orarie (Europe/Rome) ───────────────────────────────────────────
+const PRIME_START   = 20 * 60 + 30; // 20:30
+const PRIME_END     = 23 * 60;       // 23:00
+const MORNING_START = 6 * 60;        // 06:00
+const EVENING_START = 18 * 60;       // 18:00
 
 // ─── Selezione programma SERVER-SIDE (per stasera/domani) ─────────────────
-const primeTimeProgram = programs.find(p => { const m = toUTCMin(p.startTime); return m >= PRIME_START && m < PRIME_END; }) ?? null;
-const eveningProgram   = programs.find(p => toUTCMin(p.startTime) >= EVENING_START) ?? null;
-const morningFirst     = programs.find(p => toUTCMin(p.startTime) >= MORNING_START) ?? null;
+const primeTimeProgram = programs.find(p => { const m = toRomeMinutes(p.startTime); return m >= PRIME_START && m < PRIME_END; }) ?? null;
+const eveningProgram   = programs.find(p => toRomeMinutes(p.startTime) >= EVENING_START) ?? null;
+const morningFirst     = programs.find(p => toRomeMinutes(p.startTime) >= MORNING_START) ?? null;
 
 let displayProgram: Program | null = null;
 if (mode === 'domani') {
@@ -207,23 +208,23 @@ function esc(value) {
 }
 
 function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programDataJson) {
-  if (!prog) return '<p class="text-xs text-slate-400 italic">Nessun programma</p>';
+  if (!prog) return '<p class="text-xs text-slate-400 dark:text-slate-500 italic">Nessun programma</p>';
 
   const liveBadge = isUpcoming
-    ? `<span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">Prossimo</span>`
+    ? `<span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/60 px-1.5 py-0.5 rounded-full">Prossimo</span>`
     : '';
 
   const barPct = progress + '%';
   const barColor = isLive ? '#3b82f6' : '#cbd5e1';
-  const catHTML = prog.category ? `<span class="uppercase tracking-wide font-bold text-slate-500">${esc(prog.category)}</span>` : '';
+  const catHTML = prog.category ? `<span class="uppercase tracking-wide font-bold text-slate-500 dark:text-slate-400">${esc(prog.category)}</span>` : '';
   const posterHTML = prog.poster_url
-    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 border border-slate-200 flex-shrink-0 shadow-sm" onerror="this.style.display='none'">`
+    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0 shadow-sm" onerror="this.style.display='none'">`
     : '';
   const descriptionHTML = prog.description
-    ? `<p class="text-[13px] text-slate-600 leading-snug line-clamp-2 mt-1">${esc(prog.description)}</p>`
+    ? `<p class="text-[13px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2 mt-1">${esc(prog.description)}</p>`
     : '';
   const nextHTML = nextProg
-    ? `<p class="text-[12px] text-slate-500 truncate"><span class="tabular-nums">${fmtTime(nextProg.startTime)}</span> — <span class="text-slate-700">${esc(nextProg.title)}</span></p>`
+    ? `<p class="text-[12px] text-slate-500 dark:text-slate-400 truncate"><span class="tabular-nums">${fmtTime(nextProg.startTime)}</span> — <span class="text-slate-700 dark:text-slate-300">${esc(nextProg.title)}</span></p>`
     : '';
 
   // data-program attiva l'overlay; escapiamo le virgolette per l'attributo HTML
@@ -235,16 +236,16 @@ function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programData
       <div class="flex gap-2.5">
         ${posterHTML}
         <div class="min-w-0 flex-1">
-          <p class="text-[12px] text-slate-500 mb-0.5 flex items-center gap-1.5 flex-wrap">
+          <p class="text-[12px] text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5 flex-wrap">
             ${liveBadge}
             <span class="tabular-nums font-medium">${fmtTime(prog.startTime)} – ${fmtTime(prog.endTime)}</span>
             ${catHTML}
           </p>
-          <p class="text-[15px] font-extrabold text-slate-950 leading-snug mb-1 line-clamp-2 group-hover:text-blue-600">${esc(prog.title)}</p>
+          <p class="text-[15px] font-extrabold text-slate-950 dark:text-slate-100 leading-snug mb-1 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">${esc(prog.title)}</p>
           ${descriptionHTML}
         </div>
       </div>
-      <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 mb-2">
+      <div class="h-[3px] w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-600 mb-2">
         <div class="h-full rounded-full transition-all" style="width:${barPct};background:${barColor}"></div>
       </div>
       ${nextHTML}
