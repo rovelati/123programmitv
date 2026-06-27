@@ -32,7 +32,9 @@ https://www.123programmitv.it/*  https://123programmitv.it/:splat  301
 /programmi-tv/cielo         /cielo/      301
 
 # Legacy React: /programmi-tv/canale/stasera → hub canale stasera
+/programmi-tv/:canale/stasera/   /:canale/    301
 /programmi-tv/:canale/stasera    /:canale/    301
+/palinsesto/:canale/stasera/     /:canale/    301
 /palinsesto/:canale/stasera      /:canale/    301
 
 /programmi-tv/:canale       /:canale/    301
