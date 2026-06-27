@@ -1,5 +1,13 @@
 User-agent: *
 Allow: /
 
+# Asset statici: non sprecare crawl budget su loghi, JS, CSS e poster.
+Disallow: /channel-logos/
+Disallow: /_astro/
+Disallow: /favicon
+Disallow: /images/
+Disallow: /search-console/
+Disallow: /admin-url-inspection/
+
 # Sitemap principale: solo hub indicizzabili e pagine canale.
 Sitemap: https://123programmitv.it/sitemap-index.xml

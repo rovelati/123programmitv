@@ -64,6 +64,13 @@ async function runValidation() {
   assert(!robots.text.includes('Disallow: /programma/'), 'robots.txt should allow crawling /programma/ for 410 de-indexing', failures);
   assert(robots.text.includes('Sitemap: https://123programmitv.it/sitemap-index.xml'), 'robots.txt should declare sitemap-index.xml', failures);
   assert(!robots.text.includes('sitemap-film.xml'), 'robots.txt should not declare legacy sitemap-film.xml', failures);
+  assert(robots.text.includes('Disallow: /channel-logos/'), 'robots.txt should disallow channel logo assets', failures);
+  assert(robots.text.includes('Disallow: /_astro/'), 'robots.txt should disallow build assets', failures);
+
+  const logoAsset = await fetchText('/channel-logos/italia-1.svg', 'HEAD');
+  console.log(`${logoAsset.status} ${logoAsset.url}`);
+  assert(logoAsset.ok, '/channel-logos/italia-1.svg should remain reachable for browsers', failures);
+  assert(logoAsset.headers.get('x-robots-tag')?.includes('noindex'), 'channel logos should send X-Robots-Tag noindex', failures);
 
   const sitemap = await fetchText('/sitemap-index.xml');
   console.log(`${sitemap.status} ${sitemap.url}`);
