@@ -79,31 +79,21 @@
 /programma/*
   Cache-Control: public, max-age=86400
 
-# Asset statici — noindex + cache lunga (non indicizzare loghi/JS/CSS)
+# Asset statici — cache lunga (loghi SVG/JPG, bundle, poster)
 /channel-logos/*
-  X-Robots-Tag: noindex
   Cache-Control: public, max-age=31536000, immutable
 
 /_astro/*
-  X-Robots-Tag: noindex
   Cache-Control: public, max-age=31536000, immutable
 
 /favicon.svg
-  X-Robots-Tag: noindex
   Cache-Control: public, max-age=604800, immutable
 
 /favicon/*
-  X-Robots-Tag: noindex
-  Cache-Control: public, max-age=604800, immutable
+  Cache-Control: public, max-age=604800
 
 /images/*
-  X-Robots-Tag: noindex
   Cache-Control: public, max-age=86400
 
-/search-console/*
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-# Assets statici — cache lunga
 /og/*
   Cache-Control: public, max-age=86400
