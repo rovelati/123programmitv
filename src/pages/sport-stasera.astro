@@ -93,7 +93,7 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Sport Stasera in TV | Calcio, Tennis e Motori — 123ProgrammiTV`;
+const title       = `Sport Stasera in TV | Calcio, Tennis e Motori — InTVStasera`;
 const description = `Sport stasera in TV: eventi di oggi, calcio, tennis, basket, Formula 1, MotoGP, orari e canali italiani aggiornati.`;
 const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi stasera, partite stasera in tv`;
 ---
@@ -113,13 +113,9 @@ const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi 
     </h1>
     <p class="text-slate-500 dark:text-slate-400 text-sm">{totalSport} eventi sportivi in onda questa sera.</p>
   </section>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
-    <ChannelNav />
-  </div>
-
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-    <nav class="flex flex-wrap gap-2" aria-label="Altre categorie">
+    <ChannelNav />
+    <nav class="flex flex-wrap gap-2 mt-4" aria-label="Altre categorie">
       <a href="/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors">Tutti i programmi stasera</a>
       <a href="/film-stasera" class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 text-xs font-medium transition-colors">Film stasera</a>
       <a href="/serie-stasera" class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white text-blue-700 dark:text-blue-300 text-xs font-medium transition-colors">Serie TV stasera</a>

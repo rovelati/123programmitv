@@ -40,7 +40,7 @@ const dateLabel = program.date ? formatDateIT(program.date) : '';
 
 const schemas = isIndexable ? buildProgramJsonLd({ program, channel }) : [];
 
-const title = `${program.title} — ${channel.name} ${dateLabel} ore ${startLabel} | 123ProgrammiTV`;
+const title = `${program.title} — ${channel.name} ${dateLabel} ore ${startLabel} | InTVStasera`;
 const description = program.description
   ? program.description.slice(0, 155) + (program.description.length > 155 ? '…' : '')
   : `${program.title} in onda su ${channel.name} ${dateLabel} alle ${startLabel}.`;
@@ -164,7 +164,6 @@ const articleSection = isFilm ? 'Film' : isSeries ? 'Serie TV' : 'Programmi TV';
       </section>
     </article>
 
-    <!-- Navigazione canali (link equity verso hub) -->
     <ChannelNav currentChannelId={channel.id} />
 
     <!-- Cross-link ad altri canali -->

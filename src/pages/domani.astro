@@ -28,7 +28,7 @@ const channelsWithPrograms = channels.filter(ch =>
   })
 );
 
-const title       = `Programmi TV Domani | Palinsesto TV Completo — 123ProgrammiTV`;
+const title       = `Programmi TV Domani | Palinsesto TV Completo — InTVStasera`;
 const description = `Programmi TV domani: palinsesto completo dei canali italiani con prima serata, film, serie, sport e orari aggiornati.`;
 const keywords    = `programmi tv domani, guida tv domani, programmi domani sera, palinsesto tv domani, prima serata domani`;
 const schemas = buildHubHomeJsonLd({
@@ -77,9 +77,7 @@ const schemas = buildHubHomeJsonLd({
 
   <!-- LISTA CANALI -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <div class="mb-4">
-      <ChannelNav />
-    </div>
+    <ChannelNav />
 
     <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">
       Guida TV di domani · dalle 06:00

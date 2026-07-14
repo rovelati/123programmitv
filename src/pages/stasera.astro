@@ -31,7 +31,7 @@ const primeTimeCount = channelsWithPrograms.filter(ch =>
   })
 ).length;
 
-const title = `Programmi TV Stasera | Prime Time di Oggi — 123ProgrammiTV`;
+const title = `Programmi TV Stasera | Prime Time di Oggi — InTVStasera`;
 const description = `Programmi TV stasera: prime time di oggi dalle 20:30 su RAI, Mediaset, La7, Sky e canali italiani con orari aggiornati.`;
 const keywords = `programmi tv stasera, programmi stasera, guida tv stasera, prime time tv, stasera in tv`;
 const schemas = buildHubHomeJsonLd({
@@ -80,9 +80,7 @@ const schemas = buildHubHomeJsonLd({
 
   <!-- ─── LISTA CANALI ─── -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <div class="mb-4">
-      <ChannelNav />
-    </div>
+    <ChannelNav />
 
     <!-- Filtri rapidi categorie -->
     <nav class="flex flex-wrap gap-2 mb-5" aria-label="Categorie">

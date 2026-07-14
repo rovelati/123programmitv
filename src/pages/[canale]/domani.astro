@@ -39,7 +39,7 @@ interface Props {
 const { channel, programs, allChannels, tomorrow } = Astro.props;
 const dateLabel = formatDateIT(tomorrow);
 
-const title       = `Programmi ${channel.name} Domani | Palinsesto e Guida TV — 123ProgrammiTV`;
+const title       = `Programmi ${channel.name} Domani | Palinsesto e Guida TV — InTVStasera`;
 const description = `Programmi ${channel.name} domani: palinsesto completo con orari, prima serata, film, serie TV e programmi in onda.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} domani, ${channel.name.toLowerCase()} domani, guida tv ${channel.name.toLowerCase()} domani`;
 const canonicalPath = `/${channel.id}/domani`;
@@ -92,14 +92,10 @@ const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
     </p>
   </section>
 
-  <!-- Navigazione canali -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
-    <ChannelNav currentChannelId={channel.id} />
-  </div>
-
   <!-- Link rapidi -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-    <nav class="flex flex-wrap gap-2 text-xs" aria-label="Navigazione rapida">
+    <ChannelNav currentChannelId={channel.id} />
+    <nav class="flex flex-wrap gap-2 text-xs mt-4" aria-label="Navigazione rapida">
       <a href={`/${channel.id}`} class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
         ← {channel.name} stasera
       </a>

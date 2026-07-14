@@ -1,27 +1,24 @@
 ---
 import { HUB_CHANNELS } from '../utils/channelSlug';
-import type { Channel } from '../types';
 
 interface Props {
   currentChannelId?: string;
-  allChannels?: Channel[];
 }
 
 const { currentChannelId } = Astro.props;
-const channels = HUB_CHANNELS;
 ---
 
-<nav class="overflow-x-auto scrollbar-none bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 mb-6 shadow-sm" aria-label="Navigazione canali TV">
+<nav class="overflow-x-auto scrollbar-none bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-600 mb-6 shadow-sm" aria-label="Navigazione canali TV">
   <ul class="flex items-center gap-1 p-2" role="list">
     <li class="flex-shrink-0">
-      <a href="/" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+      <a href="/" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-slate-500 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/80">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
           <path d="M6 1L1 5.5V11h3.5V7.5h3V11H11V5.5L6 1Z"/>
         </svg>
         Tutti
       </a>
     </li>
-    {channels.map(ch => (
+    {HUB_CHANNELS.map(ch => (
       <li class="flex-shrink-0">
         <a
           href={`/${ch.id}`}
@@ -30,7 +27,7 @@ const channels = HUB_CHANNELS;
             'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap',
             ch.id === currentChannelId
               ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700',
+              : 'text-slate-500 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/80',
           ]}
         >
           {ch.name}
