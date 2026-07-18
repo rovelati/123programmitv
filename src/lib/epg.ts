@@ -174,6 +174,13 @@ function resolvePosterUrl(url: string | null): string | null {
     try {
       const parsed = new URL(trimmed);
       const host = parsed.hostname.replace(/^www\./, '');
+      // Same-origin path: evita SSL rotto su 123programmitv.it e hotlink flaky
+      if (
+        (host === '123programmitv.it' || host === 'intvstasera.it')
+        && parsed.pathname.startsWith('/images/programs/')
+      ) {
+        return parsed.pathname;
+      }
       if (host === '123programmitv.it' || host === 'intvstasera.it') {
         parsed.protocol = 'https:';
         parsed.hostname = 'www.intvstasera.it';
