@@ -335,8 +335,23 @@ const { candidates, pageSlot = 'stasera' } = Astro.props;
         .map((r, idx) => {
           const isSaved = savedIds.has(r.id);
           const poster = r.poster_url
-            ? `<img src="${escapeAttr(r.poster_url)}" alt="" width="64" height="96" class="w-14 h-[5.25rem] object-cover rounded-lg" loading="lazy" />`
-            : `<div class="w-14 h-[5.25rem] rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center p-1"><img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" /></div>`;
+            ? `<div class="w-14 h-[5.25rem] flex-shrink-0 relative">
+                <img
+                  src="${escapeAttr(r.poster_url)}"
+                  alt=""
+                  width="64"
+                  height="96"
+                  class="spt-poster w-14 h-[5.25rem] object-cover rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600"
+                  loading="lazy"
+                  data-fallback="${escapeAttr(r.channelLogo)}"
+                />
+                <div class="spt-logo-fallback hidden w-14 h-[5.25rem] rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
+                  <img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" />
+                </div>
+              </div>`
+            : `<div class="w-14 h-[5.25rem] flex-shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
+                <img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" />
+              </div>`;
           return `
           <article
             class="spt-card flex gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800/80 p-3 shadow-sm"
@@ -368,6 +383,15 @@ const { candidates, pageSlot = 'stasera' } = Astro.props;
           </article>`;
         })
         .join('');
+
+      recsEl.querySelectorAll('img.spt-poster').forEach((img) => {
+        img.addEventListener('error', () => {
+          const el = img as HTMLImageElement;
+          el.classList.add('hidden');
+          const fallback = el.parentElement?.querySelector('.spt-logo-fallback');
+          if (fallback) fallback.classList.remove('hidden');
+        });
+      });
 
       ranked.forEach((r, idx) => {
         track('rec_impression', {

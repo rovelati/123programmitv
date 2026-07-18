@@ -155,15 +155,37 @@ interface RawProgram {
   indexable: boolean | null;
 }
 
+const SITE_ORIGIN = 'https://www.intvstasera.it';
+
 /** Risolve le poster_url relative in URL assoluti.
- * Lo scraper RaiPlay salva /dl/img/... senza dominio → risolvono su 123programmitv.it → 404.
- * Prefissiamo con www.rai.it che è il CDN originale di quelle immagini.
+ * - /dl/img/... (RaiPlay) → CDN rai.it
+ * - host legacy 123programmitv.it → intvstasera.it (SSL/redirect spezza le <img> in browser)
+ * - path /images/programs/... → origin del sito
  */
 function resolvePosterUrl(url: string | null): string | null {
   if (!url) return null;
-  if (url.startsWith('http')) return url;          // già assoluto
-  if (url.startsWith('/dl/img/')) return `https://www.rai.it${url}`;  // RAI
-  return url;                                      // altri relativi: lasciamo stare
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith('/dl/img/')) return `https://www.rai.it${trimmed}`;
+  if (trimmed.startsWith('/images/programs/')) return `${SITE_ORIGIN}${trimmed}`;
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    try {
+      const parsed = new URL(trimmed);
+      const host = parsed.hostname.replace(/^www\./, '');
+      if (host === '123programmitv.it' || host === 'intvstasera.it') {
+        parsed.protocol = 'https:';
+        parsed.hostname = 'www.intvstasera.it';
+        return parsed.toString();
+      }
+      return trimmed;
+    } catch {
+      return null;
+    }
+  }
+
+  return trimmed;
 }
 
 function cleanProgramTitle(title: string): string {
