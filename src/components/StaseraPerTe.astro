@@ -1,0 +1,533 @@
+---
+/**
+ * Blocco prodotto cliente: onboarding preferenze + "Stasera per te" + salvati.
+ * Non altera H1/URL SEO: va sotto l'hero.
+ */
+import type { RecCandidate } from '../utils/eveningPrefs';
+import {
+  GENRE_OPTIONS,
+  MOOD_OPTIONS,
+  ONBOARDING_CHANNELS,
+} from '../utils/eveningPrefs';
+
+interface Props {
+  candidates: RecCandidate[];
+  pageSlot?: 'ora' | 'stasera';
+}
+
+const { candidates, pageSlot = 'stasera' } = Astro.props;
+---
+
+<section
+  id="stasera-per-te"
+  class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-6 border-b border-slate-200 dark:border-slate-700"
+  data-slot={pageSlot}
+  data-candidates={JSON.stringify(candidates)}
+  aria-label="Stasera per te"
+>
+  <!-- Onboarding -->
+  <div id="spt-onboarding" class="hidden mb-6 rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/30 p-4 sm:p-5">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div>
+        <p class="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">La tua serata</p>
+        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+          In 3 tap, scegliamo cosa guardare
+        </h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          Niente account. Solo preferenze sul tuo dispositivo.
+        </p>
+      </div>
+      <button
+        type="button"
+        id="spt-skip"
+        class="shrink-0 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline"
+      >
+        Salta
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">1 · Generi</p>
+        <div class="flex flex-wrap gap-2" id="spt-genres" role="group" aria-label="Generi preferiti">
+          {GENRE_OPTIONS.map((g) => (
+            <button
+              type="button"
+              data-genre={g.id}
+              class="spt-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-blue-500 transition-colors"
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">2 · Canali che hai</p>
+        <div class="flex flex-wrap gap-2" id="spt-channels" role="group" aria-label="Canali preferiti">
+          {ONBOARDING_CHANNELS.map((ch) => (
+            <button
+              type="button"
+              data-channel={ch.id}
+              class="spt-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-blue-500 transition-colors"
+            >
+              {ch.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">3 · Mood stasera</p>
+        <div class="flex flex-wrap gap-2" id="spt-moods" role="group" aria-label="Mood">
+          {MOOD_OPTIONS.map((m) => (
+            <button
+              type="button"
+              data-mood={m.id}
+              class="spt-chip px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-blue-500 transition-colors"
+              title={m.hint}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 pt-1">
+        <button
+          type="button"
+          id="spt-save-prefs"
+          class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-colors"
+        >
+          Mostra la mia serata
+        </button>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Puoi cambiare dopo dai consigli.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raccomandazioni -->
+  <div id="spt-recs-wrap">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div>
+        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+          Stasera per te
+        </h2>
+        <p id="spt-recs-sub" class="text-sm text-slate-500 dark:text-slate-400">
+          3–5 scelte rapide, non 132 canali
+        </p>
+      </div>
+      <button
+        type="button"
+        id="spt-edit-prefs"
+        class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        Preferenze
+      </button>
+    </div>
+    <div id="spt-recs" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+  </div>
+
+  <!-- Salvati -->
+  <div id="spt-saved-wrap" class="hidden mt-6">
+    <h3 class="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-2">Salvati per stasera</h3>
+    <ul id="spt-saved" class="space-y-2"></ul>
+  </div>
+</section>
+
+<style>
+  .spt-chip.is-on {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+  }
+  :global(.dark) .spt-chip.is-on {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+  }
+</style>
+
+<script>
+  import {
+    ANON_KEY,
+    PREFS_KEY,
+    SAVED_KEY,
+    rankForYou,
+    type EveningGenre,
+    type EveningMood,
+    type EveningPrefs,
+    type RecCandidate,
+    type SavedProgram,
+  } from '../utils/eveningPrefs';
+
+  function track(event: string, props: Record<string, unknown> = {}) {
+    const payload = { event, ...props, ts: Date.now() };
+    try {
+      const w = window as Window & { dataLayer?: unknown[]; plausible?: (n: string, o?: { props?: object }) => void };
+      w.dataLayer = w.dataLayer || [];
+      w.dataLayer.push(payload);
+      if (typeof w.plausible === 'function') w.plausible(event, { props });
+    } catch {
+      /* ignore */
+    }
+    if (import.meta.env.DEV) console.debug('[spt]', payload);
+  }
+
+  function getAnonId(): string {
+    try {
+      let id = localStorage.getItem(ANON_KEY);
+      if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem(ANON_KEY, id);
+      }
+      return id;
+    } catch {
+      return 'anon';
+    }
+  }
+
+  function loadPrefs(): EveningPrefs | null {
+    try {
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as EveningPrefs;
+    } catch {
+      return null;
+    }
+  }
+
+  function savePrefs(prefs: EveningPrefs) {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  }
+
+  function loadSaved(): SavedProgram[] {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw) as SavedProgram[];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveSaved(items: SavedProgram[]) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(items.slice(0, 20)));
+  }
+
+  function fmtTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('it-IT', {
+      timeZone: 'Europe/Rome',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  }
+
+  function chipToggle(btn: HTMLElement, on: boolean) {
+    btn.classList.toggle('is-on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  const root = document.getElementById('stasera-per-te');
+  if (!root) {
+    /* pagina senza blocco */
+  } else {
+    const pageSlot = root.dataset.slot || 'stasera';
+    let candidates: RecCandidate[] = [];
+    try {
+      candidates = JSON.parse(root.dataset.candidates || '[]') as RecCandidate[];
+    } catch {
+      candidates = [];
+    }
+
+    const onboarding = document.getElementById('spt-onboarding')!;
+    const recsEl = document.getElementById('spt-recs')!;
+    const recsSub = document.getElementById('spt-recs-sub')!;
+    const savedWrap = document.getElementById('spt-saved-wrap')!;
+    const savedEl = document.getElementById('spt-saved')!;
+    const anonId = getAnonId();
+
+    const selectedGenres = new Set<EveningGenre>();
+    const selectedChannels = new Set<string>();
+    let selectedMood: EveningMood | null = null;
+
+    function hydrateChipsFromPrefs(prefs: EveningPrefs | null) {
+      selectedGenres.clear();
+      selectedChannels.clear();
+      selectedMood = null;
+      document.querySelectorAll('#spt-genres .spt-chip').forEach((el) => chipToggle(el as HTMLElement, false));
+      document.querySelectorAll('#spt-channels .spt-chip').forEach((el) => chipToggle(el as HTMLElement, false));
+      document.querySelectorAll('#spt-moods .spt-chip').forEach((el) => chipToggle(el as HTMLElement, false));
+      if (!prefs) return;
+      prefs.genres.forEach((g) => {
+        selectedGenres.add(g);
+        const btn = document.querySelector(`#spt-genres [data-genre="${g}"]`);
+        if (btn) chipToggle(btn as HTMLElement, true);
+      });
+      prefs.channels.forEach((id) => {
+        selectedChannels.add(id);
+        const btn = document.querySelector(`#spt-channels [data-channel="${id}"]`);
+        if (btn) chipToggle(btn as HTMLElement, true);
+      });
+      if (prefs.mood) {
+        selectedMood = prefs.mood;
+        const btn = document.querySelector(`#spt-moods [data-mood="${prefs.mood}"]`);
+        if (btn) chipToggle(btn as HTMLElement, true);
+      }
+    }
+
+    function renderSaved() {
+      const items = loadSaved().filter((s) => new Date(s.endTime).getTime() > Date.now());
+      if (!items.length) {
+        savedWrap.classList.add('hidden');
+        savedEl.innerHTML = '';
+        return;
+      }
+      savedWrap.classList.remove('hidden');
+      savedEl.innerHTML = items
+        .map(
+          (s) => `
+        <li class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800/80 px-3 py-2">
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(s.title)}</p>
+            <p class="text-xs text-slate-500">${escapeHtml(s.channelName)} · ${fmtTime(s.startTime)}</p>
+          </div>
+          <button type="button" data-unsave="${escapeAttr(s.id)}" class="text-xs font-semibold text-slate-500 hover:text-red-600">Rimuovi</button>
+        </li>`,
+        )
+        .join('');
+      savedEl.querySelectorAll('[data-unsave]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = (btn as HTMLElement).dataset.unsave!;
+          saveSaved(loadSaved().filter((x) => x.id !== id));
+          renderSaved();
+          renderRecs();
+        });
+      });
+    }
+
+    function escapeHtml(s: string) {
+      return s.replace(/[&<>"']/g, (ch) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!,
+      );
+    }
+    function escapeAttr(s: string) {
+      return escapeHtml(s);
+    }
+
+    function renderRecs() {
+      const prefs = loadPrefs();
+      const ranked = rankForYou(candidates, prefs, 5);
+      const savedIds = new Set(loadSaved().map((s) => s.id));
+
+      if (!ranked.length) {
+        recsEl.innerHTML =
+          '<p class="text-sm text-slate-500 col-span-full py-4">Nessun consiglio disponibile al momento. Esplora i canali sotto.</p>';
+        return;
+      }
+
+      recsSub.textContent = prefs && !prefs.skipped && (prefs.genres.length || prefs.channels.length || prefs.mood)
+        ? 'Selezionate in base alle tue preferenze'
+        : 'Prime scelte di stasera — personalizza con Preferenze';
+
+      recsEl.innerHTML = ranked
+        .map((r, idx) => {
+          const isSaved = savedIds.has(r.id);
+          const poster = r.poster_url
+            ? `<img src="${escapeAttr(r.poster_url)}" alt="" width="64" height="96" class="w-14 h-[5.25rem] object-cover rounded-lg" loading="lazy" />`
+            : `<div class="w-14 h-[5.25rem] rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center p-1"><img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" /></div>`;
+          return `
+          <article
+            class="spt-card flex gap-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800/80 p-3 shadow-sm"
+            data-program-id="${escapeAttr(r.id)}"
+            data-rank="${idx + 1}"
+            data-reason="${escapeAttr(r.reason)}"
+          >
+            ${poster}
+            <div class="min-w-0 flex-1 flex flex-col">
+              <p class="text-[11px] font-semibold text-slate-500 mb-0.5">
+                ${escapeHtml(r.channelName)} · ${fmtTime(r.startTime)}–${fmtTime(r.endTime)}
+                <span class="text-blue-600 dark:text-blue-400"> · ${escapeHtml(r.reason)}</span>
+              </p>
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 mb-2">${escapeHtml(r.title)}</h3>
+              <div class="mt-auto flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  class="spt-save px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isSaved ? 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700'}"
+                  data-save-id="${escapeAttr(r.id)}"
+                >${isSaved ? 'Salvato' : 'Salva'}</button>
+                <button
+                  type="button"
+                  class="spt-nope px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  data-nope="${escapeAttr(r.id)}"
+                >Non mi interessa</button>
+                <a href="/${escapeAttr(r.channelId)}" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline self-center">Canale →</a>
+              </div>
+            </div>
+          </article>`;
+        })
+        .join('');
+
+      ranked.forEach((r, idx) => {
+        track('rec_impression', {
+          program_id: r.id,
+          rank: idx + 1,
+          reason: r.reason,
+          slot: pageSlot,
+          anon_id: anonId,
+        });
+      });
+
+      recsEl.querySelectorAll('.spt-card').forEach((card) => {
+        card.addEventListener('click', (e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('button, a')) return;
+          track('rec_click', {
+            program_id: (card as HTMLElement).dataset.programId,
+            rank: Number((card as HTMLElement).dataset.rank),
+            slot: pageSlot,
+            anon_id: anonId,
+          });
+        });
+      });
+
+      recsEl.querySelectorAll('.spt-save').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = (btn as HTMLElement).dataset.saveId;
+          const r = candidates.find((c) => c.id === id);
+          if (!r) return;
+          const list = loadSaved().filter((x) => x.id !== r.id);
+          list.unshift({
+            id: r.id,
+            title: r.title,
+            channelId: r.channelId,
+            channelName: r.channelName,
+            startTime: r.startTime,
+            endTime: r.endTime,
+            category: r.category,
+            savedAt: new Date().toISOString(),
+          });
+          saveSaved(list);
+          track('plan_save', {
+            program_id: r.id,
+            slot: pageSlot,
+            anon_id: anonId,
+          });
+          renderSaved();
+          renderRecs();
+        });
+      });
+
+      recsEl.querySelectorAll('.spt-nope').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = (btn as HTMLElement).dataset.nope!;
+          const key = 'intv_evening_nope_v1';
+          let nope: string[] = [];
+          try {
+            nope = JSON.parse(localStorage.getItem(key) || '[]');
+          } catch {
+            nope = [];
+          }
+          if (!nope.includes(id)) nope.push(id);
+          localStorage.setItem(key, JSON.stringify(nope.slice(-100)));
+          track('negative_feedback', { program_id: id, slot: pageSlot, anon_id: anonId });
+          candidates = candidates.filter((c) => c.id !== id);
+          root.dataset.candidates = JSON.stringify(candidates);
+          renderRecs();
+        });
+      });
+    }
+
+    function showOnboarding(show: boolean) {
+      onboarding.classList.toggle('hidden', !show);
+    }
+
+    // Chip handlers
+    document.querySelectorAll('#spt-genres .spt-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.genre as EveningGenre;
+        if (selectedGenres.has(id)) selectedGenres.delete(id);
+        else selectedGenres.add(id);
+        chipToggle(btn as HTMLElement, selectedGenres.has(id));
+      });
+    });
+    document.querySelectorAll('#spt-channels .spt-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.channel!;
+        if (selectedChannels.has(id)) selectedChannels.delete(id);
+        else selectedChannels.add(id);
+        chipToggle(btn as HTMLElement, selectedChannels.has(id));
+      });
+    });
+    document.querySelectorAll('#spt-moods .spt-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.mood as EveningMood;
+        selectedMood = selectedMood === id ? null : id;
+        document.querySelectorAll('#spt-moods .spt-chip').forEach((el) => {
+          chipToggle(el as HTMLElement, (el as HTMLElement).dataset.mood === selectedMood);
+        });
+      });
+    });
+
+    document.getElementById('spt-save-prefs')?.addEventListener('click', () => {
+      const prefs: EveningPrefs = {
+        genres: [...selectedGenres],
+        channels: [...selectedChannels],
+        mood: selectedMood,
+        skipped: false,
+        updatedAt: new Date().toISOString(),
+      };
+      savePrefs(prefs);
+      track('onboarding_completed', {
+        genres: prefs.genres,
+        channels: prefs.channels,
+        mood: prefs.mood,
+        skipped: false,
+        slot: pageSlot,
+        anon_id: anonId,
+      });
+      showOnboarding(false);
+      renderRecs();
+    });
+
+    document.getElementById('spt-skip')?.addEventListener('click', () => {
+      const prefs: EveningPrefs = {
+        genres: [],
+        channels: [],
+        mood: null,
+        skipped: true,
+        updatedAt: new Date().toISOString(),
+      };
+      savePrefs(prefs);
+      track('onboarding_completed', { skipped: true, slot: pageSlot, anon_id: anonId });
+      showOnboarding(false);
+      renderRecs();
+    });
+
+    document.getElementById('spt-edit-prefs')?.addEventListener('click', () => {
+      hydrateChipsFromPrefs(loadPrefs());
+      showOnboarding(true);
+      onboarding.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    // Filter nope from candidates
+    try {
+      const nope: string[] = JSON.parse(localStorage.getItem('intv_evening_nope_v1') || '[]');
+      if (nope.length) candidates = candidates.filter((c) => !nope.includes(c.id));
+    } catch {
+      /* ignore */
+    }
+
+    const prefs = loadPrefs();
+    if (!prefs) {
+      showOnboarding(true);
+      track('onboarding_shown', { variant: 'v1', slot: pageSlot, anon_id: anonId });
+    } else {
+      showOnboarding(false);
+    }
+    hydrateChipsFromPrefs(prefs);
+    renderRecs();
+    renderSaved();
+  }
+</script>

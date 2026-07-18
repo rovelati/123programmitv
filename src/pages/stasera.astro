@@ -4,10 +4,12 @@ export const prerender = true;
 import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
+import StaseraPerTe from '../components/StaseraPerTe.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
+import { buildEveningCandidates } from '../utils/eveningPrefs';
 
 const today = getTodayInRome();
 const dateLabel = formatDateIT(today);
@@ -41,6 +43,7 @@ const schemas = buildHubHomeJsonLd({
   pageTitle: 'Programmi TV stasera',
   pageDescription: description,
 });
+const eveningCandidates = buildEveningCandidates(channels, programs);
 ---
 
 <HubLayout {title} {description} {keywords} canonicalPath="/stasera" {schemas}>
@@ -77,6 +80,8 @@ const schemas = buildHubHomeJsonLd({
 
     </div>
   </section>
+
+  <StaseraPerTe candidates={eveningCandidates} pageSlot="stasera" />
 
   <!-- ─── LISTA CANALI ─── -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
