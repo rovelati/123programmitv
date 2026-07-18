@@ -70,6 +70,14 @@ jobs:
             dist/client/images/programs/ \
             || echo "WARNING: program image sync failed — continuing deploy without updated posters."
 
+      - name: Mirror missing TMDB posters from programmecesoir.fr
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MIRROR_TMDB_LIMIT: 120
+        run: node scripts/mirror-missing-tmdb-posters.mjs
+
       - name: Bundle Cloudflare Functions
         run: cp -R functions dist/client/functions
 

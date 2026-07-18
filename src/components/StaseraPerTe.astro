@@ -387,6 +387,14 @@ const { candidates, pageSlot = 'stasera' } = Astro.props;
       recsEl.querySelectorAll('img.spt-poster').forEach((img) => {
         img.addEventListener('error', () => {
           const el = img as HTMLImageElement;
+          const pathMatch = (el.getAttribute('src') || el.src).match(/\/images\/programs\/tmdb\/(\d+\.jpg)/i);
+          // 1) mirror sibling CDN se il file non è su intvstasera
+          if (pathMatch && el.dataset.mirror !== '1') {
+            el.dataset.mirror = '1';
+            el.src = `https://programmecesoir.fr/images/programs/tmdb/${pathMatch[1]}`;
+            return;
+          }
+          // 2) logo canale
           el.classList.add('hidden');
           const fallback = el.parentElement?.querySelector('.spt-logo-fallback');
           if (fallback) fallback.classList.remove('hidden');
