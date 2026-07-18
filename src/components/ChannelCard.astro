@@ -207,7 +207,7 @@ function esc(value) {
     .replace(/'/g, '&#39;');
 }
 
-function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programDataJson) {
+function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programDataJson, channelLogo = '') {
   if (!prog) return '<p class="text-xs text-slate-400 dark:text-slate-500 italic">Nessun programma</p>';
 
   const liveBadge = isUpcoming
@@ -217,8 +217,9 @@ function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programData
   const barPct = progress + '%';
   const barColor = isLive ? '#3b82f6' : '#cbd5e1';
   const catHTML = prog.category ? `<span class="uppercase tracking-wide font-bold text-slate-500 dark:text-slate-400">${esc(prog.category)}</span>` : '';
+  const logoFallback = esc(channelLogo);
   const posterHTML = prog.poster_url
-    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0 shadow-sm" onerror="(function(img){var m=(img.getAttribute('src')||'').match(/tmdb\\/(\\d+\\.jpg)/i);if(m&&img.dataset.mirror!=='1'){img.dataset.mirror='1';img.src='https://programmecesoir.fr/images/programs/tmdb/'+m[1];return;}img.onerror=null;img.src='${esc(channel.logo)}';img.className='w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-contain p-1.5 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0';})(this)">`
+    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0 shadow-sm" onerror="(function(img){var m=(img.getAttribute('src')||'').match(/tmdb\\/(\\d+\\.jpg)/i);if(m&&img.dataset.mirror!=='1'){img.dataset.mirror='1';img.src='https://programmecesoir.fr/images/programs/tmdb/'+m[1];return;}img.onerror=null;img.src='${logoFallback}';img.className='w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-contain p-1.5 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0';})(this)">`
     : '';
   const descriptionHTML = prog.description
     ? `<p class="text-[13px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2 mt-1">${esc(prog.description)}</p>`
@@ -256,60 +257,67 @@ function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programData
 function updateOraCards() {
   const now = Date.now();
   document.querySelectorAll('.ora-card').forEach(card => {
-    const contentEl = card.querySelector('.ora-program-content');
-    if (!contentEl) return;
+    try {
+      const contentEl = card.querySelector('.ora-program-content');
+      if (!contentEl) return;
 
-    // Il JSON è nell'attributo data-programs (Astro valuta gli attributi, non il contenuto dei <script>)
-    let programs = [];
-    try { programs = JSON.parse(contentEl.dataset.programs || '[]'); } catch(e) { return; }
-    if (!programs.length) return;
+      // Il JSON è nell'attributo data-programs (Astro valuta gli attributi, non il contenuto dei <script>)
+      let programs = [];
+      try { programs = JSON.parse(contentEl.dataset.programs || '[]'); } catch(e) { return; }
+      if (!programs.length) {
+        contentEl.innerHTML = '<p class="text-xs text-slate-400 dark:text-slate-500 italic">Nessun programma</p>';
+        return;
+      }
 
-    // Dati canale salvati sul <a> (data-channel-*)
-    const channelId   = card.dataset.channelId   || '';
-    const channelLogo = card.dataset.channelLogo  || '';
-    const channelName = card.dataset.channelName  || '';
+      // Dati canale salvati sul <a> (data-channel-*)
+      const channelId   = card.dataset.channelId   || '';
+      const channelLogo = card.dataset.channelLogo  || '';
+      const channelName = card.dataset.channelName  || '';
 
-    const live = programs.find(p => new Date(p.startTime).getTime() <= now && now < new Date(p.endTime).getTime()) || null;
-    const justStarted = programs
-      .filter(p => new Date(p.startTime).getTime() <= now)
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())[0] || null;
-    const upcoming = programs
-      .filter(p => new Date(p.startTime).getTime() > now)
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] || null;
+      const live = programs.find(p => new Date(p.startTime).getTime() <= now && now < new Date(p.endTime).getTime()) || null;
+      const justStarted = programs
+        .filter(p => new Date(p.startTime).getTime() <= now)
+        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())[0] || null;
+      const upcoming = programs
+        .filter(p => new Date(p.startTime).getTime() > now)
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] || null;
 
-    const display = live || justStarted || upcoming || null;
-    const isLive = !!live;
-    const isUpcoming = !live && !justStarted && !!upcoming;
+      const display = live || justStarted || upcoming || null;
+      const isLive = !!live;
+      const isUpcoming = !live && !justStarted && !!upcoming;
 
-    let progress = 0;
-    if (isLive && display) {
-      const s = new Date(display.startTime).getTime();
-      const e = new Date(display.endTime).getTime();
-      progress = Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
+      let progress = 0;
+      if (isLive && display) {
+        const s = new Date(display.startTime).getTime();
+        const e = new Date(display.endTime).getTime();
+        progress = Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
+      }
+
+      const nextProg = display
+        ? (programs.find(p => new Date(p.startTime).getTime() >= new Date(display.endTime).getTime()) || null)
+        : null;
+
+      // Costruisci il JSON per l'overlay
+      let programDataJson = null;
+      if (display) {
+        programDataJson = JSON.stringify({
+          id:          display.id,
+          title:       display.title,
+          startTime:   display.startTime,
+          endTime:     display.endTime,
+          category:    display.category    || '',
+          description: display.description || '',
+          poster_url:  display.poster_url  || null,
+          channelId,
+          channelLogo,
+          channelName,
+        });
+      }
+
+      contentEl.innerHTML = buildCardHTML(display, nextProg, isLive, isUpcoming, progress, programDataJson, channelLogo);
+    } catch (err) {
+      console.warn('[ora-card]', err);
     }
-
-    const nextProg = display
-      ? (programs.find(p => new Date(p.startTime).getTime() >= new Date(display.endTime).getTime()) || null)
-      : null;
-
-    // Costruisci il JSON per l'overlay
-    let programDataJson = null;
-    if (display) {
-      programDataJson = JSON.stringify({
-        id:          display.id,
-        title:       display.title,
-        startTime:   display.startTime,
-        endTime:     display.endTime,
-        category:    display.category    || '',
-        description: display.description || '',
-        poster_url:  display.poster_url  || null,
-        channelId,
-        channelLogo,
-        channelName,
-      });
-    }
-
-    contentEl.innerHTML = buildCardHTML(display, nextProg, isLive, isUpcoming, progress, programDataJson);
   });
 }
 
