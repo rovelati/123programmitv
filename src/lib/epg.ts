@@ -28,9 +28,13 @@ function getPgPool() {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) return null;
   if (!pgPool) {
+    const local =
+      databaseUrl.includes('127.0.0.1') ||
+      databaseUrl.includes('localhost') ||
+      databaseUrl.includes('@postgres:');
     pgPool = new Pool({
       connectionString: databaseUrl,
-      ssl: { rejectUnauthorized: false },
+      ssl: local ? false : { rejectUnauthorized: false },
       max: 3,
     });
   }
