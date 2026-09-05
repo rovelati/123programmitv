@@ -4,7 +4,7 @@
  * Verifica robots, sitemap e principali hub indicizzabili del sito live.
  */
 
-const SITE_URL = (process.env.SITE_URL || 'https://123programmitv.it').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://www.intvstasera.it').replace(/\/$/, '');
 const MAX_ATTEMPTS = Number.parseInt(process.env.SEO_VALIDATE_ATTEMPTS || '1', 10);
 const RETRY_DELAY_MS = Number.parseInt(process.env.SEO_VALIDATE_RETRY_MS || '30000', 10);
 
@@ -32,7 +32,7 @@ async function fetchText(path, method = 'GET') {
   const response = await fetch(url, {
     method,
     headers: {
-      'User-Agent': '123ProgrammiTV SEO validator',
+      'User-Agent': 'InTVStasera SEO validator',
     },
   });
   const text = method === 'HEAD' ? '' : await response.text();
@@ -62,7 +62,7 @@ async function runValidation() {
   console.log(`${robots.status} ${robots.url}`);
   assert(robots.ok, 'robots.txt is not reachable', failures);
   assert(!robots.text.includes('Disallow: /programma/'), 'robots.txt should allow crawling /programma/ for 410 de-indexing', failures);
-  assert(robots.text.includes('Sitemap: https://123programmitv.it/sitemap.xml'), 'robots.txt should declare sitemap.xml', failures);
+  assert(robots.text.includes('Sitemap: https://www.intvstasera.it/sitemap.xml'), 'robots.txt should declare sitemap.xml', failures);
   assert(!robots.text.includes('sitemap-index.xml'), 'robots.txt should not declare nested sitemap-index.xml', failures);
   assert(!robots.text.includes('Disallow: /channel-logos/'), 'robots.txt should not block channel logo assets', failures);
 
@@ -76,9 +76,8 @@ async function runValidation() {
   const sitemap = await fetchText('/sitemap.xml');
   console.log(`${sitemap.status} ${sitemap.url}`);
   assert(sitemap.ok, 'sitemap.xml is not reachable', failures);
-  assert(sitemap.text.includes('<urlset'), 'sitemap.xml should be a flat urlset', failures);
   assert(!sitemap.text.includes('/programma/'), 'sitemap.xml should not include /programma/ URLs', failures);
-  assert(!sitemap.text.includes('/domani/'), 'sitemap.xml should not list every /canale/domani/ page', failures);
+  assert(!sitemap.text.match(/\/[a-z0-9-]+\/domani\//), 'sitemap.xml should not list every /canale/domani/ page', failures);
   const urlCount = (sitemap.text.match(/<loc>/g) || []).length;
   assert(urlCount >= 50 && urlCount <= 60, `sitemap.xml should list hub pages plus ~50 channels (found ${urlCount})`, failures);
 

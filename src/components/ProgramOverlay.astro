@@ -265,8 +265,8 @@
     const endFmt      = fmt(prog.endTime);
     const streamUrl   = prog.channelId ? STREAMS[prog.channelId] : null;
     const moreInfoUrl = prog.channelId
-      ? `https://123programmitv.it/${prog.channelId}`
-      : 'https://123programmitv.it';
+      ? `https://www.intvstasera.it/${prog.channelId}`
+      : 'https://www.intvstasera.it';
 
     const parts = [
       `📺 ${channelName} · dalle ${startFmt} alle ${endFmt}`,
@@ -285,7 +285,7 @@
     parts.push('');
     parts.push(`ℹ️ Per maggiori informazioni: ${moreInfoUrl}`);
     parts.push('');
-    parts.push('📅 123ProgrammiTV — guida TV italiana');
+    parts.push('📅 In TV Stasera — guida TV italiana');
 
     return parts.join('\n');
   }
@@ -295,7 +295,7 @@
     const start     = toICSDate(prog.startTime);
     const end       = toICSDate(prog.endTime);
     const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
-    const location  = streamUrl || `https://123programmitv.it/${prog.channelId || ''}`;
+    const location  = streamUrl || `https://www.intvstasera.it/${prog.channelId || ''}`;
 
     const params = new URLSearchParams({
       action: 'TEMPLATE',
@@ -319,11 +319,11 @@
     const start     = toICSDate(prog.startTime);
     const end       = toICSDate(prog.endTime);
     const stamp     = toICSDate(new Date().toISOString());
-    const uid       = `${prog.id || Date.now()}@123programmitv.it`;
+    const uid       = `${prog.id || Date.now()}@intvstasera.it`;
     const streamUrl = prog.channelId ? STREAMS[prog.channelId] : null;
     const moreInfoUrl = prog.channelId
-      ? `https://123programmitv.it/${prog.channelId}`
-      : 'https://123programmitv.it';
+      ? `https://www.intvstasera.it/${prog.channelId}`
+      : 'https://www.intvstasera.it';
 
     const desc = buildCalendarDesc(prog);
     const location = streamUrl || moreInfoUrl;
@@ -331,7 +331,7 @@
     const lines = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//123ProgrammiTV//IT',
+      'PRODID:-//In TV Stasera//IT',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',

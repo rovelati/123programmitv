@@ -6,7 +6,7 @@ import { config } from 'dotenv';
 
 config();
 
-const SITE_URL = process.env.SITE_URL || 'https://123programmitv.it';
+const SITE_URL = process.env.SITE_URL || 'https://www.intvstasera.it';
 const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';
 const HUBS = (process.env.WEBSUB_HUB_URLS || 'https://websub.superfeedr.com/,https://pubsubhubbub.appspot.com/')
   .split(',')

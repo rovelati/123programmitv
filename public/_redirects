@@ -1,5 +1,7 @@
-# www → apex (canonical è 123programmitv.it senza www)
-https://www.123programmitv.it/*  https://123programmitv.it/:splat  301
+# Canonical host: www.intvstasera.it
+https://123programmitv.it/*      https://www.intvstasera.it/:splat  301
+https://www.123programmitv.it/*  https://www.intvstasera.it/:splat  301
+https://intvstasera.it/*         https://www.intvstasera.it/:splat  301
 
 # Redirect 301 dai vecchi URL React → nuova struttura piatta
 

@@ -49,7 +49,7 @@ const {
   publishedTime,
 } = Astro.props;
 
-const SITE_URL    = 'https://123programmitv.it';
+const SITE_URL    = 'https://www.intvstasera.it';
 const canonicalUrl = absoluteUrl(canonicalPath);
 const ogImageUrl   = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
 const imageAlt     = ogImageAlt ?? title;
@@ -95,8 +95,8 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <title>{title}</title>
     <meta name="description" content={description} />
     {keywords && <meta name="keywords" content={keywords} />}
-    <meta name="author" content="Redazione 123ProgrammiTV" />
-    <meta name="publisher" content="123ProgrammiTV" />
+    <meta name="author" content="Redazione In TV Stasera" />
+    <meta name="publisher" content="In TV Stasera" />
     {noindex
       ? <meta name="robots" content="noindex, nofollow" />
       : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
@@ -107,7 +107,7 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <!-- Tipo e URL -->
     <meta property="og:type"        content={ogType} />
     <meta property="og:url"         content={canonicalUrl} />
-    <meta property="og:site_name"   content="123ProgrammiTV" />
+    <meta property="og:site_name"   content="In TV Stasera" />
     <meta property="og:locale"      content="it_IT" />
 
     <!-- Titolo e descrizione -->

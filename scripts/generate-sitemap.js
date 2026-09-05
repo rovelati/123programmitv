@@ -8,7 +8,7 @@ import pg from 'pg';
 
 const { Client } = pg;
 
-const SITE_URL = (process.env.SITE_URL || 'https://123programmitv.it').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://www.intvstasera.it').replace(/\/$/, '');
 const OUTPUT_PATH = path.join(process.cwd(), 'dist', 'client', 'sitemap.xml');
 const LEGACY_SITEMAPS = ['sitemap-index.xml', 'sitemap-0.xml', 'sitemap-film.xml'];
 

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { buildSeoDashboardPayload } from '../src/lib/seoDashboard.ts';
 
 const outputPath = path.join(process.cwd(), 'public', 'search-console', 'seo-dashboard-latest.json');
-const siteUrl = process.env.SITE_URL || 'https://123programmitv.it';
+const siteUrl = process.env.SITE_URL || 'https://www.intvstasera.it';
 
 async function main() {
   const fakeContext = {

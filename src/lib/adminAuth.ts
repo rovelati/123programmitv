@@ -37,7 +37,7 @@ export function ensureAdminAuthorized(context: APIContext): Response | null {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
-        'WWW-Authenticate': 'Basic realm="123ProgrammiTV admin"',
+        'WWW-Authenticate': 'Basic realm="InTVStasera admin"',
       },
     },
   );

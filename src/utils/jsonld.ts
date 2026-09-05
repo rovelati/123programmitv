@@ -1,5 +1,5 @@
 /**
- * JSON-LD schema generators — 123ProgrammiTV
+ * JSON-LD schema generators — In TV Stasera
  *
  * Basato su:
  * - Google Search API leak (maggio 2024): freshness signal via dateModified,
@@ -19,7 +19,7 @@ import { absoluteUrl, SITE_ORIGIN } from './urls';
 import { filterStaseraPrograms } from './timeSlots';
 
 const SITE_URL   = SITE_ORIGIN;
-const SITE_NAME  = '123ProgrammiTV';
+const SITE_NAME  = 'In TV Stasera';
 const ORG_ID     = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const ITALY_ID   = 'https://www.wikidata.org/wiki/Q38';

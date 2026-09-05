@@ -1,6 +1,6 @@
 {
-  "name": "123ProgrammiTV — Guida TV Italiana",
-  "short_name": "123ProgrammiTV",
+  "name": "In TV Stasera — Guida TV Italiana",
+  "short_name": "InTVStasera",
   "description": "Guida TV italiana: programmi stasera su RAI, Mediaset, La7 e canali tematici.",
   "start_url": "/",
   "display": "standalone",

@@ -3,7 +3,7 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 
-const title = 'Dashboard SEO admin - 123ProgrammiTV';
+const title = 'Dashboard SEO admin - InTVStasera';
 const description = 'Console SEO interna con import, Search Console, URL Inspection e azioni prioritarie per le head page.';
 ---
 
@@ -18,7 +18,7 @@ const description = 'Console SEO interna con import, Search Console, URL Inspect
       </h1>
       <p class="mt-3 text-base leading-7 text-slate-600 sm:text-lg">
         Vista unica su import EPG, Search Console, URL Inspection e azioni concrete per spingere le pagine head
-        di 123ProgrammiTV.
+        di InTVStasera.
       </p>
     </div>
 
@@ -364,7 +364,7 @@ const description = 'Console SEO interna con import, Search Console, URL Inspect
       );
 
       const perfByUrl = new Map((searchPerformance.headTargets || []).map((row) => [row.url, row]));
-      const SC_RESOURCE = encodeURIComponent('sc-domain:123programmitv.it');
+      const SC_RESOURCE = encodeURIComponent('sc-domain:intvstasera.it');
       const rows = (inspection.results || []).map((row) => {
         const perf = perfByUrl.get(row.url);
         const stateTone = row.indexed ? 'bg-emerald-100 text-emerald-700' : row.status === 'error' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700';

@@ -30,8 +30,8 @@ const PRODUCTION_MD_PATH = path.join(ROOT_DIR, 'production.md');
 const LOCAL_GOOGLE_INDEXING_REPORT = path.join(process.cwd(), 'public', 'search-console', 'google-indexing-latest.json');
 const LOCAL_WEBSUB_REPORT = path.join(process.cwd(), 'public', 'search-console', 'websub-latest.json');
 const GA4_MEASUREMENT_ID_FALLBACK = 'G-824117SV8J';
-const SEARCH_CONSOLE_SITE_FALLBACK = 'sc-domain:123programmitv.it';
-const SITE_URL_FALLBACK = 'https://123programmitv.it';
+const SEARCH_CONSOLE_SITE_FALLBACK = 'sc-domain:intvstasera.it';
+const SITE_URL_FALLBACK = 'https://www.intvstasera.it';
 const DASHBOARD_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const HEAD_TARGETS: HeadTarget[] = [
@@ -544,8 +544,8 @@ function buildInsights(payload: {
     });
   }
 
-  const siteUrlPublic = payload.searchPerformance.sitePublicUrl || 'https://123programmitv.it';
-  const scResource = encodeURIComponent('sc-domain:123programmitv.it');
+  const siteUrlPublic = payload.searchPerformance.sitePublicUrl || 'https://www.intvstasera.it';
+  const scResource = encodeURIComponent('sc-domain:intvstasera.it');
 
   if (unknownTargets.length > 0) {
     actions.push({

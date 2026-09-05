@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-18T15:51:16.034Z",
-  "siteUrl": "https://123programmitv.it",
-  "status": "success",
+  "generatedAt": "2026-09-05T14:35:23.420Z",
+  "siteUrl": "https://www.intvstasera.it",
+  "status": "error",
   "run": {
-    "startedAt": "2026-04-18T15:51:03.360Z",
-    "finishedAt": "2026-04-18T15:51:16.034Z",
-    "durationSeconds": 13
+    "startedAt": "2026-09-05T14:35:15.069Z",
+    "finishedAt": "2026-09-05T14:35:23.420Z",
+    "durationSeconds": 8
   },
   "quota": {
     "dailyLimit": 30,
@@ -13,35 +13,156 @@
   },
   "summary": {
     "attempted": 28,
-    "success": 28,
-    "failed": 0,
+    "success": 0,
+    "failed": 28,
     "hubUrls": 28,
     "filmUrls": 0
   },
   "urls": {
     "sample": [
-      "https://123programmitv.it/",
-      "https://123programmitv.it/domani",
-      "https://123programmitv.it/film-stasera",
-      "https://123programmitv.it/serie-stasera",
-      "https://123programmitv.it/sport-stasera",
-      "https://123programmitv.it/rai-1",
-      "https://123programmitv.it/rai-2",
-      "https://123programmitv.it/rai-3",
-      "https://123programmitv.it/rai-4",
-      "https://123programmitv.it/rai-5",
-      "https://123programmitv.it/canale-5",
-      "https://123programmitv.it/italia-1",
-      "https://123programmitv.it/rete-4",
-      "https://123programmitv.it/la7",
-      "https://123programmitv.it/la7d",
-      "https://123programmitv.it/tv8",
-      "https://123programmitv.it/nove",
-      "https://123programmitv.it/iris",
-      "https://123programmitv.it/focus",
-      "https://123programmitv.it/dmax"
+      "https://www.intvstasera.it/",
+      "https://www.intvstasera.it/domani",
+      "https://www.intvstasera.it/film-stasera",
+      "https://www.intvstasera.it/serie-stasera",
+      "https://www.intvstasera.it/sport-stasera",
+      "https://www.intvstasera.it/rai-1",
+      "https://www.intvstasera.it/rai-2",
+      "https://www.intvstasera.it/rai-3",
+      "https://www.intvstasera.it/rai-4",
+      "https://www.intvstasera.it/rai-5",
+      "https://www.intvstasera.it/canale-5",
+      "https://www.intvstasera.it/italia-1",
+      "https://www.intvstasera.it/rete-4",
+      "https://www.intvstasera.it/la7",
+      "https://www.intvstasera.it/la7d",
+      "https://www.intvstasera.it/tv8",
+      "https://www.intvstasera.it/nove",
+      "https://www.intvstasera.it/iris",
+      "https://www.intvstasera.it/focus",
+      "https://www.intvstasera.it/dmax"
     ],
-    "failed": []
+    "failed": [
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/domani",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/film-stasera",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/serie-stasera",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/sport-stasera",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rai-1",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rai-2",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rai-3",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rai-4",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rai-5",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/canale-5",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/italia-1",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/rete-4",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/la7",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/la7d",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/tv8",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/nove",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/iris",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/focus",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      },
+      {
+        "ok": false,
+        "url": "https://www.intvstasera.it/dmax",
+        "error": "Permission denied. Failed to verify the URL ownership.",
+        "status": 403
+      }
+    ]
   },
   "notes": [
     "Report focalizzato sulle head page, non sulle foglie programma.",

@@ -64,14 +64,24 @@ export const getChannelLogo = (channelId: string, logoUrl?: string | null, chann
   // 1. Prova il logo locale (priorità massima — nessuna hotlink protection)
   if (id && LOCAL_LOGOS[id]) return LOCAL_LOGOS[id];
 
-  // 2. Se il DB ha un URL che punta al vecchio dominio /channel-logos/, converti in locale
-  if (logoUrl?.includes('123programmitv.it/channel-logos/')) {
+  // 2. Se il DB ha un URL del sito che punta a /channel-logos/, converti in locale
+  if (
+    logoUrl?.includes('123programmitv.it/channel-logos/')
+    || logoUrl?.includes('www.intvstasera.it/channel-logos/')
+    || logoUrl?.includes('intvstasera.it/channel-logos/')
+  ) {
     const filename = logoUrl.split('/channel-logos/').pop();
     if (filename) return `/channel-logos/${filename}`;
   }
 
   // 3. Usa l'URL del DB se è un URL esterno valido (non hotlink-protetto)
-  if (logoUrl && logoUrl.trim() && !logoUrl.includes('123programmitv.it') && logoUrl !== 'null') {
+  if (
+    logoUrl
+    && logoUrl.trim()
+    && !logoUrl.includes('123programmitv.it')
+    && !logoUrl.includes('intvstasera.it')
+    && logoUrl !== 'null'
+  ) {
     return logoUrl;
   }
 

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap unica: hub principali + primi 50 canali.
-Sitemap: https://123programmitv.it/sitemap.xml
+Sitemap: https://www.intvstasera.it/sitemap.xml

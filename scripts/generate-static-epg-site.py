@@ -23,7 +23,7 @@ from typing import Iterable
 from zoneinfo import ZoneInfo
 
 
-SITE_URL = os.getenv("SITE_URL", "https://123programmitv.it").rstrip("/")
+SITE_URL = os.getenv("SITE_URL", "https://www.intvstasera.it").rstrip("/")
 EPG_URL = os.getenv("IPTV_EPG_URL", "https://iptv-epg.org/files/epg-it.xml.gz")
 OUT_DIR = Path(os.getenv("STATIC_EPG_OUT_DIR", "static-epg-dist"))
 ROME = ZoneInfo("Europe/Rome")
@@ -158,7 +158,7 @@ def parse_xmltv_time(value: str) -> datetime:
 
 def fetch_epg(target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    request = urllib.request.Request(EPG_URL, headers={"User-Agent": "123ProgrammiTV static fallback"})
+    request = urllib.request.Request(EPG_URL, headers={"User-Agent": "InTVStasera static fallback"})
     with urllib.request.urlopen(request, timeout=180) as response:
         target.write_bytes(response.read())
 
@@ -374,11 +374,11 @@ def render_category(path: str, title: str, heading: str, programs: list[Program]
 
 def write_static_files(urls: list[str]) -> None:
     (OUT_DIR / "robots.txt").write_text(
-        "User-agent: *\nAllow: /\n\nSitemap: https://123programmitv.it/sitemap-index.xml\n",
+        "User-agent: *\nAllow: /\n\nSitemap: https://www.intvstasera.it/sitemap-index.xml\n",
         encoding="utf-8",
     )
     (OUT_DIR / "_redirects").write_text(
-        "https://www.123programmitv.it/*  https://123programmitv.it/:splat  301\n/programmi-tv/:canale /:canale 301\n/programma/* 410\n/programma 410\n/* /404.html 404\n",
+        "https://123programmitv.it/*      https://www.intvstasera.it/:splat  301\nhttps://www.123programmitv.it/*  https://www.intvstasera.it/:splat  301\nhttps://intvstasera.it/*         https://www.intvstasera.it/:splat  301\n/programmi-tv/:canale /:canale 301\n/programma/* 410\n/programma 410\n/* /404.html 404\n",
         encoding="utf-8",
     )
     (OUT_DIR / "_headers").write_text(
