@@ -44,6 +44,7 @@ fi
 
 log "Starting Astro build (node adapter / static client)..."
 npm install 2>&1 | tee -a "$LOG"
+rm -rf dist .astro
 # Prefer build:node if present (produces dist/client for Pages)
 if npm run | grep -q 'build:node'; then
   npm run build:node 2>&1 | tee -a "$LOG"
