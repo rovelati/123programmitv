@@ -114,12 +114,19 @@ async function main() {
   mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   writeFileSync(OUTPUT_PATH, xml, 'utf8');
 
+  const publicPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+  try {
+    writeFileSync(publicPath, xml, 'utf8');
+  } catch (err) {
+    console.warn('Could not write public/sitemap.xml:', err?.message || err);
+  }
+
   for (const fileName of LEGACY_SITEMAPS) {
     const legacyPath = path.join(path.dirname(OUTPUT_PATH), fileName);
     if (existsSync(legacyPath)) unlinkSync(legacyPath);
   }
 
-  console.log(`Wrote ${OUTPUT_PATH} with ${entries.length} URLs (${channelPages.length} channels)`);
+  console.log(`Wrote ${OUTPUT_PATH} and public/sitemap.xml with ${entries.length} URLs (${channelPages.length} channels)`);
 }
 
 main().catch(error => {
