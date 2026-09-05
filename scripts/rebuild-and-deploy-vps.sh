@@ -27,11 +27,14 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
+log "Pulling latest code from git..."
+git pull origin main || true
+
 load_env DATABASE_URL
 load_env CF_API_KEY
 load_env CF_API_EMAIL
 load_env CF_ACCOUNT_ID
-load_env SITE_URL
+export SITE_URL="https://www.intvstasera.it"
 
 if [ -z "${DATABASE_URL:-}" ]; then
   log "ERROR: DATABASE_URL not set in .env"
