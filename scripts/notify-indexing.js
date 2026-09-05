@@ -21,7 +21,7 @@ import { config } from 'dotenv';
 
 config(); // carica .env
 
-const SITE_URL = process.env.SITE_URL || 'https://www.intvstasera.it';
+const SITE_URL = 'https://www.intvstasera.it';
 const MAX_URLS_PER_DAY = 30;
 const RATE_LIMIT_MS = 200;    // 200ms tra richieste per evitare 429
 const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';

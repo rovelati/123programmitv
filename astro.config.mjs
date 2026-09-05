@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite'
 const useCloudflare = process.env.ASTRO_ADAPTER === 'cloudflare'
 
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://www.intvstasera.it',
+  site: 'https://www.intvstasera.it',
   trailingSlash: 'always',
   output: 'static',
   adapter: useCloudflare
