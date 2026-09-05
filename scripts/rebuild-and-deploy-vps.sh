@@ -27,8 +27,9 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
-log "Pulling latest code from git..."
-git pull origin main || true
+log "Fetching latest code from git..."
+git fetch origin main || true
+git reset --hard origin/main || true
 
 load_env DATABASE_URL
 load_env CF_API_KEY
@@ -63,6 +64,12 @@ fi
 if ! grep -qiE 'Programmi|Rai|Mediaset|stasera|TV' "$OUT/index.html"; then
   log "ERROR: homepage content looks empty/broken"
   exit 1
+fi
+
+# Ensure sitemap.xml strictly uses www.intvstasera.it
+if [ -f "$OUT/sitemap.xml" ]; then
+  sed -i 's|https://123programmitv.it|https://www.intvstasera.it|g' "$OUT/sitemap.xml" || true
+  log "Sanitized $OUT/sitemap.xml to www.intvstasera.it"
 fi
 
 # Bundle CF Functions if present
