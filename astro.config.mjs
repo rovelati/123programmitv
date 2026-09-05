@@ -11,6 +11,9 @@ export default defineConfig({
   site: 'https://www.intvstasera.it',
   trailingSlash: 'always',
   output: 'static',
+  build: {
+    concurrency: 1,
+  },
   adapter: useCloudflare
     ? cloudflare({ prerenderEnvironment: 'node', imageService: 'compile', platformProxy: { enabled: false }, sessions: false })
     : node({ mode: 'standalone' }),
