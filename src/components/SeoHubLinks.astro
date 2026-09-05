@@ -1,5 +1,6 @@
 ---
 import { HUB_CHANNELS } from '../utils/channelSlug';
+import { sitePath } from '../utils/urls';
 import type { Channel } from '../types';
 
 interface Props {
@@ -30,12 +31,12 @@ const channelLinks = (channels ?? HUB_CHANNELS)
   .slice(0, maxChannels);
 
 const primaryLinks = [
-  { href: '/', label: 'Programmi TV ora' },
-  { href: '/stasera', label: 'Programmi TV stasera' },
-  { href: '/domani', label: 'Programmi TV domani' },
-  { href: '/film-stasera', label: 'Film stasera in TV' },
-  { href: '/serie-stasera', label: 'Serie TV stasera' },
-  { href: '/sport-stasera', label: 'Sport stasera in TV' },
+  { href: sitePath('/'), label: 'Programmi TV ora' },
+  { href: sitePath('/stasera'), label: 'Programmi TV stasera' },
+  { href: sitePath('/domani'), label: 'Programmi TV domani' },
+  { href: sitePath('/film-stasera'), label: 'Film stasera in TV' },
+  { href: sitePath('/serie-stasera'), label: 'Serie TV stasera' },
+  { href: sitePath('/sport-stasera'), label: 'Sport stasera in TV' },
 ];
 ---
 
@@ -72,7 +73,7 @@ const primaryLinks = [
       )}
       <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
         {channelLinks.map(ch => (
-          <a href={`/${ch.id}`} class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors">
+          <a href={sitePath(`/${ch.id}`)} class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors">
             Programmi {ch.name} stasera
           </a>
         ))}

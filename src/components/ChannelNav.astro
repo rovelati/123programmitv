@@ -1,5 +1,6 @@
 ---
 import { HUB_CHANNELS } from '../utils/channelSlug';
+import { sitePath } from '../utils/urls';
 
 interface Props {
   currentChannelId?: string;
@@ -21,7 +22,7 @@ const { currentChannelId } = Astro.props;
     {HUB_CHANNELS.map(ch => (
       <li class="flex-shrink-0">
         <a
-          href={`/${ch.id}`}
+          href={sitePath(`/${ch.id}`)}
           aria-current={ch.id === currentChannelId ? 'page' : undefined}
           class:list={[
             'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap',

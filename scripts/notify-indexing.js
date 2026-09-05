@@ -18,6 +18,7 @@ import { google } from 'googleapis';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
+import { absoluteUrl } from './canonical-url.js';
 
 config(); // carica .env
 
@@ -68,7 +69,7 @@ const HEAD_URLS = [
   '/iris', '/focus', '/dmax', '/giallo', '/real-time',
   '/warner-tv', '/cine34', '/tgcom24', '/top-crime', '/cielo',
   '/mediaset-extra',
-].map(p => `${SITE_URL}${p}`);
+].map(p => absoluteUrl(p));
 
 async function getGoogleAuth() {
   let credentials;

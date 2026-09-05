@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, renameSync, writeFileSync } from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
+import { absoluteUrl } from './canonical-url.js';
 
 config();
 
@@ -35,7 +36,7 @@ const HEAD_URLS = [
   '/la7',
   '/tv8',
   '/nove',
-].map((value) => new URL(value, `${SITE_URL.replace(/\/$/, '')}/`).toString());
+].map((value) => absoluteUrl(value));
 
 function getSearchConsoleDir() {
   const configured = (process.env.SEARCH_CONSOLE_PUBLIC_DIR || '').trim();

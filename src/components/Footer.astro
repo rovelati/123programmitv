@@ -1,11 +1,12 @@
 ---
 import { HUB_CHANNELS } from '../utils/channelSlug';
+import { sitePath } from '../utils/urls';
 
 const CATEGORY_HUBS = [
-  { href: '/film-stasera',  label: 'Film stasera in TV' },
-  { href: '/serie-stasera', label: 'Serie TV stasera' },
-  { href: '/sport-stasera', label: 'Sport stasera in TV' },
-  { href: '/domani',        label: 'Programmi di domani' },
+  { href: sitePath('/film-stasera'),  label: 'Film stasera in TV' },
+  { href: sitePath('/serie-stasera'), label: 'Serie TV stasera' },
+  { href: sitePath('/sport-stasera'), label: 'Sport stasera in TV' },
+  { href: sitePath('/domani'),        label: 'Programmi di domani' },
 ];
 
 const LEGAL_LINKS = [
@@ -21,7 +22,7 @@ const LEGAL_LINKS = [
       <h2 class="text-slate-900 dark:text-slate-100 font-semibold mb-3 text-xs uppercase tracking-wider">Canali TV</h2>
       <nav class="flex flex-wrap gap-2" aria-label="Guida TV per canale">
         {HUB_CHANNELS.map(ch => (
-          <a href={`/${ch.id}`} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+          <a href={sitePath(`/${ch.id}`)} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
             Programmi {ch.name}
           </a>
         ))}

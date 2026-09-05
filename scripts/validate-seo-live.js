@@ -78,6 +78,7 @@ async function runValidation() {
   assert(sitemap.ok, 'sitemap.xml is not reachable', failures);
   assert(!sitemap.text.includes('123programmitv.it'), 'sitemap.xml must not contain legacy 123programmitv.it URLs', failures);
   assert(sitemap.text.includes('www.intvstasera.it'), 'sitemap.xml must use www.intvstasera.it', failures);
+  assert(!sitemap.text.match(/<loc>https:\/\/www\.intvstasera\.it\/[^<]+[^\/]<\/loc>/), 'sitemap.xml URLs must end with trailing slash (except root)', failures);
   assert(!sitemap.text.includes('/programma/'), 'sitemap.xml should not include /programma/ URLs', failures);
   assert(!sitemap.text.match(/\/[a-z0-9-]+\/domani\//), 'sitemap.xml should not list every /canale/domani/ page', failures);
   const urlCount = (sitemap.text.match(/<loc>/g) || []).length;
