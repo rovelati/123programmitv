@@ -53,6 +53,9 @@ jobs:
             --exclude .git \
             -e "$RSYNC_SSH" \
             ./ "root@${CONTABO_HOST}:/var/www/123programmitv.it/astro/"
+          ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
+            "root@${CONTABO_HOST}" \
+            'chmod +x /var/www/123programmitv.it/astro/scripts/*.sh'
           echo "Synced commit $(git rev-parse --short HEAD) to VPS"
 
       - name: Build + deploy on Contabo VPS
@@ -64,4 +67,4 @@ jobs:
           RSYNC_SSH="ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes"
           ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
             "root@${CONTABO_HOST}" \
-            '/var/www/123programmitv.it/astro/scripts/rebuild-and-deploy-vps.sh'
+            'bash /var/www/123programmitv.it/astro/scripts/rebuild-and-deploy-vps.sh'
