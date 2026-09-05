@@ -27,7 +27,10 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Build + deploy on Contabo VPS
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync code to Contabo VPS
         env:
           CONTABO_SSH_KEY: ${{ secrets.CONTABO_SSH_KEY }}
           CONTABO_HOST: ${{ secrets.CONTABO_HOST }}
@@ -41,6 +44,24 @@ jobs:
           printf '%s\n' "$CONTABO_SSH_KEY" > ~/.ssh/contabo_key
           chmod 600 ~/.ssh/contabo_key
           ssh-keyscan -H "$CONTABO_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          RSYNC_SSH="ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes"
+          rsync -az --delete \
+            --exclude node_modules \
+            --exclude dist \
+            --exclude .astro \
+            --exclude .env \
+            --exclude .git \
+            -e "$RSYNC_SSH" \
+            ./ "root@${CONTABO_HOST}:/var/www/123programmitv.it/astro/"
+          echo "Synced commit $(git rev-parse --short HEAD) to VPS"
+
+      - name: Build + deploy on Contabo VPS
+        env:
+          CONTABO_SSH_KEY: ${{ secrets.CONTABO_SSH_KEY }}
+          CONTABO_HOST: ${{ secrets.CONTABO_HOST }}
+        run: |
+          set -euo pipefail
+          RSYNC_SSH="ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes"
           ssh -i ~/.ssh/contabo_key -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
             "root@${CONTABO_HOST}" \
             '/var/www/123programmitv.it/astro/scripts/rebuild-and-deploy-vps.sh'

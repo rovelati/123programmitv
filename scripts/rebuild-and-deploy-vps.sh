@@ -22,12 +22,40 @@ load_env() {
 
 cd "$ASTRO_DIR"
 
+# Bootstrap critical scripts from GitHub when VPS git is stale (self-healing deploy).
+GITHUB_RAW="${GITHUB_RAW:-https://raw.githubusercontent.com/rovelati/123programmitv/main}"
+bootstrap_from_github() {
+  local rel path tmp ok=0
+  for rel in \
+    scripts/rebuild-and-deploy-vps.sh \
+    scripts/generate-sitemap.js \
+    scripts/sync-search-console-assets.js \
+    package.json; do
+    path="$ASTRO_DIR/$rel"
+    tmp="$(mktemp)"
+    if curl -fsSL "$GITHUB_RAW/$rel" -o "$tmp"; then
+      if [ ! -f "$path" ] || ! cmp -s "$tmp" "$path"; then
+        cp "$tmp" "$path"
+        log "Bootstrapped $rel from GitHub"
+        ok=1
+      fi
+    else
+      log "WARN: bootstrap failed for $rel"
+    fi
+    rm -f "$tmp"
+  done
+  if [ "$ok" -eq 1 ] && [ "${BOOTSTRAP_REEXEC:-0}" -eq 0 ]; then
+    export BOOTSTRAP_REEXEC=1
+    exec "$ASTRO_DIR/scripts/rebuild-and-deploy-vps.sh"
+  fi
+}
+
 if [ ! -f .env ]; then
   log "ERROR: missing $ASTRO_DIR/.env"
   exit 1
 fi
 
-log "Fetching latest code from git..."
+bootstrap_from_github
 git fetch origin main
 git reset --hard origin/main
 log "HEAD at $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
@@ -52,6 +80,11 @@ if npm run | grep -q 'build:node'; then
 else
   npm run build 2>&1 | tee -a "$LOG"
 fi
+
+# sync-search-console-assets.js used to copy stale dist/sitemap.xml over dist/client/.
+# Regenerate sitemap after the full build/postbuild chain as a final safeguard.
+log "Final sitemap regeneration..."
+node scripts/generate-sitemap.js 2>&1 | tee -a "$LOG"
 
 OUT=""
 if [ -f dist/client/index.html ]; then
