@@ -136,6 +136,10 @@ async function main() {
   mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   writeFileSync(OUTPUT_PATH, xml, 'utf8');
 
+  // Remove stale sitemap copies that Astro may leave at dist/ root (sync used to overwrite client/).
+  const staleRoot = path.join(process.cwd(), 'dist', 'sitemap.xml');
+  if (existsSync(staleRoot)) unlinkSync(staleRoot);
+
   for (const fileName of LEGACY_SITEMAPS) {
     const legacyPath = path.join(path.dirname(OUTPUT_PATH), fileName);
     if (existsSync(legacyPath)) unlinkSync(legacyPath);

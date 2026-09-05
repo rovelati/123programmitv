@@ -28,8 +28,9 @@ if [ ! -f .env ]; then
 fi
 
 log "Fetching latest code from git..."
-git fetch origin main || true
-git reset --hard origin/main || true
+git fetch origin main
+git reset --hard origin/main
+log "HEAD at $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
 
 load_env DATABASE_URL
 load_env CF_API_KEY

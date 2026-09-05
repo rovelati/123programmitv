@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "ASTRO_ADAPTER=cloudflare astro build",
-    "postbuild": "node scripts/generate-sitemap.js && node scripts/generate-seo-dashboard.js && node scripts/sync-search-console-assets.js",
+    "postbuild": "node scripts/generate-seo-dashboard.js && node scripts/sync-search-console-assets.js && node scripts/generate-sitemap.js",
     "preview": "astro preview",
     "typecheck": "astro check --no-watch",
     "validate:seo": "node scripts/validate-seo-live.js",
