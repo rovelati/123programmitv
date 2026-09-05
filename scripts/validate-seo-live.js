@@ -76,6 +76,8 @@ async function runValidation() {
   const sitemap = await fetchText('/sitemap.xml');
   console.log(`${sitemap.status} ${sitemap.url}`);
   assert(sitemap.ok, 'sitemap.xml is not reachable', failures);
+  assert(!sitemap.text.includes('123programmitv.it'), 'sitemap.xml must not contain legacy 123programmitv.it URLs', failures);
+  assert(sitemap.text.includes('www.intvstasera.it'), 'sitemap.xml must use www.intvstasera.it', failures);
   assert(!sitemap.text.includes('/programma/'), 'sitemap.xml should not include /programma/ URLs', failures);
   assert(!sitemap.text.match(/\/[a-z0-9-]+\/domani\//), 'sitemap.xml should not list every /canale/domani/ page', failures);
   const urlCount = (sitemap.text.match(/<loc>/g) || []).length;
@@ -93,6 +95,8 @@ async function runValidation() {
       assert(ogUrl?.endsWith('/'), `${path} og:url should end with trailing slash (${ogUrl})`, failures);
     }
     assert(canonical === ogUrl, `${path} canonical and og:url should match`, failures);
+    assert(!canonical?.includes('123programmitv.it'), `${path} canonical must not use legacy domain`, failures);
+    assert(canonical?.includes('www.intvstasera.it'), `${path} canonical must use www.intvstasera.it`, failures);
   }
 
   const program = await fetchText('/programma/rai-1/test-seo-smoke', 'HEAD');

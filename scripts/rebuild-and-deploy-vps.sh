@@ -69,7 +69,18 @@ fi
 
 # Ensure sitemap.xml strictly uses www.intvstasera.it
 if [ -f "$OUT/sitemap.xml" ]; then
-  sed -i 's|https://123programmitv.it|https://www.intvstasera.it|g' "$OUT/sitemap.xml" || true
+  sed -i \
+    -e 's|https://123programmitv.it|https://www.intvstasera.it|g' \
+    -e 's|http://123programmitv.it|https://www.intvstasera.it|g' \
+    -e 's|https://www.123programmitv.it|https://www.intvstasera.it|g' \
+    -e 's|http://www.123programmitv.it|https://www.intvstasera.it|g' \
+    -e 's|https://intvstasera.it|https://www.intvstasera.it|g' \
+    -e 's|http://intvstasera.it|https://www.intvstasera.it|g' \
+    "$OUT/sitemap.xml"
+  if grep -q '123programmitv.it' "$OUT/sitemap.xml"; then
+    log "ERROR: sitemap.xml still contains legacy 123programmitv.it URLs"
+    exit 1
+  fi
   log "Sanitized $OUT/sitemap.xml to www.intvstasera.it"
 fi
 
@@ -95,5 +106,11 @@ npx --yes wrangler@4 pages deploy "$OUT" \
   --project-name="$CF_PROJECT" \
   --commit-dirty=true \
   2>&1 | tee -a "$LOG"
+
+if curl -fsS "https://www.intvstasera.it/sitemap.xml" | grep -q '123programmitv.it'; then
+  log "WARN: live sitemap still lists 123programmitv.it — purge Cloudflare cache for /sitemap.xml"
+else
+  log "Live sitemap OK (www.intvstasera.it)"
+fi
 
 log "Deploy complete"

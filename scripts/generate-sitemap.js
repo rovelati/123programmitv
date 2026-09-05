@@ -8,9 +8,19 @@ import pg from 'pg';
 
 const { Client } = pg;
 
-const SITE_URL = 'https://www.intvstasera.it';
+const DEFAULT_SITE_URL = 'https://www.intvstasera.it';
+const SITE_URL = (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/$/, '');
 const OUTPUT_PATH = path.join(process.cwd(), 'dist', 'client', 'sitemap.xml');
 const LEGACY_SITEMAPS = ['sitemap-index.xml', 'sitemap-0.xml', 'sitemap-film.xml'];
+
+const LEGACY_ORIGINS = [
+  'https://123programmitv.it',
+  'http://123programmitv.it',
+  'https://www.123programmitv.it',
+  'http://www.123programmitv.it',
+  'https://intvstasera.it',
+  'http://intvstasera.it',
+];
 
 const HUB_CHANNEL_IDS = [
   'rai-1', 'rai-2', 'rai-3', 'rete-4', 'canale-5', 'italia-1', 'la7', 'tv8', 'nove', '20',
@@ -29,6 +39,14 @@ const HUB_PAGES = [
 ];
 
 const TOP_CHANNEL_IDS = new Set(['rai-1', 'canale-5', 'italia-1', 'la7', 'rete-4', 'rai-2', 'rai-3']);
+
+function sanitizeSitemapXml(xml) {
+  let sanitized = xml;
+  for (const legacy of LEGACY_ORIGINS) {
+    sanitized = sanitized.replaceAll(legacy, SITE_URL);
+  }
+  return sanitized;
+}
 
 function xmlEscape(value) {
   return String(value)
@@ -103,30 +121,27 @@ async function main() {
   }));
 
   const entries = [...HUB_PAGES, ...channelPages];
-  const xml = [
+  const xml = sanitizeSitemapXml([
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...entries.map(urlEntry),
     '</urlset>',
     '',
-  ].join('\n');
+  ].join('\n'));
+
+  if (xml.includes('123programmitv.it')) {
+    throw new Error('sitemap generation produced legacy 123programmitv.it URLs');
+  }
 
   mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   writeFileSync(OUTPUT_PATH, xml, 'utf8');
-
-  const publicPath = path.join(process.cwd(), 'public', 'sitemap.xml');
-  try {
-    writeFileSync(publicPath, xml, 'utf8');
-  } catch (err) {
-    console.warn('Could not write public/sitemap.xml:', err?.message || err);
-  }
 
   for (const fileName of LEGACY_SITEMAPS) {
     const legacyPath = path.join(path.dirname(OUTPUT_PATH), fileName);
     if (existsSync(legacyPath)) unlinkSync(legacyPath);
   }
 
-  console.log(`Wrote ${OUTPUT_PATH} and public/sitemap.xml with ${entries.length} URLs (${channelPages.length} channels)`);
+  console.log(`Wrote ${OUTPUT_PATH} with ${entries.length} URLs on ${SITE_URL} (${channelPages.length} channels)`);
 }
 
 main().catch(error => {
