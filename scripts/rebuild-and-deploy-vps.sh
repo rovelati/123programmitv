@@ -56,6 +56,13 @@ if [ -z "${DATABASE_URL:-}" ]; then
   exit 1
 fi
 
+if [ -f "$ASTRO_DIR/scripts/run-epg-import.sh" ]; then
+  log "Running EPG import into local Postgres..."
+  bash "$ASTRO_DIR/scripts/run-epg-import.sh" 2>&1 | tee -a "$LOG"
+else
+  log "WARN: scripts/run-epg-import.sh missing — building with existing DB data"
+fi
+
 log "Starting Astro build (node adapter / static client)..."
 npm install 2>&1 | tee -a "$LOG"
 rm -rf dist .astro

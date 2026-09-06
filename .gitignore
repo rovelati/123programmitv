@@ -27,3 +27,4 @@ wrangler.toml.bak
 
 # Python
 __pycache__/
+scripts/epg/.venv/
