@@ -5,9 +5,9 @@ permissions:
   deployments: write
 
 on:
-  # Contabo: EPG ~01:00, rebuild locale 02:15 Europe/Rome → questo job è backup/manual
-  schedule:
-    - cron: '30 1 * * *'   # 03:30 CEST
+  # Rebuild notturno: crontab su Contabo VPS (~02:15 Europe/Rome, dopo import EPG).
+  # GitHub Actions solo su push a main o lancio manuale (workflow_dispatch).
+  # L'importer EPG può triggerare via GITHUB_WORKFLOW_DISPATCH_URL.
 
   workflow_dispatch:
 
