@@ -2,7 +2,7 @@
 /**
  * notify-indexing.js
  * Notifica Google Search Console (Indexing API) delle pagine hub aggiornate.
- * Eseguire via cron alle 06:00 UTC (dopo rebuild Cloudflare alle 02:30).
+ * Chiamato da rebuild-and-deploy-vps.sh dopo ogni build (Contabo → Cloudflare Pages).
  *
  * Prerequisiti:
  *   1. Google Search Console API abilitata nel Google Cloud project

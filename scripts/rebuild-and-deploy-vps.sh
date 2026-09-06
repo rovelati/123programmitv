@@ -40,7 +40,16 @@ load_env DATABASE_URL
 load_env CF_API_KEY
 load_env CF_API_EMAIL
 load_env CF_ACCOUNT_ID
+load_env GOOGLE_SA_KEY_FILE
+load_env GOOGLE_SA_KEY_JSON
 export SITE_URL="https://www.intvstasera.it"
+
+if [ -z "${GOOGLE_SA_KEY_FILE:-}" ] && [ -f "$ASTRO_DIR/secrets/google-sa.json" ]; then
+  export GOOGLE_SA_KEY_FILE="$ASTRO_DIR/secrets/google-sa.json"
+fi
+if [ -z "${GOOGLE_SA_KEY_FILE:-}" ] && [ -f "$ASTRO_DIR/../programmitv-974f34f03606.json" ]; then
+  export GOOGLE_SA_KEY_FILE="$ASTRO_DIR/../programmitv-974f34f03606.json"
+fi
 
 if [ -z "${DATABASE_URL:-}" ]; then
   log "ERROR: DATABASE_URL not set in .env"
@@ -101,6 +110,17 @@ if [ -d functions ] && [ "$OUT" = "dist/client" ]; then
 fi
 
 log "Build OK ($(du -sh "$OUT" | awk '{print $1}')) → $OUT"
+
+log "Google Indexing API notifications..."
+if node scripts/notify-indexing.js 2>&1 | tee -a "$LOG"; then
+  if [ -f public/search-console/google-indexing-latest.json ]; then
+    mkdir -p "$OUT/search-console"
+    cp public/search-console/google-indexing-latest.json "$OUT/search-console/"
+    log "Synced google-indexing-latest.json into deploy bundle"
+  fi
+else
+  log "WARN: Google Indexing API notifications failed — check GOOGLE_SA_KEY_FILE in .env"
+fi
 
 if [ -z "${CF_API_KEY:-}" ] || [ -z "${CF_API_EMAIL:-}" ]; then
   log "WARN: CF_API_KEY/CF_API_EMAIL missing — skip Pages deploy"
