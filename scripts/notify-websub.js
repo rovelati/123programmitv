@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, renameSync, writeFileSync } from 'fs';
+import { mkdirSync, renameSync, writeFileSync } from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
 import { absoluteUrl } from './canonical-url.js';
@@ -8,7 +8,6 @@ import { absoluteUrl } from './canonical-url.js';
 config();
 
 const SITE_URL = process.env.SITE_URL || 'https://www.intvstasera.it';
-const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';
 const HUBS = (process.env.WEBSUB_HUB_URLS || 'https://websub.superfeedr.com/,https://pubsubhubbub.appspot.com/')
   .split(',')
   .map((value) => value.trim())
@@ -43,12 +42,6 @@ function getSearchConsoleDir() {
   if (configured) {
     mkdirSync(configured, { recursive: true });
     return configured;
-  }
-
-  const serverDir = path.join(SERVER_PUBLIC_DIR, 'search-console');
-  if (existsSync(SERVER_PUBLIC_DIR)) {
-    mkdirSync(serverDir, { recursive: true });
-    return serverDir;
   }
 
   const localDir = path.resolve(process.cwd(), 'public', 'search-console');

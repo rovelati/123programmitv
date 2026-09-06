@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { Pool } from 'pg';
 import { google } from 'googleapis';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -115,13 +115,25 @@ function loadGoogleCredentials(context: APIContext): Record<string, unknown> {
   throw new Error('Missing Google service account credentials.');
 }
 
-function getSupabaseConfig(context: APIContext): { url: string; key: string } {
-  const url = getEnvValue(context, 'SUPABASE_URL') || readProductionMdValue('project-url');
-  const key = getEnvValue(context, 'SUPABASE_SERVICE_KEY') || readProductionMdValue('service-role-key');
-  if (!url || !key) {
-    throw new Error('Missing Supabase runtime credentials.');
+function getDatabaseUrl(context: APIContext): string {
+  const databaseUrl = getEnvValue(context, 'DATABASE_URL') || readProductionMdValue('database-url');
+  if (!databaseUrl) {
+    throw new Error('Missing DATABASE_URL (Postgres locale Contabo).');
   }
-  return { url, key };
+  return databaseUrl;
+}
+
+function getPgPool(context: APIContext): Pool {
+  const databaseUrl = getDatabaseUrl(context);
+  const local =
+    databaseUrl.includes('127.0.0.1') ||
+    databaseUrl.includes('localhost') ||
+    databaseUrl.includes('@postgres:');
+  return new Pool({
+    connectionString: databaseUrl,
+    ssl: local ? false : { rejectUnauthorized: false },
+    max: 2,
+  });
 }
 
 function getGoogleAuth(context: APIContext, scopes: string[]) {
@@ -129,11 +141,6 @@ function getGoogleAuth(context: APIContext, scopes: string[]) {
     credentials: loadGoogleCredentials(context),
     scopes,
   });
-}
-
-function getSupabaseAdmin(context: APIContext) {
-  const { url, key } = getSupabaseConfig(context);
-  return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function buildAbsoluteUrl(siteUrl: string, routePath: string): string {
@@ -375,23 +382,22 @@ async function runUrlInspection(context: APIContext) {
 }
 
 async function loadImportStatus(context: APIContext) {
-  const supabase = getSupabaseAdmin(context);
-  const { data, error } = await supabase
-    .from('epg_sync_logs')
-    .select('*')
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`Supabase import status error: ${error.message}`);
+  const pool = getPgPool(context);
+  try {
+    const { rows } = await pool.query(`
+      SELECT *
+      FROM epg_sync_logs
+      ORDER BY started_at DESC
+      LIMIT 1
+    `);
+    return {
+      status: 'ok',
+      source: 'Postgres epg_sync_logs',
+      latestRun: rows[0] ?? null,
+    };
+  } finally {
+    await pool.end();
   }
-
-  return {
-    status: 'ok',
-    source: 'Supabase epg_sync_logs',
-    latestRun: data,
-  };
 }
 
 async function loadGoogleIndexingReport(context: APIContext) {

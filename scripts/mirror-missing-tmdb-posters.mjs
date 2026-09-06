@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
- * Dopo il sync Hostinger, scarica i poster TMDB mancanti da programmecesoir.fr
+ * Dopo il build, scarica i poster TMDB mancanti da programmecesoir.fr
  * (stesso naming /images/programs/tmdb/{id}.jpg) così il deploy CF li include.
  */
 import { mkdir, access, writeFile, readFile, readdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -55,35 +57,41 @@ async function collectIdsFromHtml() {
 }
 
 async function collectIdsFromDb() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) return [];
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return [];
 
-  const sb = createClient(url, key, { auth: { persistSession: false } });
+  const local =
+    databaseUrl.includes('127.0.0.1') ||
+    databaseUrl.includes('localhost') ||
+    databaseUrl.includes('@postgres:');
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    ssl: local ? false : { rejectUnauthorized: false },
+    max: 2,
+  });
+
   const ids = new Set();
-  let offset = 0;
-  const page = 1000;
   const today = new Date().toISOString().slice(0, 10);
 
-  while (ids.size < 400) {
-    const { data, error } = await sb
-      .from('programs')
-      .select('poster_url')
-      .gte('date', today)
-      .not('poster_url', 'is', null)
-      .range(offset, offset + page - 1);
-    if (error) {
-      console.warn('DB query failed:', error.message);
-      break;
-    }
-    if (!data?.length) break;
-    for (const row of data) {
+  try {
+    const { rows } = await pool.query(`
+      SELECT poster_url
+      FROM programs
+      WHERE date >= $1
+        AND poster_url IS NOT NULL
+      LIMIT 400
+    `, [today]);
+
+    for (const row of rows) {
       const id = extractTmdbId(row.poster_url);
       if (id) ids.add(id);
     }
-    if (data.length < page) break;
-    offset += page;
+  } catch (error) {
+    console.warn('DB query failed:', error.message);
+  } finally {
+    await pool.end();
   }
+
   return [...ids];
 }
 

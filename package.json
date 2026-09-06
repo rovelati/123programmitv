@@ -21,7 +21,6 @@
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.0",
     "@astrojs/sitemap": "^3.7.0",
-    "@supabase/supabase-js": "^2.43.0",
     "@tailwindcss/vite": "^4.0.0",
     "astro": "^6.1.0",
     "dotenv": "^16.6.1",

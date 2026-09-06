@@ -8,7 +8,6 @@
  *   1. Google Search Console API abilitata nel Google Cloud project
  *   2. Service Account con verifica su Search Console (Property Owner)
  *   3. Variabili d'ambiente nel .env:
- *      SUPABASE_URL, SUPABASE_SERVICE_KEY
  *      GOOGLE_SA_KEY_JSON  oppure  GOOGLE_SA_KEY_FILE
  *
  * Usage: node scripts/notify-indexing.js
@@ -25,7 +24,6 @@ config(); // carica .env
 const SITE_URL = 'https://www.intvstasera.it';
 const MAX_URLS_PER_DAY = 30;
 const RATE_LIMIT_MS = 200;    // 200ms tra richieste per evitare 429
-const SERVER_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html';
 const GOOGLE_JSON_CANDIDATES = [
   path.resolve(process.cwd(), '..', 'programmitv-974f34f03606.json'),
   path.resolve(process.cwd(), '..', 'fernsehheute-8840739e2dc1.json'),
@@ -36,12 +34,6 @@ function getSearchConsoleDir() {
   if (configured) {
     mkdirSync(configured, { recursive: true });
     return configured;
-  }
-
-  const serverDir = path.join(SERVER_PUBLIC_DIR, 'search-console');
-  if (existsSync(SERVER_PUBLIC_DIR)) {
-    mkdirSync(serverDir, { recursive: true });
-    return serverDir;
   }
 
   const localDir = path.resolve(process.cwd(), 'public', 'search-console');

@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import pytz
 import requests
 from dotenv import load_dotenv
-from supabase import Client, create_client
 from PIL import Image
 
 from pg_adapter import create_postgres_client
@@ -34,19 +33,18 @@ IPTV_EPG_URL = os.getenv('IPTV_EPG_URL', 'https://iptv-epg.org/files/epg-it.xml'
 TIMEZONE = pytz.timezone('Europe/Rome')
 BATCH_SIZE = 100
 RETENTION_DAYS = int(os.getenv('RETENTION_DAYS', '1'))
-DEFAULT_PUBLIC_DIR = '/home/u914016995/domains/123programmitv.it/public_html'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHANNEL_MAP_PATH = os.getenv('EPG_CHANNEL_MAP_PATH', os.path.join(SCRIPT_DIR, 'epg_channel_map.json'))
-SITE_BASE_URL = os.getenv('SITE_BASE_URL', 'https://123programmitv.it')
+SITE_BASE_URL = os.getenv('SITE_BASE_URL', 'https://www.intvstasera.it')
 CHANNEL_LOGOS_SUBDIR = os.getenv('CHANNEL_LOGOS_SUBDIR', 'channel-logos')
 SYNC_CHANNEL_LOGOS = os.getenv('SYNC_CHANNEL_LOGOS', '1') == '1'
 ADESSOIN_URL = os.getenv('ADESSOIN_URL', 'https://www.adessoin.tv/')
 RAIPLAY_ONAIR_URL = os.getenv('RAIPLAY_ONAIR_URL', 'https://www.raiplay.it/palinsesto/onAir.json')
 
-CHANNELS_TABLE = os.getenv('SUPABASE_CHANNELS_TABLE', 'channels')
-PROGRAMS_TABLE = os.getenv('SUPABASE_PROGRAMS_TABLE', 'programs')
-CHANNELS_CONFIG_TABLE = os.getenv('SUPABASE_CHANNELS_CONFIG_TABLE', 'channels_config')
-EPG_SYNC_LOGS_TABLE = os.getenv('SUPABASE_EPG_SYNC_LOGS_TABLE', 'epg_sync_logs')
+CHANNELS_TABLE = os.getenv('EPG_CHANNELS_TABLE', 'channels')
+PROGRAMS_TABLE = os.getenv('EPG_PROGRAMS_TABLE', 'programs')
+CHANNELS_CONFIG_TABLE = os.getenv('EPG_CHANNELS_CONFIG_TABLE', 'channels_config')
+EPG_SYNC_LOGS_TABLE = os.getenv('EPG_SYNC_LOGS_TABLE', 'epg_sync_logs')
 
 EXCLUDED_CHANNEL_PATTERNS = ['antena', 'de -', 'de-']
 
@@ -62,16 +60,15 @@ CLOUDFLARE_DEPLOY_HOOK_URL = os.getenv('CLOUDFLARE_DEPLOY_HOOK_URL', '')
 GITHUB_WORKFLOW_DISPATCH_URL = os.getenv('GITHUB_WORKFLOW_DISPATCH_URL', '').strip()
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '').strip()
 
-# --- Static deploy pull on Hostinger (optional) ---
+# --- Static deploy pull (optional, legacy) ---
 STATIC_DEPLOY_ENABLED = os.getenv('STATIC_DEPLOY_ENABLED', '0') == '1'
 STATIC_DEPLOY_REPO = os.getenv('STATIC_DEPLOY_REPO', 'https://github.com/rovelati/123programmitv.git').strip()
 STATIC_DEPLOY_BRANCH = os.getenv('STATIC_DEPLOY_BRANCH', 'deploy-static').strip()
-STATIC_DEPLOY_DIR = os.getenv('STATIC_DEPLOY_DIR', '/home/u914016995/site_deploy').strip()
-STATIC_DEPLOY_PUBLIC_HTML = os.getenv('STATIC_DEPLOY_PUBLIC_HTML', '/home/u914016995/domains/123programmitv.it/public_html/').strip()
+STATIC_DEPLOY_DIR = os.getenv('STATIC_DEPLOY_DIR', '').strip()
+STATIC_DEPLOY_PUBLIC_HTML = os.getenv('STATIC_DEPLOY_PUBLIC_HTML', '').strip()
 
 # --- Verifica post-trigger (best effort) ---
-# Usa HEAD su una URL pubblica e controlla variazione di Last-Modified.
-REBUILD_VERIFY_URL = os.getenv('REBUILD_VERIFY_URL', 'https://www.123programmitv.it/').strip()
+REBUILD_VERIFY_URL = os.getenv('REBUILD_VERIFY_URL', 'https://www.intvstasera.it/').strip()
 REBUILD_VERIFY_TIMEOUT_SEC = int(os.getenv('REBUILD_VERIFY_TIMEOUT_SEC', '180'))
 REBUILD_VERIFY_POLL_SEC = int(os.getenv('REBUILD_VERIFY_POLL_SEC', '15'))
 IMAGE_ENRICHER_ENABLED = os.getenv('IMAGE_ENRICHER_ENABLED', '1') == '1'
@@ -1281,17 +1278,12 @@ def update_sync_log(supabase: Any, sync_log_id: Optional[int], payload: Dict[str
         logger.warning('Unable to update sync log %s: %s', sync_log_id, error)
 
 
-def get_supabase_client() -> Any:
+def get_db_client() -> Any:
     database_url = os.getenv('DATABASE_URL')
-    if database_url:
-        logger.info('Using direct Postgres connection from DATABASE_URL')
-        return create_postgres_client(database_url)
-
-    url = os.getenv('SUPABASE_URL')
-    key = os.getenv('SUPABASE_SERVICE_KEY')
-    if not url or not key:
-        raise ValueError('Missing DATABASE_URL or SUPABASE_URL/SUPABASE_SERVICE_KEY')
-    return create_client(url, key)
+    if not database_url:
+        raise ValueError('Missing DATABASE_URL (Postgres locale Contabo VPS)')
+    logger.info('Using Postgres connection from DATABASE_URL')
+    return create_postgres_client(database_url)
 
 
 def upsert_channels(supabase: Any, channels_data: List[Dict[str, Any]]) -> int:
@@ -1463,9 +1455,10 @@ def get_public_dir() -> str:
     public_dir = os.getenv('SITEMAP_PUBLIC_DIR')
     if public_dir:
         return public_dir
-    if os.path.isdir(DEFAULT_PUBLIC_DIR):
-        return DEFAULT_PUBLIC_DIR
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'public'))
+    astro_public = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', 'public'))
+    if os.path.isdir(astro_public):
+        return astro_public
+    return os.path.abspath(os.path.join(SCRIPT_DIR, '..', 'public'))
 
 
 def get_search_console_dir() -> str:
@@ -1745,7 +1738,7 @@ def main() -> int:
     }
     try:
         write_import_pipeline_report(report_context)
-        supabase = get_supabase_client()
+        supabase = get_db_client()
         trigger_source = os.getenv('SYNC_TRIGGER_SOURCE', 'cron')
         triggered_by = os.getenv('SYNC_TRIGGERED_BY')
         sync_log_id = create_sync_log(supabase, trigger_source, triggered_by)
