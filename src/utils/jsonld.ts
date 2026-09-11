@@ -15,6 +15,7 @@
  * - Publisher/Organization come entità root riutilizzata via @id
  */
 import type { Channel, Program } from '../types';
+import { getChannelLogo } from './channelLogos';
 import { absoluteUrl, SITE_ORIGIN } from './urls';
 import { filterStaseraPrograms } from './timeSlots';
 
@@ -93,6 +94,40 @@ function extractYear(title: string): string | null {
   return (y >= 1900 && y <= 2030) ? match[1] : null;
 }
 
+function defaultImageUrl(siteUrl = SITE_URL): string {
+  return `${siteUrl.replace(/\/$/, '')}/favicon/apple-touch-icon.png`;
+}
+
+/** URL assoluto per immagini schema.org (no data: URI). */
+function toAbsoluteImageUrl(raw: string | null | undefined, siteUrl = SITE_URL): string | null {
+  if (!raw?.trim()) return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('data:')) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) return `${siteUrl.replace(/\/$/, '')}${trimmed}`;
+  return `${siteUrl.replace(/\/$/, '')}/${trimmed}`;
+}
+
+/** Poster programma → logo canale → immagine sito (Movie richiede image). */
+function programImageUrl(program: Program, channel?: Channel, siteUrl = SITE_URL): string {
+  return (
+    toAbsoluteImageUrl(program.poster_url, siteUrl)
+    ?? (channel ? toAbsoluteImageUrl(channel.logo, siteUrl) : null)
+    ?? (program.channel_id
+      ? toAbsoluteImageUrl(getChannelLogo(program.channel_id), siteUrl)
+      : null)
+    ?? defaultImageUrl(siteUrl)
+  );
+}
+
+function schemaImageObject(url: string): Record<string, unknown> {
+  return {
+    '@type': 'ImageObject',
+    url,
+    representativeOfPage: true,
+  };
+}
+
 /** Determina il tipo schema.org del contenuto trasmesso */
 function workType(program: Program): 'Movie' | 'TVEpisode' | 'SportsEvent' {
   const cat   = (program.category ?? '').toLowerCase();
@@ -129,7 +164,7 @@ function onlineEventExtras(
     ...(program ? {
       description: program.description ?? `${program.title} in onda su ${channel.name}`,
     } : {}),
-    ...(program?.poster_url ? { image: program.poster_url } : {}),
+    ...(program ? { image: programImageUrl(program, channel) } : {}),
     ...(streamUrl ? {
       offers: {
         '@type': 'Offer',
@@ -250,16 +285,21 @@ function broadcastEventEntity(
   const streamUrl  = CHANNEL_STREAM_URL[channel.id];
   const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
 
+  const imageUrl = programImageUrl(program, channel, siteUrl);
+
   // workPerformed: Movie / TVEpisode / SportsEvent
   const workPerformed: Record<string, unknown> = {
     '@type': type,
     '@id': `${eventId}#work`,
     name: program.title,
     inLanguage: 'it',
-    ...(program.description ? { description: program.description }  : {}),
-    ...(program.category    ? { genre: program.category }           : {}),
-    ...(program.poster_url  ? { image: program.poster_url }         : {}),
-    ...(year                ? { dateCreated: year }                 : {}),
+    ...(program.description ? { description: program.description } : {}),
+    ...(program.category ? { genre: program.category } : {}),
+    ...(type === 'Movie'
+      ? { image: schemaImageObject(imageUrl), ...(year ? { dateCreated: year } : {}) }
+      : program.poster_url
+        ? { image: toAbsoluteImageUrl(program.poster_url, siteUrl) ?? program.poster_url }
+        : {}),
     url: channelUrl,
   };
 
@@ -303,7 +343,7 @@ function broadcastEventEntity(
     eventStatus: EVENT_SCHEDULED,
     inLanguage: 'it',
     url: channelUrl,
-    ...(program.poster_url ? { image: program.poster_url } : {}),
+    image: imageUrl,
     publishedOn: { '@id': `${channelUrl}#channel` },
     workPerformed,
   };
@@ -505,6 +545,7 @@ export function buildHubCategoryJsonLd({
     const channelUrl = p.channel_id ? absoluteUrl(`/${p.channel_id}`, siteUrl) : pageUrl;
     if (isFilmPage) {
       const year = extractYear(p.title);
+      const imageUrl = programImageUrl(p, undefined, siteUrl);
       return {
         '@type': 'ListItem',
         position: i + 1,
@@ -512,8 +553,8 @@ export function buildHubCategoryJsonLd({
           '@type': 'Movie',
           name: p.title,
           ...(p.description ? { description: p.description.slice(0, 160) } : {}),
-          ...(p.poster_url  ? { image: p.poster_url }  : {}),
-          ...(year          ? { dateCreated: year }     : {}),
+          image: schemaImageObject(imageUrl),
+          ...(year ? { dateCreated: year } : {}),
           inLanguage: 'it',
           url: channelUrl,
         },
@@ -586,10 +627,16 @@ export function buildProgramJsonLd({
     '@id': `${programUrl}#work`,
     name: program.title,
     inLanguage: 'it',
-    ...(program.description ? { description: program.description }                    : {}),
-    ...(program.category    ? { genre: program.category }                             : {}),
-    ...(program.poster_url  ? { image: { '@type': 'ImageObject', url: program.poster_url, representativeOfPage: true } } : {}),
-    ...(year                ? { dateCreated: year }                                   : {}),
+    ...(program.description ? { description: program.description } : {}),
+    ...(program.category ? { genre: program.category } : {}),
+    ...(type === 'Movie'
+      ? {
+          image: schemaImageObject(programImageUrl(program, channel, siteUrl)),
+          ...(year ? { dateCreated: year } : {}),
+        }
+      : program.poster_url
+        ? { image: schemaImageObject(toAbsoluteImageUrl(program.poster_url, siteUrl) ?? program.poster_url) }
+        : {}),
     url: programUrl,
     subjectOf: { '@id': `${programUrl}#event` },
     ...(streamUrl ? {
