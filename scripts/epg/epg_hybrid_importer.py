@@ -1708,8 +1708,6 @@ def run_image_enricher_step() -> Dict[str, Any]:
         result = subprocess.run(
             command,
             cwd=SCRIPT_DIR,
-            capture_output=True,
-            text=True,
             timeout=IMAGE_ENRICHER_TIMEOUT_SEC,
             check=False,
         )
@@ -1730,29 +1728,13 @@ def run_image_enricher_step() -> Dict[str, Any]:
             'durationSeconds': int(time.time() - started_at),
         }
 
-    stdout = (result.stdout or '').strip()
-    stderr = (result.stderr or '').strip()
-    summary = None
-    if stdout:
-        lines = [line.strip() for line in stdout.splitlines() if line.strip()]
-        if lines:
-            try:
-                summary = json.loads(lines[-1])
-            except json.JSONDecodeError:
-                summary = None
-
-    payload: Dict[str, Any] = {
+    return {
         'enabled': True,
         'ok': result.returncode == 0,
         'status': 'ok' if result.returncode == 0 else 'error',
         'returnCode': result.returncode,
         'durationSeconds': int(time.time() - started_at),
-        'stdoutTail': stdout[-2000:] if stdout else '',
-        'stderrTail': stderr[-2000:] if stderr else '',
     }
-    if summary is not None:
-        payload['summary'] = summary
-    return payload
 
 
 def main() -> int:
