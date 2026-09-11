@@ -27,6 +27,8 @@ if [ ! -f "$ASTRO_DIR/.env" ]; then
 fi
 
 load_env DATABASE_URL
+load_env TMDB_API_KEY
+load_env SITE_URL
 if [ -z "${DATABASE_URL:-}" ]; then
   log "ERROR: DATABASE_URL not set in $ASTRO_DIR/.env"
   exit 1
@@ -49,7 +51,11 @@ export SITE_BASE_URL="${SITE_URL:-https://www.intvstasera.it}"
 export SITEMAP_PUBLIC_DIR="$ASTRO_DIR/public"
 export SEARCH_CONSOLE_PUBLIC_DIR="$ASTRO_DIR/public/search-console"
 export SYNC_CHANNEL_LOGOS="${SYNC_CHANNEL_LOGOS:-0}"
-export IMAGE_ENRICHER_ENABLED="${IMAGE_ENRICHER_ENABLED:-0}"
+export IMAGE_ENRICHER_ENABLED="${IMAGE_ENRICHER_ENABLED:-1}"
+export IMAGE_STORE_MODE="${IMAGE_STORE_MODE:-remote}"
+export IMAGE_ENRICHER_BATCH_SIZE="${IMAGE_ENRICHER_BATCH_SIZE:-150}"
+export IMAGE_ENRICHER_MAX_ROUNDS="${IMAGE_ENRICHER_MAX_ROUNDS:-25}"
+export IMAGE_ENRICHER_TIMEOUT_SEC="${IMAGE_ENRICHER_TIMEOUT_SEC:-1200}"
 export SYNC_TRIGGER_SOURCE="${SYNC_TRIGGER_SOURCE:-contabo-rebuild}"
 export LOG_FILE="${LOG_FILE:-/var/log/programmitv-epg-import-python.log}"
 

@@ -1337,6 +1337,56 @@ def ensure_channel_configs(supabase: Any, channels_data: List[Dict[str, Any]]) -
         return 0
 
 
+def load_preserved_posters(supabase: Any, dates: set) -> Dict[str, str]:
+    """Conserva poster_url già arricchiti quando l'import giornaliero riscrive i programmi."""
+    preserved: Dict[str, str] = {}
+    for date_iso in sorted(dates):
+        try:
+            rows = (
+                supabase.table(PROGRAMS_TABLE)
+                .select('channel_id, slug, start_time, poster_url')
+                .eq('date', date_iso)
+                .execute()
+                .data
+                or []
+            )
+        except Exception as error:
+            logger.warning('Unable to load existing posters for %s: %s', date_iso, error)
+            continue
+        for row in rows:
+            poster = (row.get('poster_url') or '').strip()
+            if not poster:
+                continue
+            channel_id = row.get('channel_id')
+            slug = row.get('slug')
+            start_time = row.get('start_time')
+            if channel_id and slug:
+                preserved[f'{channel_id}|slug|{slug}'] = poster
+            if channel_id and start_time:
+                preserved[f'{channel_id}|start|{start_time}'] = poster
+    if preserved:
+        logger.info('Preserving %s existing poster URLs across re-import', len(preserved))
+    return preserved
+
+
+def resolve_import_poster(
+    program: Dict[str, Any],
+    title: str,
+    start_time: datetime,
+    preserved: Dict[str, str],
+) -> Optional[str]:
+    poster = (program.get('poster') or '').strip() or None
+    if poster:
+        return poster
+    channel_id = program.get('channel_id')
+    slug = slugify_title(title)
+    start_iso = start_time.isoformat()
+    return (
+        preserved.get(f'{channel_id}|slug|{slug}')
+        or preserved.get(f'{channel_id}|start|{start_iso}')
+    )
+
+
 def insert_programs(supabase: Any, programs_data: List[Dict[str, Any]]) -> int:
     if not programs_data:
         return 0
@@ -1348,6 +1398,8 @@ def insert_programs(supabase: Any, programs_data: List[Dict[str, Any]]) -> int:
             unique_dates.add(dt.astimezone(TIMEZONE).date().isoformat())
         except Exception:
             continue
+
+    preserved_posters = load_preserved_posters(supabase, unique_dates)
 
     for date_iso in sorted(unique_dates):
         try:
@@ -1364,10 +1416,11 @@ def insert_programs(supabase: Any, programs_data: List[Dict[str, Any]]) -> int:
                 continue
             start_time = datetime.fromisoformat(str(program['start']).replace('Z', '+00:00'))
             end_time = datetime.fromisoformat(str(program['end']).replace('Z', '+00:00'))
+            slug = slugify_title(title)
             batch.append({
                 'channel_id': program['channel_id'],
                 'title': title,
-                'slug': slugify_title(title),
+                'slug': slug,
                 'description': program.get('description') or '',
                 'start_time': start_time.isoformat(),
                 'end_time': end_time.isoformat(),
@@ -1375,7 +1428,7 @@ def insert_programs(supabase: Any, programs_data: List[Dict[str, Any]]) -> int:
                 'time_slot': get_time_slot(start_time),
                 'genre': program.get('category'),
                 'rating': program.get('rating'),
-                'poster_url': program.get('poster'),
+                'poster_url': resolve_import_poster(program, title, start_time, preserved_posters),
                 'indexable': should_index_program(program),
             })
             if len(batch) >= BATCH_SIZE:
