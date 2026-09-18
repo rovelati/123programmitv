@@ -41,8 +41,7 @@ fi
 
 if [ ! -f "$VENV_DIR/bin/pip" ]; then
   log "Creating Python venv for EPG import..."
-  rm -rf "$VENV_DIR"
-  python3 -m venv "$VENV_DIR"
+  python3 -m venv --clear "$VENV_DIR" 2>/dev/null || python3 -m venv "$VENV_DIR"
 fi
 
 log "Installing/updating EPG importer dependencies..."
