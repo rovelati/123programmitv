@@ -129,6 +129,17 @@ else
   log "WARN: Google Indexing API notifications failed — check GOOGLE_SA_KEY_FILE in .env"
 fi
 
+log "Microsoft IndexNow API notifications..."
+if node scripts/notify-indexnow.js 2>&1 | tee -a "$LOG"; then
+  if [ -f public/search-console/indexnow-latest.json ]; then
+    mkdir -p "$OUT/search-console"
+    cp public/search-console/indexnow-latest.json "$OUT/search-console/"
+    log "Synced indexnow-latest.json into deploy bundle"
+  fi
+else
+  log "WARN: IndexNow API notifications failed"
+fi
+
 if [ -z "${CF_API_KEY:-}" ] || [ -z "${CF_API_EMAIL:-}" ]; then
   log "WARN: CF_API_KEY/CF_API_EMAIL missing — skip Pages deploy"
   exit 0

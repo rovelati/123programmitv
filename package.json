@@ -11,6 +11,7 @@
     "typecheck": "astro check --no-watch",
     "validate:seo": "node scripts/validate-seo-live.js",
     "notify-indexing": "node scripts/notify-indexing.js",
+    "notify:indexnow": "node scripts/notify-indexnow.js",
     "notify-websub": "node scripts/notify-websub.js",
     "generate-seo-dashboard": "node scripts/generate-seo-dashboard.js",
     "build:node": "astro build && npm run postbuild"

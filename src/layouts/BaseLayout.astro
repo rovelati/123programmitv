@@ -168,11 +168,15 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
     <!-- Apple Touch Icon (iOS home screen) -->
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-    <!-- Web App Manifest (Android / PWA) -->
+    <!-- Web App Manifest (Android / PWA / Edge) -->
     <link rel="manifest" href="/site.webmanifest" />
-    <!-- MS Tile -->
-    <meta name="msapplication-TileColor" content="#3b82f6" />
+    <!-- Microsoft Windows & Edge Integration -->
+    <meta name="application-name" content="In TV Stasera" />
+    <meta name="msapplication-TileColor" content="#2563eb" />
     <meta name="msapplication-TileImage" content="/web-app-manifest-192x192.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="msapplication-tooltip" content="Guida TV Italiana Stasera e Ora" />
+    <meta name="msapplication-starturl" content="/" />
 
     <!-- ═══ JSON-LD Structured Data ═══════════════════════════════════════ -->
     {schemas.length > 0 && <SchemaInjector {schemas} />}

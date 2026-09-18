@@ -1,12 +1,59 @@
 {
+  "id": "https://www.intvstasera.it/",
   "name": "In TV Stasera — Guida TV Italiana",
   "short_name": "InTVStasera",
   "description": "Guida TV italiana: programmi stasera su RAI, Mediaset, La7 e canali tematici.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
   "background_color": "#0f172a",
-  "theme_color": "#3b82f6",
+  "theme_color": "#2563eb",
   "lang": "it",
+  "dir": "ltr",
+  "categories": [
+    "entertainment",
+    "magazines",
+    "news"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 380
+  },
+  "shortcuts": [
+    {
+      "name": "Stasera in TV",
+      "short_name": "Stasera",
+      "description": "Guida ai programmi TV in prima serata",
+      "url": "/stasera/",
+      "icons": [{ "src": "/favicon/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "In Onda Ora",
+      "short_name": "Ora in TV",
+      "description": "Cosa c'è in TV in questo momento",
+      "url": "/",
+      "icons": [{ "src": "/favicon/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Film di Oggi",
+      "short_name": "Film",
+      "description": "Tutti i film in programmazione oggi",
+      "url": "/film/",
+      "icons": [{ "src": "/favicon/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Programmi Domani",
+      "short_name": "Domani",
+      "description": "Palinsesto TV di domani",
+      "url": "/domani/",
+      "icons": [{ "src": "/favicon/favicon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
   "icons": [
     {
       "src": "/favicon/favicon-16x16.png",
@@ -37,3 +84,4 @@
     }
   ]
 }
+
