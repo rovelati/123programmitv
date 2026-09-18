@@ -48,19 +48,6 @@ const nextProgram = displayProgram
 // Per stasera/domani: progress bar sempre a 0 (programma futuro)
 const progress = 0;
 
-// ─── JSON per ORA mode (usato dal JS client-side) ─────────────────────────
-// Payload ultra-snello: solo campi essenziali per determinare il programma in onda
-const programsJson = mode === 'ora'
-  ? JSON.stringify(programs.map(p => ({
-      id: p.id,
-      title: p.title,
-      startTime: p.startTime,
-      endTime: p.endTime,
-      category: p.category ?? '',
-      poster_url: p.poster_url ?? null,
-    })))
-  : '[]';
-
 // ─── JSON overlay per stasera/domani (server-side) ────────────────────────
 const staseraOverlayJson = displayProgram
   ? JSON.stringify({
@@ -114,7 +101,7 @@ const staseraOverlayJson = displayProgram
 
       {/* ── MODE: ORA → placeholder, aggiornato da JS ── */}
       {mode === 'ora' && (
-        <div class="ora-program-content" data-programs={programsJson}>
+        <div class="ora-program-content">
           <!-- Scheletro iniziale — JS lo sostituisce subito -->
           <div class="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-1.5"></div>
           <div class="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-3"></div>
@@ -259,23 +246,39 @@ function buildCardHTML(prog, nextProg, isLive, isUpcoming, progress, programData
 
 function updateOraCards() {
   const now = Date.now();
+  let liveEpg: Record<string, [string, string, number, number, string, string | null][]> = {};
+  try {
+    const el = document.getElementById('live-epg-data');
+    if (el && el.textContent) {
+      liveEpg = JSON.parse(el.textContent);
+    }
+  } catch (e) {}
+
   document.querySelectorAll('.ora-card').forEach(card => {
     try {
       const contentEl = card.querySelector('.ora-program-content');
       if (!contentEl) return;
 
-      // Il JSON è nell'attributo data-programs (Astro valuta gli attributi, non il contenuto dei <script>)
-      let programs = [];
-      try { programs = JSON.parse(contentEl.dataset.programs || '[]'); } catch(e) { return; }
-      if (!programs.length) {
+      const htmlCard = card as HTMLElement;
+      const channelId   = htmlCard.dataset.channelId   || '';
+      const channelLogo = htmlCard.dataset.channelLogo  || '';
+      const channelName = htmlCard.dataset.channelName  || '';
+
+      const rawPrograms = liveEpg[channelId] || [];
+      if (!rawPrograms.length) {
         contentEl.innerHTML = '<p class="text-xs text-slate-400 dark:text-slate-500 italic">Nessun programma</p>';
         return;
       }
 
-      // Dati canale salvati sul <a> (data-channel-*)
-      const channelId   = card.dataset.channelId   || '';
-      const channelLogo = card.dataset.channelLogo  || '';
-      const channelName = card.dataset.channelName  || '';
+      // Compact item format: [id, title, startSec, endSec, category, poster_url]
+      const programs = rawPrograms.map(p => ({
+        id: p[0],
+        title: p[1],
+        startTime: new Date(p[2] * 1000).toISOString(),
+        endTime: new Date(p[3] * 1000).toISOString(),
+        category: p[4] || '',
+        poster_url: p[5] || null,
+      }));
 
       const live = programs.find(p => new Date(p.startTime).getTime() <= now && now < new Date(p.endTime).getTime()) || null;
       const justStarted = programs
@@ -309,7 +312,7 @@ function updateOraCards() {
           startTime:   display.startTime,
           endTime:     display.endTime,
           category:    display.category    || '',
-          description: display.description || '',
+          description: '',
           poster_url:  display.poster_url  || null,
           channelId,
           channelLogo,

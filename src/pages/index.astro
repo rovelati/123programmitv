@@ -7,7 +7,7 @@ import ChannelNav from '../components/ChannelNav.astro';
 import StaseraPerTe from '../components/StaseraPerTe.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
 import { buildEveningCandidates } from '../utils/eveningPrefs';
 
@@ -37,6 +37,22 @@ const schemas = buildHubHomeJsonLd({
 // Serializza i channel_id per il conteggio live lato client
 const channelIds = JSON.stringify(channelsWithPrograms.map(ch => ch.id));
 const eveningCandidates = buildEveningCandidates(channels, programs);
+
+// Palinsesti compatti per la modalità 'ora' in un unico blocco JSON:
+// [id, title, startSec, endSec, category, poster_url]
+const liveEpgData: Record<string, [string, string, number, number, string, string | null][]> = {};
+for (const ch of channelsWithPrograms) {
+  liveEpgData[ch.id] = programs
+    .filter(p => p.channel_id === ch.id && toRomeMinutes(p.endTime) >= 5 * 60)
+    .map(p => [
+      p.id,
+      p.title,
+      Math.floor(new Date(p.startTime).getTime() / 1000),
+      Math.floor(new Date(p.endTime).getTime() / 1000),
+      p.category ?? '',
+      p.poster_url ?? null,
+    ]);
+}
 ---
 
 <HubLayout {title} {description} {keywords} canonicalPath="/" {schemas}>
@@ -102,6 +118,8 @@ const eveningCandidates = buildEveningCandidates(channels, programs);
 
   </section>
 
+  <script id="live-epg-data" type="application/json" set:html={JSON.stringify(liveEpgData)}></script>
+
 </HubLayout>
 
 <script define:vars={{ channelIds }}>
@@ -121,20 +139,21 @@ function updateHero() {
   const clockEl = document.getElementById('hero-clock');
   if (clockEl) clockEl.textContent = fmtTime();
 
-  // Conteggio live: conta le ora-card che hanno un programma live
-  const now = Date.now();
+  // Conteggio live: calcolato dai dati palinsesto centralizzati
+  const now = Math.floor(Date.now() / 1000);
   let liveCount = 0;
-  document.querySelectorAll('.ora-card').forEach(card => {
-    const contentEl = card.querySelector('.ora-program-content');
-    if (!contentEl) return;
-    try {
-      const progs = JSON.parse(contentEl.dataset.programs || '[]');
-      const isLive = progs.some(
-        p => new Date(p.startTime).getTime() <= now && now < new Date(p.endTime).getTime()
-      );
-      if (isLive) liveCount++;
-    } catch {}
-  });
+  try {
+    const el = document.getElementById('live-epg-data');
+    if (el && el.textContent) {
+      const epg = JSON.parse(el.textContent);
+      for (const chId in epg) {
+        const progs = epg[chId] || [];
+        if (progs.some(p => p[2] <= now && now < p[3])) {
+          liveCount++;
+        }
+      }
+    }
+  } catch {}
 
   const countEl = document.getElementById('hero-live-count');
   if (countEl) {
