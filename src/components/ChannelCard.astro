@@ -16,7 +16,11 @@ interface Props {
 
 const { channel, programs: rawPrograms, mode = 'stasera' } = Astro.props;
 
-const programs = mode === 'stasera' ? filterStaseraPrograms(rawPrograms) : rawPrograms;
+const programs = mode === 'stasera'
+  ? filterStaseraPrograms(rawPrograms)
+  : mode === 'ora'
+    ? rawPrograms.filter(p => toRomeMinutes(p.endTime) >= 5 * 60)
+    : rawPrograms;
 
 // ─── Soglie orarie (Europe/Rome) ───────────────────────────────────────────
 const PRIME_START   = 20 * 60 + 30; // 20:30
@@ -45,7 +49,7 @@ const nextProgram = displayProgram
 const progress = 0;
 
 // ─── JSON per ORA mode (usato dal JS client-side) ─────────────────────────
-// Include tutti i campi necessari per l'overlay
+// Payload snello: descrizione max 100 char per non appesantire il DOM
 const programsJson = mode === 'ora'
   ? JSON.stringify(programs.map(p => ({
       id: p.id,
@@ -53,7 +57,7 @@ const programsJson = mode === 'ora'
       startTime: p.startTime,
       endTime: p.endTime,
       category: p.category ?? '',
-      description: p.description ?? '',
+      description: p.description ? p.description.slice(0, 100) : '',
       poster_url: p.poster_url ?? null,
     })))
   : '[]';
