@@ -105,7 +105,7 @@ export function buildEveningCandidates(
       startTime: p.startTime,
       endTime: p.endTime,
       category: p.category ?? '',
-      description: p.description ? p.description.slice(0, 100) : '',
+      description: '',
       poster_url: p.poster_url ?? null,
       channelId: ch.id,
       channelName: ch.name,
