@@ -4,7 +4,7 @@ set -euo pipefail
 
 ASTRO_DIR="${ASTRO_DIR:-/var/www/123programmitv.it/astro}"
 EPG_DIR="$ASTRO_DIR/scripts/epg"
-VENV_DIR="$EPG_DIR/.venv"
+VENV_DIR="${EPG_VENV:-/var/www/123programmitv.it/epg_venv}"
 LOG="${EPG_IMPORT_LOG:-/var/log/programmitv-epg-import.log}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
@@ -39,9 +39,10 @@ if [ ! -f "$EPG_DIR/epg_importer.py" ]; then
   exit 1
 fi
 
-if [ ! -f "$VENV_DIR/bin/pip" ]; then
-  log "Creating Python venv for EPG import..."
-  python3 -m venv --clear "$VENV_DIR" 2>/dev/null || python3 -m venv "$VENV_DIR"
+if [ ! -f "$VENV_DIR/bin/pip" ] || ! "$VENV_DIR/bin/pip" --version >/dev/null 2>&1; then
+  log "Creating Python venv for EPG import at $VENV_DIR..."
+  rm -rf "$VENV_DIR" 2>/dev/null || true
+  python3 -m venv "$VENV_DIR"
 fi
 
 log "Installing/updating EPG importer dependencies..."
