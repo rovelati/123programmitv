@@ -7,6 +7,12 @@ EPG_DIR="$ASTRO_DIR/scripts/epg"
 VENV_DIR="${EPG_VENV:-/var/www/123programmitv.it/epg_venv}"
 LOG="${EPG_IMPORT_LOG:-/var/log/programmitv-epg-import.log}"
 
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+if [ -d "${HOME:-/root}/.nvm" ]; then
+  export NVM_DIR="${HOME:-/root}/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+fi
+
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
 
 load_env() {

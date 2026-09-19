@@ -6,6 +6,13 @@ ASTRO_DIR="${ASTRO_DIR:-/var/www/123programmitv.it/astro}"
 LOG="${LOG:-/var/log/programmitv-astro-rebuild.log}"
 CF_PROJECT="${CF_PROJECT:-123programmitv}"
 
+# Assicura che PATH, NVM e Node >= 22 siano sempre caricati anche se eseguito da crontab
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+if [ -d "${HOME:-/root}/.nvm" ]; then
+  export NVM_DIR="${HOME:-/root}/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+fi
+
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
 
 load_env() {
