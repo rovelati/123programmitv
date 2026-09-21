@@ -60,7 +60,7 @@ const HEAD_URLS = [
   '/la7', '/la7d', '/tv8', '/nove',
   '/iris', '/focus', '/dmax', '/giallo', '/real-time',
   '/warner-tv', '/cine34', '/tgcom24', '/top-crime', '/cielo',
-  '/mediaset-extra',
+  '/mediaset-extra', '/inter-tv', '/milan-tv',
 ].map(p => absoluteUrl(p));
 
 async function getGoogleAuth() {

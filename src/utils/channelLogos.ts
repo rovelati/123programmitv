@@ -51,6 +51,7 @@ const LOCAL_LOGOS: Record<string, string> = {
   // ── Altri ────────────────────────────────────────────────────────────────
   'tv2000':         '/channel-logos/tv2000.png',
   'supertennis':    '/channel-logos/supertennis.png',
+  'inter-tv':       '/channel-logos/inter-tv.png',
   'euronews':       '/channel-logos/euronews.png',
   'bloomberg':      '/channel-logos/bloomberg.png',
 };

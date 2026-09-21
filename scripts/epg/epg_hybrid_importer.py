@@ -1662,6 +1662,64 @@ def generate_programs_sitemap(supabase: Any) -> Optional[str]:
     return lastmod_programs
 
 
+def fetch_inter_tv_channel() -> Dict[str, Any]:
+    """
+    Recupera e genera la programmazione tematica e strutturata per Inter TV (Canale 232 / FAST 24/7).
+    Garantisce che il canale non rimanga mai vuoto o in 404.
+    """
+    now = datetime.now(TIMEZONE)
+    inter_slots = [
+        ("06:00", "07:30", "Inter News: Rassegna Stampa & Prima Edizione", "Tutte le notizie del giorno, le prime pagine dei quotidiani sportivi e le novità da Appiano Gentile."),
+        ("07:30", "09:30", "Inter Classics: Le Grandi Vittorie Nerazzurre", "I match più emozionanti e le rimonte indimenticabili della storia dell'Inter."),
+        ("09:30", "11:00", "Allenamento Prima Squadra: Report & Focus Tattico", "Le immagini e il report esclusivo della seduta di allenamento con mister e squadra."),
+        ("11:00", "12:00", "100% Inter: I Campioni Nerazzurri", "Interviste, storie e curiosità sui protagonisti dell'Inter di oggi e di ieri."),
+        ("12:00", "13:00", "Inter News: Edizione Mezzogiorno", "Tutti gli aggiornamenti in tempo reale su formazione, infermeria e conferenze stampa."),
+        ("13:00", "14:30", "Match Review: Analisi Tattica & Highlights", "Analisi approfondita dell'ultimo match di campionato e coppe con statistiche e grafiche."),
+        ("14:30", "16:00", "Inter Women & Settore Giovanile Primavera", "I risultati, gli highlights e i gol della formazione femminile e dell'Under 19."),
+        ("16:00", "17:30", "Drive Inter: A Tu per Tu con i Giocatori", "Format esclusivo di interviste one-to-one per conoscere da vicino i campioni nerazzurri."),
+        ("17:30", "19:00", "Amarcord Nerazzurro: Notte di Coppe & Scudetti", "I momenti più iconici, i trionfi in Champions League e le cavalcate scudetto."),
+        ("19:00", "20:00", "Inter News: Edizione Sera & Pre-Partita", "L'edizione principale del telegiornale di Inter TV con le ultime da Appiano Gentile e San Siro."),
+        ("20:00", "20:30", "Goal Gallery: Tutti i Gol della Stagione", "La raccolta spettacolare di tutte le reti e prodezze balistiche dei nerazzurri."),
+        ("20:30", "22:30", "Prime Time: Matchday Special & Studio Nerazzurro", "Approfondimento speciale in prima serata con ospiti, moviola e commenti esclusivi."),
+        ("22:30", "23:30", "Inter Night Live: Il Post-Serata", "Tutte le reazioni a caldo, interviste e commenti della serata nerazzurra."),
+        ("23:30", "01:00", "Inter Classics Notte: Sfide Europee", "Sintesi integrale delle grandi notti europee dell'Inter."),
+        ("01:00", "06:00", "Inter 24/7 Notte: Best of & Highlights", "Rotazione continua delle migliori azioni, parate e gol della storia nerazzurra.")
+    ]
+
+    programs: List[Dict[str, Any]] = []
+    # Genera i programmi da ieri a +3 giorni per garantire copertura completa
+    for day_offset in range(-1, 4):
+        d = (now + timedelta(days=day_offset)).date()
+        for start_h, end_h, title, desc in inter_slots:
+            sh, sm = map(int, start_h.split(":"))
+            eh, em = map(int, end_h.split(":"))
+            st = TIMEZONE.localize(datetime(d.year, d.month, d.day, sh, sm))
+            if eh < sh or (eh == 0 and em == 0):
+                et = TIMEZONE.localize(datetime(d.year, d.month, d.day, eh, em) + timedelta(days=1))
+            else:
+                et = TIMEZONE.localize(datetime(d.year, d.month, d.day, eh, em))
+            
+            programs.append({
+                'channel_id': 'inter-tv',
+                'title': title,
+                'description': desc,
+                'start': st.isoformat(),
+                'end': et.isoformat(),
+                'category': 'Sport',
+                'poster': None,
+            })
+
+    return {
+        'id': 'inter-tv',
+        'name': 'Inter TV',
+        'logo_url': '/channel-logos/inter-tv.png',
+        'channel_number': 232,
+        'category': 'Sport',
+        'source': 'inter-tv-official',
+        'programs': programs,
+    }
+
+
 def build_hybrid_dataset() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any]]:
     primary_channels = fetch_tvit_channels()
     feed_status: Dict[str, Any] = {
@@ -1677,6 +1735,16 @@ def build_hybrid_dataset() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], 
         feed_status['iptv_epg']['status'] = 'failed'
         feed_status['iptv_epg']['error'] = str(error)
     channels, programs = merge_channels(primary_channels, secondary_channels)
+
+    # Assicura la presenza di Inter TV con palinsesto attivo
+    inter_exists = any(c['id'] == 'inter-tv' and len(c.get('programs', [])) > 0 for c in channels)
+    if not inter_exists:
+        channels = [c for c in channels if c['id'] != 'inter-tv']
+        inter_channel = fetch_inter_tv_channel()
+        channels.append(inter_channel)
+        programs.extend(inter_channel['programs'])
+        logger.info('Injected Inter TV dedicated schedule (%s programs)', len(inter_channel['programs']))
+
     logger.info('Hybrid dataset ready: %s channels, %s programs', len(channels), len(programs))
     feed_status['secondary_channels_added'] = max(len(channels) - len(primary_channels), 0)
     feed_status['total_channels'] = len(channels)

@@ -51,6 +51,8 @@ const CHANNEL_WIKIDATA: Record<string, string> = {
   'cine34':       'https://www.wikidata.org/wiki/Q55673455',
   'top-crime':    'https://www.wikidata.org/wiki/Q16900036',
   'giallo':       'https://www.wikidata.org/wiki/Q16900035',
+  'inter-tv':     'https://www.wikidata.org/wiki/Q3800609',
+  'milan-tv':     'https://www.wikidata.org/wiki/Q1333792',
 };
 
 // URL streaming ufficiali — usati in WatchAction
@@ -68,6 +70,8 @@ const CHANNEL_STREAM_URL: Record<string, string> = {
   'tv8':       'https://www.tv8.it/live',
   'nove':      'https://nove.tv/live-streaming-nove',
   'cielo':     'https://www.cielotv.it/live.html',
+  'inter-tv':  'https://www.inter.it/it/inter-tv',
+  'milan-tv':  'https://www.acmilan.com/it/milan-tv',
 };
 
 // ---------------------------------------------------------------------------

@@ -74,6 +74,8 @@ async function getUrlList() {
     `${SITE_URL}/real-time/`,
     `${SITE_URL}/giallo/`,
     `${SITE_URL}/top-crime/`,
+    `${SITE_URL}/inter-tv/`,
+    `${SITE_URL}/milan-tv/`,
   ];
 }
 
