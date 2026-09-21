@@ -1526,11 +1526,16 @@ def get_search_console_dir() -> str:
 
 def write_json_report(filename: str, payload: Dict[str, Any]) -> str:
     target_dir = get_search_console_dir()
+    os.makedirs(target_dir, exist_ok=True)
     final_path = os.path.join(target_dir, filename)
     temp_path = f'{final_path}.tmp'
-    with open(temp_path, 'w', encoding='utf-8') as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
-    os.replace(temp_path, final_path)
+    try:
+        with open(temp_path, 'w', encoding='utf-8') as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2)
+        if os.path.exists(temp_path):
+            os.replace(temp_path, final_path)
+    except Exception as err:
+        logger.warning('Could not write json report %s: %s', filename, err)
     return final_path
 
 
