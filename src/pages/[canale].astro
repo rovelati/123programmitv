@@ -71,8 +71,8 @@ const { channel, programs, allChannels, relatedChannels, today } = Astro.props;
 const dateLabel = formatDateIT(today);
 const stream = getChannelStream(channel.id);
 
-const title       = `Programmi ${channel.name} Stasera | Guida TV dalle 20:30 — InTVStasera`;
-const description = `Programmi ${channel.name} stasera: guida TV della sera con prima serata e seconda serata, orari aggiornati fino alle 02:00.`;
+const title       = `${channel.name} stasera: programmi TV e prima serata | inTVstasera.it`;
+const description = `Programmi ${channel.name} stasera: guida TV della sera con prima serata e seconda serata, orari aggiornati.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
 const schemas = buildHubChannelJsonLd({
@@ -80,7 +80,7 @@ const schemas = buildHubChannelJsonLd({
   programs,
   today,
   canonicalPath,
-  pageTitle: `Programmi ${channel.name} stasera`,
+  pageTitle: `${channel.name} stasera: programmi TV e prima serata`,
   pageDescription: description,
 });
 
@@ -92,7 +92,7 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
-      { label: 'Programmi stasera', href: '/stasera' },
+      { label: 'inTV stasera', href: '/' },
       { label: channel.name },
     ]} />
   </div>
@@ -112,13 +112,13 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
       </div>
       <div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          Programmi <span class="text-blue-600">{channel.name}</span> stasera
+          {channel.name} stasera: <span class="text-blue-600">programmi e palinsesto</span>
         </h1>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{dateLabel} · dalle 20:30 alle 02:00</p>
       </div>
     </div>
     <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">
-      Palinsesto serale di {channel.name}: prima serata, seconda serata e programmi fino alle 02:00.
+      Palinsesto serale di {channel.name}: prima serata, seconda serata e programmi TV in onda questa sera.
     </p>
 
     {stream && (
@@ -144,8 +144,11 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
     <ChannelNav currentChannelId={channel.id} />
     <nav class="flex flex-wrap gap-2 text-xs mt-4" aria-label="Navigazione rapida">
-      <a href="/stasera/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
-        Tutti i canali stasera
+      <a href="/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
+        inTV stasera
+      </a>
+      <a href="/ora/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
+        inTV ora
       </a>
       <a href="/film-stasera/" class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 transition-colors font-medium">
         Film stasera
@@ -163,8 +166,8 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
     {programs.length === 0 ? (
       <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
         <p class="text-slate-400 dark:text-slate-500">Nessun programma serale disponibile per {channel.name} stasera.</p>
-        <a href="/stasera/" class="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm transition-colors">
-          ← Tutti i canali stasera
+        <a href="/" class="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm transition-colors">
+          ← Torna a inTV stasera
         </a>
       </div>
     ) : (
@@ -184,8 +187,8 @@ const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
               Confronta subito film, serie e programmi in prima serata sugli altri canali principali.
             </p>
           </div>
-          <a href="/stasera/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline shrink-0">
-            Vedi tutti i canali stasera →
+          <a href="/" class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline shrink-0">
+            Tutti i canali stasera →
           </a>
         </div>
 

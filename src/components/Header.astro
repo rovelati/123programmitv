@@ -8,8 +8,8 @@ const CATEGORY_HUBS = [
 ];
 
 const pathname = Astro.url.pathname;
-const isOra     = pathname === '/';
-const isStasera = pathname.startsWith('/stasera');
+const isStasera = pathname === '/' || pathname === '';
+const isOra     = pathname.startsWith('/ora');
 const isDomani  = pathname.startsWith('/domani');
 ---
 
@@ -19,22 +19,22 @@ const isDomani  = pathname.startsWith('/domani');
     <div class="flex items-center justify-between h-16 gap-3">
 
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-3 select-none group shrink-0" aria-label="In TV Stasera - Home">
+      <a href="/" class="flex items-center gap-3 select-none group shrink-0" aria-label="inTV stasera - Home">
         <div class="transition-all duration-300 group-hover:scale-105 group-hover:rotate-1">
-          <img src="/favicon.svg" alt="In TV Stasera" class="w-[52px] h-[44px] drop-shadow-lg" />
+          <img src="/favicon.svg" alt="inTV stasera" class="w-[52px] h-[44px] drop-shadow-lg" />
         </div>
         <div class="hidden sm:flex flex-col -space-y-1.5">
-          <span class="text-[10px] font-black tracking-[0.3em] text-blue-600 uppercase">Italia</span>
+          <span class="text-[10px] font-black tracking-[0.3em] text-blue-600 uppercase">inTV</span>
           <span class="text-xl font-light tracking-tighter text-slate-800 dark:text-slate-200">
-            PROGRAMMI <span class="font-black text-slate-950 dark:text-white">TV</span>
+            STASERA <span class="font-black text-slate-950 dark:text-white">.IT</span>
           </span>
         </div>
       </a>
 
-      <!-- Nav desktop: Ora | Stasera | Domani | — | Film | Serie | Sport -->
+      <!-- Nav desktop: Stasera | Ora | Domani | — | Film | Serie | Sport -->
       <nav class="hidden md:flex items-center gap-1 text-sm flex-1 justify-center" aria-label="Navigazione principale">
-        <a href="/" class:list={['px-3 py-1.5 rounded-lg font-semibold transition-colors', isOra ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800']}>Ora</a>
-        <a href="/stasera/" class:list={['px-3 py-1.5 rounded-lg font-semibold transition-colors', isStasera ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800']}>Stasera</a>
+        <a href="/" class:list={['px-3 py-1.5 rounded-lg font-semibold transition-colors', isStasera ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800']}>Stasera</a>
+        <a href="/ora/" class:list={['px-3 py-1.5 rounded-lg font-semibold transition-colors', isOra ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800']}>Ora</a>
         <a href="/domani/" class:list={['px-3 py-1.5 rounded-lg font-semibold transition-colors', isDomani ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800']}>Domani</a>
         <span class="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></span>
         {CATEGORY_HUBS.map(cat => (
@@ -47,11 +47,11 @@ const isDomani  = pathname.startsWith('/domani');
       <!-- Destra: mobile tabs + toggle tema -->
       <div class="flex items-center gap-2 shrink-0">
 
-        <!-- Mobile: ORA / SERA / DOM -->
+        <!-- Mobile: STASERA / ORA / DOM -->
         <div class="flex md:hidden items-center gap-0.5 bg-slate-100 dark:bg-slate-800/95 dark:ring-1 dark:ring-slate-700 rounded-full p-1">
-          <a href="/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isOra ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>ORA</a>
-          <a href="/stasera/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isStasera ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>SERA</a>
-          <a href="/domani/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isDomani ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>DOM</a>
+          <a href="/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isStasera ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>STASERA</a>
+          <a href="/ora/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isOra ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>ORA</a>
+          <a href="/domani/" class:list={['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors whitespace-nowrap', isDomani ? 'bg-blue-600 text-white shadow-sm shadow-blue-950/30' : 'text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white']}>DOMANI</a>
         </div>
 
         <!-- Toggle dark/light mode -->

@@ -53,7 +53,7 @@ async function getUrlList() {
   // Fallback URLs
   return [
     `${SITE_URL}/`,
-    `${SITE_URL}/stasera/`,
+    `${SITE_URL}/ora/`,
     `${SITE_URL}/domani/`,
     `${SITE_URL}/film-stasera/`,
     `${SITE_URL}/serie-stasera/`,

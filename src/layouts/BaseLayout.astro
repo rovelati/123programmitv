@@ -95,8 +95,8 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <title>{title}</title>
     <meta name="description" content={description} />
     {keywords && <meta name="keywords" content={keywords} />}
-    <meta name="author" content="Redazione In TV Stasera" />
-    <meta name="publisher" content="In TV Stasera" />
+    <meta name="author" content="Redazione inTV stasera" />
+    <meta name="publisher" content="inTVstasera.it" />
     {noindex
       ? <meta name="robots" content="noindex, nofollow" />
       : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
@@ -107,7 +107,7 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <!-- Tipo e URL -->
     <meta property="og:type"        content={ogType} />
     <meta property="og:url"         content={canonicalUrl} />
-    <meta property="og:site_name"   content="In TV Stasera" />
+    <meta property="og:site_name"   content="inTVstasera.it" />
     <meta property="og:locale"      content="it_IT" />
 
     <!-- Titolo e descrizione -->

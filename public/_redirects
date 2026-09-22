@@ -6,8 +6,9 @@ https://intvstasera.it/*         https://www.intvstasera.it/:splat  301
 # Redirect 301 dai vecchi URL React → nuova struttura piatta
 
 # Hub time slot
-# /stasera ora è una pagina reale — NON redirigere
-/oggi                       /           301
+/stasera                        /           301
+/stasera/                       /           301
+/oggi                           /           301
 
 # Canali (da /programmi-tv/slug → /slug/)
 /programmi-tv/rai-1         /rai-1/      301

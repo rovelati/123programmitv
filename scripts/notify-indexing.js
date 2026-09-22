@@ -51,6 +51,7 @@ function writeReport(payload) {
 
 const HEAD_URLS = [
   '/',
+  '/ora',
   '/domani',
   '/film-stasera',
   '/serie-stasera',

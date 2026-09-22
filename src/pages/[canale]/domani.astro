@@ -39,7 +39,7 @@ interface Props {
 const { channel, programs, allChannels, tomorrow } = Astro.props;
 const dateLabel = formatDateIT(tomorrow);
 
-const title       = `Programmi ${channel.name} Domani | Palinsesto e Guida TV — InTVStasera`;
+const title       = `${channel.name} domani: programmi TV e palinsesto | inTVstasera.it`;
 const description = `Programmi ${channel.name} domani: palinsesto completo con orari, prima serata, film, serie TV e programmi in onda.`;
 const keywords    = `programmi ${channel.name.toLowerCase()} domani, ${channel.name.toLowerCase()} domani, guida tv ${channel.name.toLowerCase()} domani`;
 const canonicalPath = `/${channel.id}/domani`;
@@ -48,7 +48,7 @@ const schemas = buildHubChannelJsonLd({
   programs,
   today: tomorrow,
   canonicalPath,
-  pageTitle: `Programmi ${channel.name} domani`,
+  pageTitle: `${channel.name} domani: programmi TV e palinsesto`,
   pageDescription: description,
 });
 
@@ -60,8 +60,8 @@ const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
-      { label: 'Programmi stasera', href: '/' },
-      { label: channel.name, href: `/${channel.id}` },
+      { label: 'inTV stasera', href: '/' },
+      { label: channel.name, href: `/${channel.id}/` },
       { label: 'Domani' },
     ]} />
   </div>
@@ -82,7 +82,7 @@ const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
       </div>
       <div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          Programmi <span class="text-blue-600">{channel.name}</span> domani
+          {channel.name} domani: <span class="text-blue-600">programmi e palinsesto</span>
         </h1>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1 capitalize">{dateLabel}</p>
       </div>
@@ -100,7 +100,10 @@ const ogImageAlt = `Programmi ${channel.name} domani — guida TV`;
         ← {channel.name} stasera
       </a>
       <a href="/domani/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
-        Tutti i canali domani
+        inTV domani (tutti i canali)
+      </a>
+      <a href="/ora/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-medium">
+        inTV ora
       </a>
       <a href="/film-stasera/" class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 transition-colors font-medium">
         Film stasera

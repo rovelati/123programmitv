@@ -1,0 +1,175 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import ChannelCard from '../components/ChannelCard.astro';
+import ChannelNav from '../components/ChannelNav.astro';
+import StaseraPerTe from '../components/StaseraPerTe.astro';
+import SeoHubLinks from '../components/SeoHubLinks.astro';
+import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
+import { getTodayInRome, formatDateIT, toRomeMinutes } from '../utils/timeSlots';
+import { buildHubHomeJsonLd } from '../utils/jsonld';
+import { buildEveningCandidates } from '../utils/eveningPrefs';
+
+const today = getTodayInRome();
+const dateLabel = formatDateIT(today);
+
+const [channels, programs] = await Promise.all([
+  fetchChannels(),
+  fetchProgramsForDate(today),
+]);
+
+const channelsWithPrograms = channels.filter(ch =>
+  programs.some(p => p.channel_id === ch.id)
+);
+
+const title = `inTV ora: cosa c'è in TV adesso | inTVstasera.it`;
+const description = `inTV ora: scopri i programmi attualmente in onda sui principali canali TV italiani, con orari, durata e cosa vedere subito.`;
+const keywords = `inTV ora, cosa c'è in tv ora, programmi tv ora, in onda adesso, tv adesso, cosa vedere ora in tv, guida tv ora`;
+
+const schemas = buildHubHomeJsonLd({
+  channels,
+  today,
+  canonicalPath: '/ora',
+  pageTitle: 'inTV ora: cosa c\'è in TV adesso',
+  pageDescription: description,
+});
+
+// Serializza i channel_id per il conteggio live lato client
+const channelIds = JSON.stringify(channelsWithPrograms.map(ch => ch.id));
+const eveningCandidates = buildEveningCandidates(channels, programs);
+
+// Palinsesti compatti per la modalità 'ora' in un unico blocco JSON:
+// [id, title, startSec, endSec, category, poster_url]
+const liveEpgData: Record<string, [string, string, number, number, string, string | null][]> = {};
+for (const ch of channelsWithPrograms) {
+  liveEpgData[ch.id] = programs
+    .filter(p => p.channel_id === ch.id && toRomeMinutes(p.endTime) >= 5 * 60)
+    .map(p => [
+      p.id,
+      p.title,
+      Math.floor(new Date(p.startTime).getTime() / 1000),
+      Math.floor(new Date(p.endTime).getTime() / 1000),
+      p.category ?? '',
+      p.poster_url ?? null,
+    ]);
+}
+---
+
+<HubLayout {title} {description} {keywords} canonicalPath="/ora" {schemas}>
+
+  <!-- ─── HERO ─── -->
+  <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="flex items-center gap-3 mb-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+          ⚡ inTV ora
+        </span>
+        <!-- Aggiornato client-side — placeholder iniziale neutro -->
+        <span id="hero-live-count" class="text-slate-400 dark:text-slate-500 text-sm font-medium">
+          {channelsWithPrograms.length} canali
+        </span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-2">
+        inTV ora: <span class="text-blue-600">cosa c'è in TV adesso</span>
+      </h1>
+
+      <!-- Data + ora: data statica (non cambia), ora aggiornata client-side -->
+      <p class="text-base sm:text-lg font-medium capitalize text-slate-500 dark:text-slate-400 mb-2">
+        inTV ora — {dateLabel} · ore <span id="hero-clock">--:--</span>
+      </p>
+
+      <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-4 max-w-3xl leading-relaxed">
+        Scopri i programmi attualmente in onda sui principali canali TV italiani: orari di inizio e fine in tempo reale, durata e cosa vedere subito in televisione.
+      </p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <a href="/" class="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+          ← inTV stasera (prima serata)
+        </a>
+        <a href="/domani/" class="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline">
+          inTV domani →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <StaseraPerTe candidates={eveningCandidates} pageSlot="ora" />
+
+  <!-- ─── LISTA CANALI ─── -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <ChannelNav />
+
+    <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">
+      In onda adesso sui canali TV
+    </h2>
+
+    <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      {channelsWithPrograms.map(channel => {
+        const channelPrograms = programs.filter(p => p.channel_id === channel.id);
+        return <ChannelCard {channel} programs={channelPrograms} mode="ora" />;
+      })}
+    </div>
+
+    <SeoHubLinks
+      channels={channelsWithPrograms}
+      title="inTV ora: guida ai programmi in onda e palinsesti"
+      intro="Segui i programmi attualmente in onda su tutti i canali o passa alla guida TV di stasera e domani."
+      maxChannels={48}
+    />
+
+  </section>
+
+  <script id="live-epg-data" type="application/json" set:html={JSON.stringify(liveEpgData)}></script>
+
+</HubLayout>
+
+<script define:vars={{ channelIds }}>
+// ── Data/ora e live count — aggiornati client-side ──────────────────────────
+
+function fmtTime() {
+  return new Date().toLocaleTimeString('it-IT', {
+    timeZone: 'Europe/Rome',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+function updateHero() {
+  // Orologio
+  const clockEl = document.getElementById('hero-clock');
+  if (clockEl) clockEl.textContent = fmtTime();
+
+  // Conteggio live: calcolato dai dati palinsesto centralizzati
+  const now = Math.floor(Date.now() / 1000);
+  let liveCount = 0;
+  try {
+    const el = document.getElementById('live-epg-data');
+    if (el && el.textContent) {
+      const epg = JSON.parse(el.textContent);
+      for (const chId in epg) {
+        const progs = epg[chId] || [];
+        if (progs.some(p => p[2] <= now && now < p[3])) {
+          liveCount++;
+        }
+      }
+    }
+  } catch {}
+
+  const countEl = document.getElementById('hero-live-count');
+  if (countEl) {
+    countEl.textContent = liveCount > 0
+      ? `${liveCount} canali in onda`
+      : `${JSON.parse(channelIds).length} canali`;
+  }
+}
+
+// Esegui subito (DOM già pronto — script Astro è deferred module)
+updateHero();
+// Aggiorna ogni 30s (allineato con il refresh delle card ORA)
+setInterval(updateHero, 30000);
+</script>

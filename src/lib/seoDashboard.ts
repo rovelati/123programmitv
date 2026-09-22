@@ -35,9 +35,9 @@ const SITE_URL_FALLBACK = 'https://www.intvstasera.it';
 const DASHBOARD_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const HEAD_TARGETS: HeadTarget[] = [
-  { path: '/', label: 'Home', category: 'hub' },
-  { path: '/stasera', label: 'Programmi stasera', category: 'hub' },
-  { path: '/domani', label: 'Programmi domani', category: 'hub' },
+  { path: '/', label: 'inTV stasera', category: 'hub' },
+  { path: '/ora', label: 'inTV ora', category: 'hub' },
+  { path: '/domani', label: 'inTV domani', category: 'hub' },
   { path: '/film-stasera', label: 'Film stasera', category: 'hub' },
   { path: '/serie-stasera', label: 'Serie stasera', category: 'hub' },
   { path: '/sport-stasera', label: 'Sport stasera', category: 'hub' },

@@ -31,7 +31,7 @@ const HUB_CHANNEL_IDS = [
 
 const HUB_PAGES = [
   { loc: `${SITE_URL}/`, changefreq: 'hourly', priority: '1.0' },
-  { loc: `${SITE_URL}/stasera/`, changefreq: 'daily', priority: '0.9' },
+  { loc: `${SITE_URL}/ora/`, changefreq: 'hourly', priority: '0.9' },
   { loc: `${SITE_URL}/domani/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/film-stasera/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/serie-stasera/`, changefreq: 'daily', priority: '0.85' },

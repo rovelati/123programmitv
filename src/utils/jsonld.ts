@@ -20,7 +20,7 @@ import { absoluteUrl, SITE_ORIGIN } from './urls';
 import { filterStaseraPrograms } from './timeSlots';
 
 const SITE_URL   = SITE_ORIGIN;
-const SITE_NAME  = 'In TV Stasera';
+const SITE_NAME  = 'inTVstasera.it';
 const ORG_ID     = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const ITALY_ID   = 'https://www.wikidata.org/wiki/Q38';
@@ -448,7 +448,7 @@ export function buildHubChannelJsonLd({
     '@type': 'BreadcrumbList',
     '@id': `${pageUrl}#breadcrumb`,
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Programmi stasera', item: absoluteUrl('/stasera', siteUrl) },
+      { '@type': 'ListItem', position: 1, name: 'inTV stasera', item: absoluteUrl('/', siteUrl) },
       { '@type': 'ListItem', position: 2, name: channel.name, item: pageUrl },
     ],
   };
