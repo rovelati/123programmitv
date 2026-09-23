@@ -2,12 +2,12 @@
 export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
-import HubGrid from '../components/HubGrid.astro';
+import ProgramRow from '../components/ProgramRow.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
 import type { Channel, Program } from '../types';
 
@@ -21,9 +21,9 @@ const [allChannels, allPrograms] = await Promise.all([
 
 // Mappa channel_id → Channel
 const channelMap = new Map<string, Channel>(allChannels.map(ch => [ch.id, ch]));
+const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
 
 // ─── Canali esclusivamente/prevalentemente cinematografici ───────────────────
-// Cielo è ESCLUSO: alterna film a reality, TG, sport clip → troppi falsi positivi
 const FILM_CHANNELS = new Set([
   'iris', 'cine34', 'rai-movie',
   'sky-cinema-uno', 'sky-cinema-due',
@@ -34,43 +34,27 @@ const FILM_CHANNELS = new Set([
   'paramount-network', 'paramount-channel',
 ]);
 
-// Anno tra parentesi nel titolo o descrizione: segnale fortissimo di film
 const YEAR_RE = /\(\s*(?:19|20)\d{2}\s*\)/;
-
-// Parole chiave nel campo genre come fallback
 const FILM_KW = ['film', 'cinema', 'movie'];
 
-// ─── Finestra "stasera": dalle 20:00 alle ~04:00 in ora italiana ─────────────
-// In CEST (apr–ott, UTC+2): 20:00 CEST = 18:00 UTC.
-// In CET  (nov–mar, UTC+1): 20:00 CET  = 19:00 UTC.
-// Usiamo >= 18 UTC come soglia: nei mesi invernali include anche 19:00-20:00 locale
-// (accettabile). Il confine notturno (01:00-03:59 locale) corrisponde a 23:00-01:59 UTC.
-function isStasera(p: Program): boolean {
-  const h = new Date(p.startTime).getUTCHours();
-  return h >= 18 || h < 2;   // 20:00–03:59 ora di Roma
-}
-
-// Durata in minuti
 function durationMin(p: Program): number {
   return (new Date(p.endTime).getTime() - new Date(p.startTime).getTime()) / 60000;
 }
 
-// Marker di puntata/episodio → è una serie, NON un film
 function hasEpisodeMarker(p: Program): boolean {
   const txt = `${p.title} ${p.description ?? ''}`;
   return /\b(?:S\s*\d+\s*E\s*\d+|\d{1,2}x\d{1,2}|Ep\.?\s*\d+|Episodio\s+\d+|Stagione\s+\d+)\b/i.test(txt)
     || /Puntata\s+del\b/i.test(txt);
 }
 
-// Rubriche e format NON cinematografici da escludere per titolo
 const EXCLUDE_TITLE_FRAGMENTS = [
   'appuntamento al cinema', 'note di cinema', 'movie mag',
-  'cinematin',  // cinematinée
+  'cinematin',
   'anica',
   'tg24', 'telegiornale', 'tg2 ', 'tg1 ', 'tg3 ',
   'in pillole', 'mezz\'ora', 'notizie',
   'top 20 ', 'countdown',
-  'sfida implacabile',    // Steve Austin (game show)
+  'sfida implacabile',
   'icarus ultra',
   'rubrica',
   'santa messa', 'messa in',
@@ -81,61 +65,75 @@ function isExcludedByTitle(p: Program): boolean {
   return EXCLUDE_TITLE_FRAGMENTS.some(f => t.includes(f));
 }
 
-// ─── Rilevamento film ─────────────────────────────────────────────────────────
 function isFilm(p: Program): boolean {
-  // Solo "stasera": dalle 20:00 in poi
-  if (!isStasera(p)) return false;
-
   const cid = p.channel_id ?? '';
   const dur  = durationMin(p);
 
-  // Hard-exclude: rubriche per titolo
   if (isExcludedByTitle(p)) return false;
-
-  // Hard-exclude: episodio di serie TV
   if (hasEpisodeMarker(p)) return false;
 
-  // 1. Canale cinematografico dedicato + durata da film (≥ 70 min)
   if (FILM_CHANNELS.has(cid) && dur >= 70) return true;
-
-  // 2. Anno nel titolo (segnale fortissimo) + durata da film
   if (YEAR_RE.test(p.title) && dur >= 60) return true;
-
-  // 3. Anno nella descrizione + durata da film
   if (p.description && YEAR_RE.test(p.description) && dur >= 70) return true;
-
-  // 4. "Regia di" / "regia:" nella descrizione + durata da lungometraggio
-  //    (soglia alta per evitare falsi positivi tipo "Santa Messa — regia di X")
   if (p.description && dur >= 75) {
     const desc = p.description.toLowerCase();
     if (desc.includes('regia di') || desc.includes('regia:')) return true;
   }
-
-  // 5. Keyword nel campo genre (fallback debole) + durata lunga
   if (FILM_KW.some(k => p.category?.toLowerCase().includes(k)) && dur >= 80) return true;
 
   return false;
 }
 
-// ─── Filtra e raggruppa per canale ───────────────────────────────────────────
-const filmPrograms = allPrograms.filter(isFilm);
-const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
+// Filtra SOLO film della fascia serale/notturna (20:30–02:00)
+const filmPrograms = filterStaseraPrograms(allPrograms.filter(isFilm));
 
-interface FilmGroup { channel: Channel; programs: Program[] }
-const groupMap = new Map<string, FilmGroup>();
+interface ChannelFilmGroup {
+  channel: Channel;
+  primeTime: Program[];
+  secondaSerata: Program[];
+  totalPrograms: number;
+}
+
+const groupsByChannel = new Map<string, ChannelFilmGroup>();
 
 for (const p of filmPrograms) {
   const cid = p.channel_id ?? '';
   const ch  = channelMap.get(cid);
   if (!ch) continue;
-  if (!groupMap.has(cid)) groupMap.set(cid, { channel: ch, programs: [] });
-  groupMap.get(cid)!.programs.push(p);
+
+  if (!groupsByChannel.has(cid)) {
+    groupsByChannel.set(cid, {
+      channel: ch,
+      primeTime: [],
+      secondaSerata: [],
+      totalPrograms: 0,
+    });
+  }
+
+  const group = groupsByChannel.get(cid)!;
+  const minutes = toRomeMinutes(p.startTime);
+  if (minutes >= 20 * 60 + 30 && minutes < 23 * 60) {
+    group.primeTime.push(p);
+  } else {
+    group.secondaSerata.push(p);
+  }
+  group.totalPrograms++;
 }
 
-// Ordina i gruppi per posizione canale (DB order = audience reach)
-const filmGroups: FilmGroup[] = [...groupMap.values()].sort(
-  (a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999),
-);
+// Ordina i gruppi per posizione canale
+const allFilmGroups = [...groupsByChannel.values()]
+  .filter(g => g.totalPrograms > 0)
+  .sort((a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999));
+
+// Canali con prima serata
+const primeTimeGroups = allFilmGroups
+  .filter(g => g.primeTime.length > 0)
+  .map(g => ({ channel: g.channel, programs: g.primeTime }));
+
+// Canali con seconda serata (successivamente)
+const secondaSerataGroups = allFilmGroups
+  .filter(g => g.secondaSerata.length > 0)
+  .map(g => ({ channel: g.channel, programs: g.secondaSerata }));
 
 const totalFilms = filmPrograms.length;
 
@@ -165,9 +163,10 @@ const keywords    = `film stasera, film stasera in tv, cinema stasera, film ques
       🎬 Film stasera in TV — <span class="text-blue-600">{dateLabel}</span>
     </h1>
     <p class="text-slate-500 dark:text-slate-400 text-sm">
-      {totalFilms} {totalFilms === 1 ? 'film' : 'film'} in prima serata sui canali italiani.
+      {totalFilms} {totalFilms === 1 ? 'film' : 'film'} in onda questa sera sui canali italiani.
     </p>
   </section>
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
     <ChannelNav />
     <nav class="flex flex-wrap gap-2 mt-4" aria-label="Altre categorie">
@@ -177,47 +176,116 @@ const keywords    = `film stasera, film stasera in tv, cinema stasera, film ques
     </nav>
   </div>
 
-  <!-- Film per canale (solo prima serata e seconda serata) -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
-    {filmGroups.length === 0 ? (
-      <p class="text-slate-400 dark:text-slate-500 py-8 text-center">Nessun film in prima serata per questa sera.</p>
-    ) : (
-      filmGroups.map(({ channel, programs: chPrograms }) => (
-        <div>
-          {/* Intestazione canale */}
-          <div class="flex items-center gap-3 mb-2 px-1">
-            <div class="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
-              <img
-                src={channel.logo}
-                alt={`Logo ${channel.name}`}
-                width="30"
-                height="30"
-                class="w-[30px] h-[30px] object-contain"
-                loading="lazy"
-                onerror="this.style.display='none'"
-              />
-            </div>
-            <a
-              href={`/${channel.id}/`}
-              class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              {channel.name}
-            </a>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
-              {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
-            </span>
-          </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-10">
 
-          {/* Griglia programmi del canale */}
-          <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
-            <HubGrid programs={chPrograms} channel={channel} />
-          </div>
+    {/* ─── 1. PRIMA SERATA (DALLE 20:30) ─── */}
+    <section aria-labelledby="prime-time-heading">
+      <div class="flex items-center gap-2.5 mb-4">
+        <span class="w-3 h-3 bg-orange-500 rounded-full inline-block"></span>
+        <h2 id="prime-time-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+          Prima serata · <span class="text-blue-600">dalle 20:30</span>
+        </h2>
+        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+          {primeTimeGroups.length} canali
+        </span>
+      </div>
+
+      {primeTimeGroups.length === 0 ? (
+        <div class="p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 text-center text-slate-400">
+          Nessun film in prima serata per oggi.
         </div>
-      ))
+      ) : (
+        <div class="space-y-4">
+          {primeTimeGroups.map(({ channel, programs: chPrograms }) => (
+            <div>
+              <div class="flex items-center gap-3 mb-2 px-1">
+                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
+                  <img
+                    src={channel.logo}
+                    alt={`Logo ${channel.name}`}
+                    width="26"
+                    height="26"
+                    class="w-[26px] h-[26px] object-contain"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  />
+                </div>
+                <a
+                  href={`/${channel.id}/`}
+                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {channel.name}
+                </a>
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
+                </span>
+              </div>
+              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  {chPrograms.map(program => (
+                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+
+    {/* ─── 2. SECONDA SERATA (SUCCESSIVAMENTE · DALLE 23:00) ─── */}
+    {secondaSerataGroups.length > 0 && (
+      <section aria-labelledby="seconda-serata-heading" class="pt-6 border-t border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center gap-2.5 mb-4">
+          <span class="w-3 h-3 bg-blue-500 rounded-full inline-block"></span>
+          <h2 id="seconda-serata-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+            Seconda serata · <span class="text-blue-600">fino alle 02:00</span>
+          </h2>
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+            {secondaSerataGroups.length} canali
+          </span>
+        </div>
+
+        <div class="space-y-4">
+          {secondaSerataGroups.map(({ channel, programs: chPrograms }) => (
+            <div>
+              <div class="flex items-center gap-3 mb-2 px-1">
+                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
+                  <img
+                    src={channel.logo}
+                    alt={`Logo ${channel.name}`}
+                    width="26"
+                    height="26"
+                    class="w-[26px] h-[26px] object-contain"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  />
+                </div>
+                <a
+                  href={`/${channel.id}/`}
+                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {channel.name}
+                </a>
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
+                </span>
+              </div>
+              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  {chPrograms.map(program => (
+                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     )}
 
     <SeoHubLinks
-      channels={filmGroups.map(group => group.channel)}
+      channels={allFilmGroups.map(group => group.channel)}
       title="Film stasera: canali e altre guide TV"
       intro="Approfondisci i canali che trasmettono film oppure passa alle altre guide short-tail della serata."
       maxChannels={48}

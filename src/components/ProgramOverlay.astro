@@ -108,10 +108,14 @@
             href="#"
             class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-2xl transition-colors text-sm shadow-sm"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg id="icon-watch" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <polygon points="5,3 19,12 5,21"/>
             </svg>
-            Guarda ora
+            <svg id="icon-bell" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span id="overlay-watch-label">Guarda ora</span>
           </a>
           <button
             id="overlay-favorite"
@@ -358,7 +362,76 @@
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
-  /** Feedback visivo temporaneo sul pulsante (2 s) */
+  /** Feedback visivo temporaneo sul pulsante promemoria */
+  function showReminderFeedback(success) {
+    const label = $('overlay-watch-label');
+    const btn   = $('overlay-watch');
+    if (!label || !btn) return;
+
+    label.textContent = success ? '✓ Promemoria attivo!' : 'Promemoria';
+
+    if (success) {
+      btn.classList.add('bg-green-600', 'hover:bg-green-700');
+      btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      setTimeout(() => {
+        label.textContent = '✓ Promemoria attivo';
+      }, 2500);
+    }
+  }
+
+  /** Gestione Promemoria tramite Notifica Push + Calendario */
+  async function handleReminder(prog) {
+    if (!prog) return;
+
+    let permission = 'default';
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        permission = 'granted';
+      } else if (Notification.permission !== 'denied') {
+        try {
+          permission = await Notification.requestPermission();
+        } catch (_) {
+          permission = 'denied';
+        }
+      }
+    }
+
+    // Salva in localStorage
+    try {
+      const list = JSON.parse(localStorage.getItem('intv_reminders') || '[]');
+      if (!list.some(item => item.id === prog.id)) {
+        list.push({
+          id: prog.id,
+          title: prog.title,
+          startTime: prog.startTime,
+          channelId: prog.channelId,
+          channelName: prog.channelName,
+          addedAt: Date.now()
+        });
+        localStorage.setItem('intv_reminders', JSON.stringify(list));
+      }
+    } catch (_) {}
+
+    // Notifica push / locale di conferma se abilitata
+    if (permission === 'granted' && 'Notification' in window) {
+      try {
+        const startFmt = fmt(prog.startTime);
+        const channelName = prog.channelName || prog.channelId || '';
+        new Notification('🔔 Promemoria inTV stasera', {
+          body: `Ti ricorderemo "${prog.title}" su ${channelName} alle ${startFmt}!`,
+          icon: prog.channelLogo || '/favicon/apple-touch-icon.png',
+          badge: '/favicon/apple-touch-icon.png',
+        });
+      } catch (_) {}
+    }
+
+    // Aggiungi anche evento a Calendario
+    addToCalendar(prog);
+
+    showReminderFeedback(true);
+  }
+
+  /** Feedback visivo temporaneo sul pulsante calendario (2 s) */
   function showCalFeedback(success) {
     const label = $('overlay-fav-label');
     const btn   = $('overlay-favorite');
@@ -430,7 +503,11 @@
     const now = Date.now();
     const s = new Date(data.startTime).getTime();
     const e = new Date(data.endTime).getTime();
+    const TEN_MIN_MS = 10 * 60 * 1000;
     const isLive = s <= now && now < e;
+    const isLiveOrImminent = now >= s - TEN_MIN_MS && now < e;
+    const isFuture = now < s - TEN_MIN_MS;
+
     hidden('overlay-live-section', !isLive);
     if (isLive) {
       const pct = Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
@@ -446,17 +523,56 @@
     txt('overlay-description', data.description);
     hidden('overlay-description', !data.description);
 
-    // ── Link "Guarda ora" → stream ufficiale se disponibile, altrimenti pagina interna ──
+    // ── Azione primaria: "Guarda ora" solo se iniziato / imminente (-10m), altrimenti "Promemoria" ──
     const watchEl = $('overlay-watch');
+    const watchLabel = $('overlay-watch-label');
+    const iconWatch = $('icon-watch');
+    const iconBell = $('icon-bell');
+
     if (watchEl) {
-      const streamUrl = data.channelId ? STREAMS[data.channelId] : null;
-      if (streamUrl) {
-        watchEl.href = streamUrl;
-        watchEl.setAttribute('target', '_blank');
-        watchEl.setAttribute('rel', 'noopener noreferrer');
-        watchEl.title = 'Apri lo streaming ufficiale';
+      // Reset stili
+      watchEl.classList.remove('bg-green-600', 'hover:bg-green-700');
+      watchEl.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+      if (isLiveOrImminent) {
+        // In onda adesso o tra meno di 10 minuti -> Guarda ora
+        iconWatch?.classList.remove('hidden');
+        iconBell?.classList.add('hidden');
+        if (watchLabel) watchLabel.textContent = 'Guarda ora';
+        watchEl.onclick = null;
+
+        const streamUrl = data.channelId ? STREAMS[data.channelId] : null;
+        if (streamUrl) {
+          watchEl.href = streamUrl;
+          watchEl.setAttribute('target', '_blank');
+          watchEl.setAttribute('rel', 'noopener noreferrer');
+          watchEl.title = 'Apri lo streaming ufficiale';
+        } else {
+          watchEl.href = data.channelId ? `/${data.channelId}/` : '#';
+          watchEl.removeAttribute('target');
+          watchEl.removeAttribute('rel');
+          watchEl.title = '';
+        }
+      } else if (isFuture) {
+        // NON ancora iniziato (> 10 minuti prima) -> Promemoria
+        iconWatch?.classList.add('hidden');
+        iconBell?.classList.remove('hidden');
+        if (watchLabel) watchLabel.textContent = 'Promemoria';
+        watchEl.href = '#';
+        watchEl.removeAttribute('target');
+        watchEl.removeAttribute('rel');
+        watchEl.title = 'Imposta promemoria con notifica';
+        watchEl.onclick = (ev) => {
+          ev.preventDefault();
+          handleReminder(_prog);
+        };
       } else {
-        watchEl.href = data.channelId ? `/${data.channelId}` : '#';
+        // Concluso -> Guida canale
+        iconWatch?.classList.remove('hidden');
+        iconBell?.classList.add('hidden');
+        if (watchLabel) watchLabel.textContent = 'Guida canale';
+        watchEl.onclick = null;
+        watchEl.href = data.channelId ? `/${data.channelId}/` : '#';
         watchEl.removeAttribute('target');
         watchEl.removeAttribute('rel');
         watchEl.title = '';
@@ -514,6 +630,13 @@
   $('overlay-favorite')?.addEventListener('click', () => {
     addToCalendar(_prog);
   });
+
+  // Registra service worker per notifiche
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 
   // Esponi globalmente per usarlo dall'ORA-mode JS in ChannelCard
   window.__openProgramOverlay = openOverlay;

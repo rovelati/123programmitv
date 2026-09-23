@@ -2,12 +2,12 @@
 export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
-import HubGrid from '../components/HubGrid.astro';
+import ProgramRow from '../components/ProgramRow.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
 import type { Channel, Program } from '../types';
 
@@ -20,11 +20,9 @@ const [allChannels, allPrograms] = await Promise.all([
 ]);
 
 const channelMap = new Map<string, Channel>(allChannels.map(ch => [ch.id, ch]));
+const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
 
-/**
- * Canali prevalentemente di serie/fiction.
- * Quasi tutti i programmi in prima serata qui sono serie.
- */
+/** Canali prevalentemente di serie/fiction */
 const SERIE_CHANNELS = new Set([
   'top-crime',
   'topcrime',
@@ -32,59 +30,77 @@ const SERIE_CHANNELS = new Set([
   'warner-tv',
 ]);
 
-/**
- * Pattern di episodio nel titolo: "1x01", "S01E03", "Ep. 4", "Episodio 2"
- */
 const EPISODE_RE = /\b(?:\d{1,2}x\d{1,2}|[Ss]\d{1,2}[Ee]\d{1,2}|[Ee]p\.?\s*\d+|[Ee]pisodio\s+\d+)\b/;
-
-/** Keyword nel campo genre come fallback */
 const SERIE_KW = ['serie', 'fiction', 'telefilm', 'sitcom'];
 
 function isSerie(p: Program): boolean {
   const cid = p.channel_id ?? '';
-  const utcHour = new Date(p.startTime).getUTCHours();
 
-  // 1. Canale serie dedicato (dopo 06:00 Roma = 04:00 UTC)
-  if (SERIE_CHANNELS.has(cid) && utcHour >= 4) return true;
-
-  // 2. Pattern episodio nel titolo → segnale forte
+  if (SERIE_CHANNELS.has(cid)) return true;
   if (EPISODE_RE.test(p.title)) return true;
 
-  // 3. "episodio" / "stagione" nella descrizione
   if (p.description) {
     const desc = p.description.toLowerCase();
     if (desc.includes('episodio') || desc.includes('stagione')) return true;
   }
 
-  // 4. Keyword nel titolo
   const titleLow = p.title.toLowerCase();
   if (['telefilm', 'sitcom'].some(k => titleLow.includes(k))) return true;
-
-  // 5. Genre/category keyword come fallback
   if (SERIE_KW.some(k => p.category?.toLowerCase().includes(k))) return true;
 
   return false;
 }
 
-const seriePrograms = allPrograms.filter(isSerie);
+// Filtra SOLO serie TV della fascia serale/notturna (20:30–02:00)
+const seriePrograms = filterStaseraPrograms(allPrograms.filter(isSerie));
 
-// Raggruppa per channel_id
-const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
+interface ChannelSerieGroup {
+  channel: Channel;
+  primeTime: Program[];
+  secondaSerata: Program[];
+  totalPrograms: number;
+}
 
-interface SerieGroup { channel: Channel; programs: Program[] }
-const groupMap = new Map<string, SerieGroup>();
+const groupsByChannel = new Map<string, ChannelSerieGroup>();
 
 for (const p of seriePrograms) {
   const cid = p.channel_id ?? '';
   const ch = channelMap.get(cid);
   if (!ch) continue;
-  if (!groupMap.has(cid)) groupMap.set(cid, { channel: ch, programs: [] });
-  groupMap.get(cid)!.programs.push(p);
+
+  if (!groupsByChannel.has(cid)) {
+    groupsByChannel.set(cid, {
+      channel: ch,
+      primeTime: [],
+      secondaSerata: [],
+      totalPrograms: 0,
+    });
+  }
+
+  const group = groupsByChannel.get(cid)!;
+  const minutes = toRomeMinutes(p.startTime);
+  if (minutes >= 20 * 60 + 30 && minutes < 23 * 60) {
+    group.primeTime.push(p);
+  } else {
+    group.secondaSerata.push(p);
+  }
+  group.totalPrograms++;
 }
 
-const serieGroups: SerieGroup[] = [...groupMap.values()].sort(
-  (a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999),
-);
+// Ordina i gruppi per audience/posizione canale
+const allSerieGroups = [...groupsByChannel.values()]
+  .filter(g => g.totalPrograms > 0)
+  .sort((a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999));
+
+// Canali con prima serata
+const primeTimeGroups = allSerieGroups
+  .filter(g => g.primeTime.length > 0)
+  .map(g => ({ channel: g.channel, programs: g.primeTime }));
+
+// Canali con seconda serata (successivamente)
+const secondaSerataGroups = allSerieGroups
+  .filter(g => g.secondaSerata.length > 0)
+  .map(g => ({ channel: g.channel, programs: g.secondaSerata }));
 
 const totalSerie = seriePrograms.length;
 
@@ -113,8 +129,11 @@ const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fi
     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">
       📺 Serie TV stasera in TV — <span class="text-blue-600">{dateLabel}</span>
     </h1>
-    <p class="text-slate-500 dark:text-slate-400 text-sm">{totalSerie} serie in onda questa sera.</p>
+    <p class="text-slate-500 dark:text-slate-400 text-sm">
+      {totalSerie} {totalSerie === 1 ? 'serie TV' : 'serie TV'} in onda questa sera sui canali italiani.
+    </p>
   </section>
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
     <ChannelNav />
     <nav class="flex flex-wrap gap-2 mt-4" aria-label="Altre categorie">
@@ -124,46 +143,118 @@ const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fi
     </nav>
   </div>
 
-  <!-- Serie per canale -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
-    {serieGroups.length === 0 ? (
-      <p class="text-slate-400 dark:text-slate-500 py-8 text-center">Nessuna serie TV trovata per questa sera.</p>
-    ) : (
-      serieGroups.map(({ channel, programs: chPrograms }) => (
-        <div>
-          <div class="flex items-center gap-3 mb-2 px-1">
-            <div class="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
-              <img
-                src={channel.logo}
-                alt={`Logo ${channel.name}`}
-                width="30"
-                height="30"
-                class="w-[30px] h-[30px] object-contain"
-                loading="lazy"
-                onerror="this.style.display='none'"
-              />
-            </div>
-            <a
-              href={`/${channel.id}/`}
-              class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              {channel.name}
-            </a>
-            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
-              {chPrograms.length} {chPrograms.length === 1 ? 'programma' : 'programmi'}
-            </span>
-          </div>
-          <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
-            <HubGrid programs={chPrograms} channel={channel} />
-          </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-10">
+
+    {/* ─── 1. PRIMA SERATA (DALLE 20:30) ─── */}
+    <section aria-labelledby="prime-time-heading">
+      <div class="flex items-center gap-2.5 mb-4">
+        <span class="w-3 h-3 bg-orange-500 rounded-full inline-block"></span>
+        <h2 id="prime-time-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+          Prima serata · <span class="text-blue-600">dalle 20:30</span>
+        </h2>
+        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+          {primeTimeGroups.length} canali
+        </span>
+      </div>
+
+      {primeTimeGroups.length === 0 ? (
+        <div class="p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 text-center text-slate-400">
+          Nessuna serie TV in prima serata per oggi.
         </div>
-      ))
+      ) : (
+        <div class="space-y-4">
+          {primeTimeGroups.map(({ channel, programs: chPrograms }) => (
+            <div>
+              <div class="flex items-center gap-3 mb-2 px-1">
+                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
+                  <img
+                    src={channel.logo}
+                    alt={`Logo ${channel.name}`}
+                    width="26"
+                    height="26"
+                    class="w-[26px] h-[26px] object-contain"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  />
+                </div>
+                <a
+                  href={`/${channel.id}/`}
+                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {channel.name}
+                </a>
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  {chPrograms.length} {chPrograms.length === 1 ? 'serie' : 'serie'}
+                </span>
+              </div>
+              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  {chPrograms.map(program => (
+                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+
+    {/* ─── 2. SECONDA SERATA (SUCCESSIVAMENTE · DALLE 23:00) ─── */}
+    {secondaSerataGroups.length > 0 && (
+      <section aria-labelledby="seconda-serata-heading" class="pt-6 border-t border-slate-200 dark:border-slate-700/60">
+        <div class="flex items-center gap-2.5 mb-4">
+          <span class="w-3 h-3 bg-blue-500 rounded-full inline-block"></span>
+          <h2 id="seconda-serata-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+            Seconda serata · <span class="text-blue-600">fino alle 02:00</span>
+          </h2>
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+            {secondaSerataGroups.length} canali
+          </span>
+        </div>
+
+        <div class="space-y-4">
+          {secondaSerataGroups.map(({ channel, programs: chPrograms }) => (
+            <div>
+              <div class="flex items-center gap-3 mb-2 px-1">
+                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
+                  <img
+                    src={channel.logo}
+                    alt={`Logo ${channel.name}`}
+                    width="26"
+                    height="26"
+                    class="w-[26px] h-[26px] object-contain"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  />
+                </div>
+                <a
+                  href={`/${channel.id}/`}
+                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  {channel.name}
+                </a>
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  {chPrograms.length} {chPrograms.length === 1 ? 'serie' : 'serie'}
+                </span>
+              </div>
+              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
+                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  {chPrograms.map(program => (
+                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     )}
 
     <SeoHubLinks
-      channels={serieGroups.map(group => group.channel)}
+      channels={allSerieGroups.map(group => group.channel)}
       title="Serie TV stasera: canali e guide correlate"
-      intro="Naviga tra i canali con serie in onda oggi e le altre pagine principali della guida TV."
+      intro="Trova le serie TV e fiction per canale e raggiungi le altre pagine principali della guida TV."
       maxChannels={48}
     />
   </div>
