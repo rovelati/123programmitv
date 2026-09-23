@@ -176,7 +176,7 @@
 </style>
 
 <!-- ─── Script client-side ──────────────────────────────────────────────── -->
-<script>
+<script is:inline>
 (function () {
   'use strict';
 
@@ -216,6 +216,8 @@
     'cielo':      'https://www.cielotv.it/streaming',
     'sky-tg24':   'https://tg24.sky.it/diretta',
     'tv2000':     'https://www.play2000.it/live/tv',
+    'sport-italia': 'https://www.sportitalia.com',
+    'supertennis': 'https://www.supertennis.tv',
   };
 
   /** Programma attualmente visualizzato nell'overlay */
@@ -363,28 +365,25 @@
   }
 
   /** Feedback visivo temporaneo sul pulsante promemoria */
-  function showReminderFeedback(success) {
+  function showReminderFeedback(text, isSuccess) {
     const label = $('overlay-watch-label');
     const btn   = $('overlay-watch');
     if (!label || !btn) return;
 
-    label.textContent = success ? '✓ Promemoria attivo!' : 'Promemoria';
+    label.textContent = text;
 
-    if (success) {
+    if (isSuccess) {
       btn.classList.add('bg-green-600', 'hover:bg-green-700');
       btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-      setTimeout(() => {
-        label.textContent = '✓ Promemoria attivo';
-      }, 2500);
     }
   }
 
-  /** Gestione Promemoria tramite Notifica Push + Calendario */
+  /** Gestione Promemoria tramite Notifica Push + Local Storage */
   async function handleReminder(prog) {
     if (!prog) return;
 
     let permission = 'default';
-    if ('Notification' in window) {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         permission = 'granted';
       } else if (Notification.permission !== 'denied') {
@@ -396,7 +395,7 @@
       }
     }
 
-    // Salva in localStorage
+    // Salva in localStorage per promemoria in-app
     try {
       const list = JSON.parse(localStorage.getItem('intv_reminders') || '[]');
       if (!list.some(item => item.id === prog.id)) {
@@ -412,23 +411,19 @@
       }
     } catch (_) {}
 
-    // Notifica push / locale di conferma se abilitata
-    if (permission === 'granted' && 'Notification' in window) {
+    // Notifica di conferma
+    if (permission === 'granted' && typeof window !== 'undefined' && 'Notification' in window) {
       try {
         const startFmt = fmt(prog.startTime);
         const channelName = prog.channelName || prog.channelId || '';
         new Notification('🔔 Promemoria inTV stasera', {
           body: `Ti ricorderemo "${prog.title}" su ${channelName} alle ${startFmt}!`,
           icon: prog.channelLogo || '/favicon/apple-touch-icon.png',
-          badge: '/favicon/apple-touch-icon.png',
         });
       } catch (_) {}
     }
 
-    // Aggiungi anche evento a Calendario
-    addToCalendar(prog);
-
-    showReminderFeedback(true);
+    showReminderFeedback('✓ Promemoria attivo', true);
   }
 
   /** Feedback visivo temporaneo sul pulsante calendario (2 s) */

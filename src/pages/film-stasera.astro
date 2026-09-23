@@ -112,7 +112,7 @@ for (const p of filmPrograms) {
 
   const group = groupsByChannel.get(cid)!;
   const minutes = toRomeMinutes(p.startTime);
-  if (minutes >= 20 * 60 + 30 && minutes < 23 * 60) {
+  if (minutes >= 20 * 60 && minutes < 23 * 60) {
     group.primeTime.push(p);
   } else {
     group.secondaSerata.push(p);
