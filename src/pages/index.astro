@@ -46,9 +46,16 @@ const schemas = buildHubHomeJsonLd({
 });
 
 const eveningCandidates = buildEveningCandidates(channels, programs);
+
+const featuredWithPoster = eveningCandidates.find(c => c.program.poster_url)?.program
+  ?? programs.find(p => p.poster_url && filterStaseraPrograms([p]).length > 0)
+  ?? programs.find(p => p.poster_url);
+
+const ogImage = featuredWithPoster?.poster_url ?? '/og/default.png';
+const ogImageAlt = featuredWithPoster ? `${featuredWithPoster.title} - inTV stasera` : title;
 ---
 
-<HubLayout {title} {description} {keywords} canonicalPath="/" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/" {schemas} {ogImage} {ogImageAlt}>
 
   <!-- ─── HERO ─── -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">

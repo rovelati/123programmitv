@@ -114,9 +114,13 @@ const schemas = buildHubCategoryJsonLd({
 const title       = `Serie TV stasera in TV: episodi e fiction di oggi | inTVstasera.it`;
 const description = `Serie TV stasera in TV: episodi, fiction, telefilm, orari e canali italiani aggiornati per la programmazione di oggi.`;
 const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fiction stasera, episodi stasera`;
+
+const firstSerieWithPoster = seriePrograms.find(p => p.poster_url);
+const ogImage    = firstSerieWithPoster?.poster_url ?? '/og/default.png';
+const ogImageAlt = firstSerieWithPoster ? `${firstSerieWithPoster.title} - Serie TV stasera in TV` : title;
 ---
 
-<HubLayout {title} {description} {keywords} canonicalPath="/serie-stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/serie-stasera" {schemas} {ogImage} {ogImageAlt}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[

@@ -54,9 +54,13 @@ for (const ch of channelsWithPrograms) {
       p.poster_url ?? null,
     ]);
 }
+
+const firstProgramWithPoster = programs.find(p => p.poster_url);
+const ogImage    = firstProgramWithPoster?.poster_url ?? '/og/default.png';
+const ogImageAlt = firstProgramWithPoster ? `${firstProgramWithPoster.title} - inTV ora` : title;
 ---
 
-<HubLayout {title} {description} {keywords} canonicalPath="/ora" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/ora" {schemas} {ogImage} {ogImageAlt}>
 
   <!-- ─── HERO ─── -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">

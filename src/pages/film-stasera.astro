@@ -147,9 +147,13 @@ const schemas = buildHubCategoryJsonLd({
 const title       = `Film stasera in TV: tutti i film di oggi | inTVstasera.it`;
 const description = `Film stasera in TV: tutti i titoli di oggi, orari, canali e trame dei film in onda su RAI, Mediaset, Sky e canali italiani.`;
 const keywords    = `film stasera, film stasera in tv, cinema stasera, film questa sera, programmazione cinema tv`;
+
+const firstFilmWithPoster = filmPrograms.find(p => p.poster_url);
+const ogImage    = firstFilmWithPoster?.poster_url ?? '/og/default.png';
+const ogImageAlt = firstFilmWithPoster ? `${firstFilmWithPoster.title} - Film stasera in TV` : title;
 ---
 
-<HubLayout {title} {description} {keywords} canonicalPath="/film-stasera" {schemas}>
+<HubLayout {title} {description} {keywords} canonicalPath="/film-stasera" {schemas} {ogImage} {ogImageAlt}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[

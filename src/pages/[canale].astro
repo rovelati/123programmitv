@@ -84,8 +84,12 @@ const schemas = buildHubChannelJsonLd({
   pageDescription: description,
 });
 
-const ogImage     = channel.logo?.startsWith('http') ? channel.logo : `/og/default.png`;
-const ogImageAlt  = `Programmi ${channel.name} stasera — guida TV`;
+const firstProgramWithPoster = programs.find(p => p.poster_url);
+const ogImage     = firstProgramWithPoster?.poster_url
+  ?? (channel.logo?.startsWith('http') ? channel.logo : channel.logo ? channel.logo : '/og/default.png');
+const ogImageAlt  = firstProgramWithPoster
+  ? `${firstProgramWithPoster.title} su ${channel.name} stasera`
+  : `Programmi ${channel.name} stasera — guida TV`;
 ---
 
 <HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} ogType="website">
