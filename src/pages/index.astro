@@ -7,7 +7,7 @@ import ChannelNav from '../components/ChannelNav.astro';
 import StaseraPerTe from '../components/StaseraPerTe.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
 import { buildEveningCandidates } from '../utils/eveningPrefs';
 
@@ -47,7 +47,7 @@ const schemas = buildHubHomeJsonLd({
 
 const eveningCandidates = buildEveningCandidates(channels, programs);
 
-const featuredWithPoster = eveningCandidates.find(c => c.program.poster_url)?.program
+const featuredWithPoster = eveningCandidates.find(c => Boolean(c?.poster_url))
   ?? programs.find(p => p.poster_url && filterStaseraPrograms([p]).length > 0)
   ?? programs.find(p => p.poster_url);
 
