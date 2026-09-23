@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ProgramOverlay from '../components/ProgramOverlay.astro';
+import type { ChannelGeo } from '../utils/channelGeo';
 
 interface Props {
   title: string;
@@ -15,6 +16,7 @@ interface Props {
   ogImageHeight?: number;
   noindex?: boolean;
   schemas?: object[];
+  geo?: ChannelGeo | null;
   ogType?: 'website' | 'article' | 'video.movie' | 'video.tv_show';
   articleSection?: string;
   publishedTime?: string;

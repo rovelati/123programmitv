@@ -12,6 +12,7 @@ import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/ti
 import { buildHubChannelJsonLd } from '../utils/jsonld';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
+import { getChannelGeo } from '../utils/channelGeo';
 import type { Channel, Program } from '../types';
 
 export async function getStaticPaths() {
@@ -33,7 +34,8 @@ export async function getStaticPaths() {
 
     const orderedRelated = HUB_CHANNELS
       .map(hub => channels.find(item => item.id === hub.id))
-      .filter((item): item is Channel => Boolean(item) && item.id !== channel.id)
+      .filter((item): item is Channel => Boolean(item))
+      .filter(item => item.id !== channel.id)
       .map(item => ({
         channel: item,
         programs: filterStaseraPrograms(programsByChannel.get(item.id) ?? []),
@@ -70,6 +72,7 @@ interface Props {
 const { channel, programs, allChannels, relatedChannels, today } = Astro.props;
 const dateLabel = formatDateIT(today);
 const stream = getChannelStream(channel.id);
+const channelGeo = getChannelGeo(channel.id);
 
 const title       = `${channel.name} stasera: programmi TV e prima serata | inTVstasera.it`;
 const description = `Programmi ${channel.name} stasera: guida TV della sera con prima serata e seconda serata, orari aggiornati.`;
@@ -92,7 +95,7 @@ const ogImageAlt  = firstProgramWithPoster
   : `Programmi ${channel.name} stasera — guida TV`;
 ---
 
-<HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} ogType="website">
+<HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} geo={channelGeo} ogType="website">
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
@@ -125,24 +128,56 @@ const ogImageAlt  = firstProgramWithPoster
       Palinsesto serale di {channel.name}: prima serata, seconda serata e programmi TV in onda questa sera.
     </p>
 
-    {stream && (
-      <a
-        href={stream.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <polygon points="5,3 19,12 5,21"/>
-        </svg>
-        Guarda in diretta
-        <span class="text-red-200 font-normal text-xs">· {stream.label}</span>
-        {stream.login_required && (
-          <span class="bg-red-800/60 text-red-100 text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-            login
+    <div class="flex flex-wrap items-center gap-3">
+      {stream && (
+        <a
+          href={stream.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          Guarda in diretta
+          <span class="text-red-200 font-normal text-xs">· {stream.label}</span>
+          {stream.login_required && (
+            <span class="bg-red-800/60 text-red-100 text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide">
+              login
+            </span>
+          )}
+        </a>
+      )}
+    </div>
+
+    {channelGeo && (
+      <div class="mt-4 p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-start sm:items-center gap-2.5 min-w-0">
+          <span class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
+            📍
           </span>
-        )}
-      </a>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-extrabold text-slate-900 dark:text-slate-100">
+                {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede Principale'}:
+              </span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
+              {channelGeo.badge && (
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                  {channelGeo.badge}
+                </span>
+              )}
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5 truncate sm:whitespace-normal">
+              Area di copertura: {channelGeo.coverage}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 flex-shrink-0 self-start md:self-auto">
+          <span class="text-blue-600 dark:text-blue-400 font-bold">GEO:</span>
+          <span>{channelGeo.latitude.toFixed(4)}° N, {channelGeo.longitude.toFixed(4)}° E</span>
+        </div>
+      </div>
     )}
   </section>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">

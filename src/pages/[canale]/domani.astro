@@ -10,6 +10,7 @@ import { fetchChannels, fetchProgramsForDate } from '../../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../../utils/jsonld';
 import { HUB_CHANNELS } from '../../utils/channelSlug';
+import { getChannelGeo } from '../../utils/channelGeo';
 import type { Channel, Program } from '../../types';
 
 export async function getStaticPaths() {
@@ -38,6 +39,7 @@ interface Props {
 
 const { channel, programs, allChannels, tomorrow } = Astro.props;
 const dateLabel = formatDateIT(tomorrow);
+const channelGeo = getChannelGeo(channel.id);
 
 const title       = `${channel.name} domani: programmi TV e palinsesto | inTVstasera.it`;
 const description = `Programmi ${channel.name} domani: palinsesto completo con orari, prima serata, film, serie TV e programmi in onda.`;
@@ -60,7 +62,7 @@ const ogImageAlt = firstProgramWithPoster
   : `Programmi ${channel.name} domani — guida TV`;
 ---
 
-<HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} ogType="website">
+<HubLayout {title} {description} {keywords} {canonicalPath} {schemas} {ogImage} {ogImageAlt} geo={channelGeo} ogType="website">
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
@@ -94,6 +96,36 @@ const ogImageAlt = firstProgramWithPoster
     <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">
       Guida TV di {channel.name} per domani: palinsesto completo con orari precisi.
     </p>
+
+    {channelGeo && (
+      <div class="mt-4 p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-start sm:items-center gap-2.5 min-w-0">
+          <span class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
+            📍
+          </span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-extrabold text-slate-900 dark:text-slate-100">
+                {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede Principale'}:
+              </span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
+              {channelGeo.badge && (
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                  {channelGeo.badge}
+                </span>
+              )}
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5 truncate sm:whitespace-normal">
+              Area di copertura: {channelGeo.coverage}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 flex-shrink-0 self-start md:self-auto">
+          <span class="text-blue-600 dark:text-blue-400 font-bold">GEO:</span>
+          <span>{channelGeo.latitude.toFixed(4)}° N, {channelGeo.longitude.toFixed(4)}° E</span>
+        </div>
+      </div>
+    )}
   </section>
 
   <!-- Link rapidi -->

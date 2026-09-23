@@ -2,6 +2,7 @@
 import SchemaInjector from '../components/SchemaInjector.astro';
 import '../styles/global.css';
 import { absoluteUrl } from '../utils/urls';
+import type { ChannelGeo } from '../utils/channelGeo';
 
 interface Props {
   title: string;
@@ -19,6 +20,8 @@ interface Props {
   ogImageHeight?: number;
   noindex?: boolean;
   schemas?: object[];
+  /** Dati geografici (lat/long/città/regione) per canali locali/nazionali */
+  geo?: ChannelGeo | null;
   /**
    * Tipo OG:
    * - 'website'       → pagine hub, home, categorie
@@ -44,6 +47,7 @@ const {
   ogImageHeight = 630,
   noindex       = false,
   schemas       = [],
+  geo           = null,
   ogType        = 'website',
   articleSection,
   publishedTime,
@@ -102,6 +106,16 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
       : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     }
     <link rel="canonical" href={canonicalUrl} />
+
+    <!-- ═══ Geo Coordinates & Regional SEO ═════════════════════════════════ -->
+    {geo && (
+      <>
+        <meta name="geo.position" content={`${geo.latitude};${geo.longitude}`} />
+        <meta name="ICBM" content={`${geo.latitude}, ${geo.longitude}`} />
+        <meta name="geo.placename" content={`${geo.city}, ${geo.region}`} />
+        <meta name="geo.region" content={geo.country === 'IT' ? (geo.province ? `IT-${geo.province}` : 'IT') : geo.country} />
+      </>
+    )}
 
     <!-- ═══ Open Graph ════════════════════════════════════════════════════ -->
     <!-- Tipo e URL -->

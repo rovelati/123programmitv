@@ -18,6 +18,7 @@ import type { Channel, Program } from '../types';
 import { getChannelLogo } from './channelLogos';
 import { absoluteUrl, SITE_ORIGIN } from './urls';
 import { filterStaseraPrograms } from './timeSlots';
+import { getChannelGeo } from './channelGeo';
 
 const SITE_URL   = SITE_ORIGIN;
 const SITE_NAME  = 'inTVstasera.it';
@@ -250,6 +251,7 @@ function webPageEntity(url: string, name: string, description: string): Record<s
 function broadcastServiceEntity(channel: Channel, siteUrl = SITE_URL): Record<string, unknown> {
   const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
   const wikidata   = CHANNEL_WIKIDATA[channel.id];
+  const geo        = getChannelGeo(channel.id);
 
   return {
     '@type': 'BroadcastService',
@@ -259,16 +261,49 @@ function broadcastServiceEntity(channel: Channel, siteUrl = SITE_URL): Record<st
     ...(channel.number ? { broadcastChannelId: String(channel.number) } : {}),
     broadcastTimezone: 'Europe/Rome',
     inLanguage: 'it',
-    areaServed: {
+    areaServed: geo ? {
+      '@type': 'AdministrativeArea',
+      name: geo.coverage || geo.region,
+      addressRegion: geo.region,
+      addressCountry: geo.country,
+    } : {
       '@type': 'Country',
       name: 'Italy',
       sameAs: ITALY_ID,
     },
+    ...(geo ? {
+      spatialCoverage: {
+        '@type': 'Place',
+        name: `${geo.city} (${geo.region})`,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: geo.city,
+          ...(geo.province ? { addressRegion: `${geo.region} (${geo.province})` } : { addressRegion: geo.region }),
+          addressCountry: geo.country,
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+        },
+      },
+    } : {}),
     ...(wikidata ? { sameAs: wikidata } : {}),
     broadcastAffiliateOf: {
       '@type': 'Organization',
       name: channel.name,
       url: channelUrl,
+      ...(geo ? {
+        location: {
+          '@type': 'Place',
+          name: `${geo.city} (${geo.region})`,
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: geo.latitude,
+            longitude: geo.longitude,
+          },
+        },
+      } : {}),
     },
   };
 }
