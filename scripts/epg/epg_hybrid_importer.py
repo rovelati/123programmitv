@@ -347,6 +347,13 @@ DEFAULT_CHANNEL_SLUG_ALIASES = {
     'radiouno': 'radio-rai-1',
     'radiodue': 'radio-rai-2',
     'radiotre': 'radio-rai-3',
+    'radionorbatv': 'radionorba-tv',
+    'tgnorba24': 'tele-norba',
+    'trmh24': 'trm-h24',
+    'intertv': 'inter-tv',
+    'milantv': 'milan-tv',
+    'romatv': 'roma-tv',
+    'laziostylech': 'lazio-style-channel',
 }
 
 RAI_CHANNEL_IDS = {
@@ -1177,6 +1184,22 @@ def merge_channels(primary_channels: List[Dict[str, Any]], secondary_channels: L
                 'category': channel.get('category') or secondary_match.get('category'),
             }
             primary_programs = channel['programs']
+
+        if not primary_programs and channel['id'] == 'tele-norba':
+            norba_fallback = secondary_by_id.get('radionorba-tv') or secondary_by_id.get('tg-norba-24')
+            if norba_fallback and norba_fallback.get('programs'):
+                logger.info(
+                    'Primary feed empty for tele-norba, using %s programs (%s items)',
+                    norba_fallback.get('id'),
+                    len(norba_fallback['programs']),
+                )
+                channel = {
+                    **channel,
+                    'programs': norba_fallback['programs'],
+                    'source': 'iptv-epg',
+                    'category': channel.get('category') or norba_fallback.get('category'),
+                }
+                primary_programs = channel['programs']
 
         if not primary_programs and raiplay_schedule_programs:
             fallback_programs = raiplay_schedule_programs

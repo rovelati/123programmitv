@@ -36,8 +36,13 @@
   "Radio105.it": "radio-105",
   "RadioUno.it": "radio-rai-1",
   "RadioDue.it": "radio-rai-2",
-  "RadioTre.it": "radio-rai-3",
   "InterTV.it": "inter-tv",
   "Inter.TV.it": "inter-tv",
-  "INTER.SerieA": "inter-tv"
+  "INTER.SerieA": "inter-tv",
+  "RADIONORBATV.it": "radionorba-tv",
+  "TGNORBA24.it": "tele-norba",
+  "TRMh24.it": "trm-h24",
+  "MilanTV.it": "milan-tv",
+  "RomaTV.it": "roma-tv",
+  "LazioStyleCh.it": "lazio-style-channel"
 }

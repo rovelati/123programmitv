@@ -59,6 +59,15 @@ const CHANNEL_STREAMS: Record<string, ChannelStream> = {
   'cielo':    { url: 'https://www.cielotv.it/streaming', login_required: false, geo_it: false, label: 'CieloTV' },
   'sky-tg24': { url: 'https://tg24.sky.it/diretta',     login_required: false, geo_it: false, label: 'Sky TG24' },
   'tv2000':   { url: 'https://www.play2000.it/live/tv', login_required: true,  geo_it: false, label: 'TV2000' },
+
+  // ── Regionali & Locali ───────────────────────────────────────────────────
+  'tele-norba':     { url: 'https://norbaplay.it/', login_required: false, geo_it: false, label: 'NorbaPlay' },
+  'radionorba-tv':  { url: 'https://radionorba.it/tv-diretta/', login_required: false, geo_it: false, label: 'Radionorba TV' },
+  'tg-norba-24':    { url: 'https://norbaplay.it/', login_required: false, geo_it: false, label: 'NorbaPlay' },
+  'trm-h24':        { url: 'https://trmtv.it/diretta', login_required: false, geo_it: false, label: 'TRMTV' },
+  'san-marino-rtv': { url: 'https://www.sanmarinortv.sm/programmi/web-tv', login_required: false, geo_it: false, label: 'San Marino RTV' },
+  'rsi-la-1':       { url: 'https://www.rsi.ch/play/tv/live/la-1', login_required: false, geo_it: true, label: 'RSI Play' },
+  'rsi-la-2':       { url: 'https://www.rsi.ch/play/tv/live/la-2', login_required: false, geo_it: true, label: 'RSI Play' },
 };
 
 /** Ritorna i dati di streaming per un channel_id, o null se non disponibile. */

@@ -151,31 +151,25 @@ const ogImageAlt  = firstProgramWithPoster
     </div>
 
     {channelGeo && (
-      <div class="mt-4 p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
-        <div class="flex items-start sm:items-center gap-2.5 min-w-0">
-          <span class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
-            📍
-          </span>
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-extrabold text-slate-900 dark:text-slate-100">
-                {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede Principale'}:
+      <div class="mt-4 p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start sm:items-center gap-2.5 shadow-xs">
+        <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
+          📍
+        </span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-extrabold text-slate-900 dark:text-slate-100">
+              {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede'}:
+            </span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
+            {channelGeo.badge && (
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                {channelGeo.badge}
               </span>
-              <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
-              {channelGeo.badge && (
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                  {channelGeo.badge}
-                </span>
-              )}
-            </div>
-            <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5 truncate sm:whitespace-normal">
-              Area di copertura: {channelGeo.coverage}
-            </p>
+            )}
           </div>
-        </div>
-        <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 flex-shrink-0 self-start md:self-auto">
-          <span class="text-blue-600 dark:text-blue-400 font-bold">GEO:</span>
-          <span>{channelGeo.latitude.toFixed(4)}° N, {channelGeo.longitude.toFixed(4)}° E</span>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+            Area di copertura: {channelGeo.coverage}
+          </p>
         </div>
       </div>
     )}
@@ -203,11 +197,37 @@ const ogImageAlt  = firstProgramWithPoster
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
     {programs.length === 0 ? (
-      <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-        <p class="text-slate-400 dark:text-slate-500">Nessun programma serale disponibile per {channel.name} stasera.</p>
-        <a href="/" class="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm transition-colors">
-          ← Torna a inTV stasera
-        </a>
+      <div class="text-center py-10 px-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs mb-8">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+          📺
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900 dark:text-slate-100 mb-1">
+          Palinsesto in aggiornamento per {channel.name}
+        </h3>
+        <p class="text-slate-500 dark:text-slate-400 text-sm max-w-lg mx-auto">
+          La guida TV per {channel.name} non include programmi serali per la data odierna. Puoi seguire la trasmissione in diretta streaming o consultare la programmazione degli altri canali.
+        </p>
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+          {stream && (
+            <a
+              href={stream.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <polygon points="5,3 19,12 5,21"/>
+              </svg>
+              Guarda la diretta streaming su {stream.label || channel.name}
+            </a>
+          )}
+          <a
+            href="/"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-xl transition-colors"
+          >
+            ← Tutti i programmi stasera
+          </a>
+        </div>
       </div>
     ) : (
       <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
