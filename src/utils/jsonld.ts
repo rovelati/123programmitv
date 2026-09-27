@@ -244,6 +244,10 @@ function webPageEntity(url: string, name: string, description: string): Record<s
     isPartOf: { '@id': WEBSITE_ID },
     publisher: { '@id': ORG_ID },
     breadcrumb: { '@id': `${url}#breadcrumb` },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', 'header p', '.speakable-summary'],
+    },
   };
 }
 
@@ -488,9 +492,30 @@ export function buildHubChannelJsonLd({
     ],
   };
 
-  const webPage: object = {
+  const channelFaq: object = {
     '@context': 'https://schema.org',
-    ...webPageEntity(pageUrl, resolvedTitle, pageDesc),
+    '@type': 'FAQPage',
+    '@id': `${pageUrl}#faq`,
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `Cosa c'è in onda su ${channel.name}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `La programmazione di ${channel.name} include programmi in prima e seconda serata con orari precisi, sinossi e trame sempre aggiornate su inTVstasera.it.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `Come guardare ${channel.name} in streaming?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: streamUrl
+            ? `Puoi guardare la diretta streaming ufficiale di ${channel.name} accedendo alla piattaforma ufficiale ${streamUrl} o cliccando su Guarda Diretta in inTVstasera.it.`
+            : `Verifica sulla guida TV di inTVstasera.it la disponibilità e i dettagli di trasmissione per ${channel.name}.`,
+        },
+      },
+    ],
   };
 
   return [
@@ -500,6 +525,7 @@ export function buildHubChannelJsonLd({
     itemList,
     breadcrumb,
     webPage,
+    channelFaq,
   ];
 }
 
@@ -557,6 +583,37 @@ export function buildHubHomeJsonLd({
         title,
         description,
       ),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      '@id': `${pageUrl}#faq`,
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Cosa c\'è stasera in TV sui principali canali italiani?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Su inTVstasera.it trovi la guida TV completa di stasera con film, serie TV, show, documentari e sport in prima e seconda serata su Rai 1, Canale 5, Italia 1, Rete 4, La7, TV8, Nove e oltre 70 canali del digitale terrestre.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'A che ora inizia la prima serata in TV in Italia?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'La prima serata televisiva italiana comincia solitamente tra le ore 21:15 e le 21:30 su tutti i canali Rai, Mediaset e le altre reti nazionali.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Come vedere i programmi TV in diretta streaming gratis?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Su inTVstasera.it ogni scheda canale e programma fornisce l\'accesso diretto allo streaming legale e gratuito (RaiPlay per la Rai, Mediaset Infinity, La7.it, Discovery+ e TV8).',
+          },
+        },
+      ],
     },
   ];
 }

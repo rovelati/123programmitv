@@ -40,7 +40,7 @@ const dateLabel = program.date ? formatDateIT(program.date) : '';
 
 const schemas = isIndexable ? buildProgramJsonLd({ program, channel }) : [];
 
-const title = `${program.title} — ${channel.name} ${dateLabel} ore ${startLabel} | InTVStasera`;
+const title = `${program.title} su ${channel.name} (${startLabel})`.slice(0, 65);
 const description = program.description
   ? program.description.slice(0, 155) + (program.description.length > 155 ? '…' : '')
   : `${program.title} in onda su ${channel.name} ${dateLabel} alle ${startLabel}.`;

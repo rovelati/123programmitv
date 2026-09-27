@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-09-18T08:45:27.170Z",
+  "generatedAt": "2026-09-27T21:02:18.481Z",
   "host": "www.intvstasera.it",
   "endpoint": "https://api.indexnow.org/indexnow",
   "keyLocation": "https://www.intvstasera.it/8f3b20c36691456da871bf2c8a149d62.txt",
-  "status": "success",
-  "httpStatus": 202,
+  "status": "error",
+  "httpStatus": 403,
   "urlsSubmitted": 56,
   "sampleUrls": [
     "https://www.intvstasera.it/",
-    "https://www.intvstasera.it/stasera/",
+    "https://www.intvstasera.it/ora/",
     "https://www.intvstasera.it/domani/",
     "https://www.intvstasera.it/film-stasera/",
     "https://www.intvstasera.it/serie-stasera/",
@@ -24,8 +24,8 @@
     "https://www.intvstasera.it/nove/"
   ],
   "run": {
-    "startedAt": "2026-09-18T08:45:26.452Z",
-    "finishedAt": "2026-09-18T08:45:27.170Z",
+    "startedAt": "2026-09-27T21:02:17.733Z",
+    "finishedAt": "2026-09-27T21:02:18.481Z",
     "durationSeconds": 1
   }
 }
