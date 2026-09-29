@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { fetchChannels, fetchProgramsForDate } from '../../../lib/epg';
-import { getTomorrowInRome, formatTime } from '../../../utils/timeSlots';
+import { getTomorrowInRome, filterStaseraPrograms, formatTime } from '../../../utils/timeSlots';
 import { getChannelStream } from '../../../utils/channelStreams';
 
 export const prerender = true;
@@ -22,6 +22,7 @@ export const GET: APIRoute = async () => {
 
     const schedule = channels.map(channel => {
       const chPrograms = programsByChannel.get(channel.id) ?? [];
+      const domaniEvening = filterStaseraPrograms(chPrograms);
       const stream = getChannelStream(channel.id);
 
       return {
@@ -33,7 +34,7 @@ export const GET: APIRoute = async () => {
           streamUrl: stream?.url ?? null,
           streamLabel: stream?.label ?? null,
         },
-        programs: chPrograms.map(p => ({
+        programs: domaniEvening.map((p, idx) => ({
           id: p.id,
           title: p.title,
           description: p.description,
@@ -43,6 +44,8 @@ export const GET: APIRoute = async () => {
           startTimeFormatted: formatTime(p.startTime),
           endTimeFormatted: formatTime(p.endTime),
           posterUrl: p.poster_url,
+          isPrimaSerata: idx === 0,
+          isSecondaSerata: idx === 1,
         })),
       };
     }).filter(entry => entry.programs.length > 0);
