@@ -630,8 +630,12 @@
 
   // ── Event delegation: qualsiasi [data-program] apre l'overlay ─────────────
   document.addEventListener('click', ev => {
+    // Se il click è su un tag <a> (es. logo/nome per andare al canale), non intercettare
+    const link = ev.target.closest('a');
+    if (link && !link.closest('#program-overlay')) return;
+
     const trigger = ev.target.closest('[data-program]');
-    if (trigger) {
+    if (trigger && trigger.dataset.program) {
       ev.preventDefault();
       ev.stopPropagation();
       try { openOverlay(JSON.parse(trigger.dataset.program)); } catch (err) { console.warn('[overlay] parse error', err); }
