@@ -220,6 +220,24 @@
     'supertennis': 'https://www.supertennis.tv',
   };
 
+  /** Mappa channel_id → URL sito ufficiale (fallback) */
+  const WEBSITES = {
+    'volksmusiktv':       'https://www.volksmusik.tv',
+    'volksmusik-tv':      'https://www.volksmusik.tv',
+    'de-volksmusik-tv':   'https://www.volksmusik.tv',
+    'supertennis':        'https://www.supertennis.tv',
+    'sportitalia':        'https://www.sportitalia.com',
+    'tv2000':             'https://www.tv2000.it',
+    'padre-pio-tv':       'https://www.padrepio.tv',
+    'radio-italia-tv':    'https://www.radioitalia.it',
+    'rtl-102-5-tv':       'https://www.rtl.it',
+    'rds-social-tv':      'https://www.rds.it',
+    'radio-freccia':      'https://www.radiofreccia.it',
+    'radio-zeta':         'https://www.radiozeta.it',
+    'kiss-kiss-tv':       'https://kisskiss.it',
+    'deejay-tv':          'https://www.deejay.it',
+  };
+
   /** Programma attualmente visualizzato nell'overlay */
   let _prog = null;
 
@@ -530,23 +548,36 @@
       watchEl.classList.add('bg-blue-600', 'hover:bg-blue-700');
 
       if (isLiveOrImminent) {
-        // In onda adesso o tra meno di 10 minuti -> Guarda ora
+        // In onda adesso o tra meno di 10 minuti -> Guarda ora / Sito ufficiale / Chiudi
         iconWatch?.classList.remove('hidden');
         iconBell?.classList.add('hidden');
-        if (watchLabel) watchLabel.textContent = 'Guarda ora';
         watchEl.onclick = null;
 
         const streamUrl = data.channelId ? STREAMS[data.channelId] : null;
+        const websiteUrl = data.channelId ? WEBSITES[data.channelId] : null;
+
         if (streamUrl) {
           watchEl.href = streamUrl;
           watchEl.setAttribute('target', '_blank');
           watchEl.setAttribute('rel', 'noopener noreferrer');
-          watchEl.title = 'Apri lo streaming ufficiale';
+          watchEl.title = 'Apri lo streaming ufficiale in una nuova scheda';
+          if (watchLabel) watchLabel.textContent = 'Guarda ora';
+        } else if (websiteUrl) {
+          watchEl.href = websiteUrl;
+          watchEl.setAttribute('target', '_blank');
+          watchEl.setAttribute('rel', 'noopener noreferrer');
+          watchEl.title = 'Apri il sito ufficiale del canale';
+          if (watchLabel) watchLabel.textContent = 'Sito ufficiale';
         } else {
-          watchEl.href = data.channelId ? `/${data.channelId}/` : '#';
+          watchEl.href = '#';
           watchEl.removeAttribute('target');
           watchEl.removeAttribute('rel');
-          watchEl.title = '';
+          watchEl.title = 'Chiudi dettagli';
+          if (watchLabel) watchLabel.textContent = 'Chiudi';
+          watchEl.onclick = (ev) => {
+            ev.preventDefault();
+            closeOverlay();
+          };
         }
       } else if (isFuture) {
         // NON ancora iniziato (> 10 minuti prima) -> Promemoria
@@ -562,15 +593,18 @@
           handleReminder(_prog);
         };
       } else {
-        // Concluso -> Guida canale
+        // Concluso -> Chiudi
         iconWatch?.classList.remove('hidden');
         iconBell?.classList.add('hidden');
-        if (watchLabel) watchLabel.textContent = 'Guida canale';
-        watchEl.onclick = null;
-        watchEl.href = data.channelId ? `/${data.channelId}/` : '#';
+        if (watchLabel) watchLabel.textContent = 'Chiudi';
+        watchEl.href = '#';
         watchEl.removeAttribute('target');
         watchEl.removeAttribute('rel');
-        watchEl.title = '';
+        watchEl.title = 'Chiudi dettagli';
+        watchEl.onclick = (ev) => {
+          ev.preventDefault();
+          closeOverlay();
+        };
       }
     }
 
