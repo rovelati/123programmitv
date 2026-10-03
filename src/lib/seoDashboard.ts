@@ -183,7 +183,7 @@ function computeDelta(current: number, previous: number): number | null {
   return Math.round((((current - previous) / previous) * 100) * 100) / 100;
 }
 
-function normalizeSearchRow(row: SearchConsoleRow) {
+function normalizeSearchRow(row: any) {
   return {
     key: row.keys?.[0] || '',
     clicks: row.clicks || 0,
@@ -325,7 +325,7 @@ async function runUrlInspection(context: APIContext) {
         const response = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${typeof token === 'string' ? token : token?.token || ''}`,
+            Authorization: `Bearer ${typeof token === 'string' ? token : (token as any)?.token || ''}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -490,7 +490,7 @@ async function loadGa4Status(context: APIContext) {
   try {
     const auth = getGoogleAuth(context, ['https://www.googleapis.com/auth/analytics.readonly']);
     const analyticsData = google.analyticsdata({ version: 'v1beta', auth });
-    const response = await analyticsData.properties.runReport({
+    const response: any = await (analyticsData.properties as any).runReport({
       property: `properties/${propertyId}`,
       requestBody: {
         dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }],
@@ -504,7 +504,7 @@ async function loadGa4Status(context: APIContext) {
       status: 'ok',
       measurementId,
       propertyId,
-      rows: response.data.rows || [],
+      rows: response.data?.rows || [],
     };
   } catch (error) {
     const parsed = parseGoogleError(error);

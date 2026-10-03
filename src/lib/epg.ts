@@ -6,6 +6,7 @@
 import { Pool } from 'pg';
 import { getChannelLogo } from '../utils/channelLogos';
 import { resolveChannelNumber } from '../utils/channelNumbers';
+import { resolveProgramPoster } from '../utils/programImages';
 import type { Channel, Program } from '../types';
 
 let pgPool: Pool | null = null;
@@ -179,17 +180,20 @@ function mapProgram(raw: RawProgram): Program {
   const startTime = raw.start_time instanceof Date ? raw.start_time.toISOString() : raw.start_time;
   const endTime = raw.end_time instanceof Date ? raw.end_time.toISOString() : raw.end_time;
   const date = raw.date instanceof Date ? raw.date.toISOString().slice(0, 10) : raw.date;
+  const cleanedTitle = cleanProgramTitle(raw.title);
+  const initialPoster = resolvePosterUrl(raw.poster_url);
+  const finalPoster = resolveProgramPoster(initialPoster, cleanedTitle, raw.genre, raw.description);
 
   return {
     id: String(raw.id),
-    title: cleanProgramTitle(raw.title),
+    title: cleanedTitle,
     startTime,
     endTime,
     date,
     category: raw.genre ?? '',
     description: raw.description ?? '',
     slug: raw.slug ?? undefined,
-    poster_url: resolvePosterUrl(raw.poster_url),
+    poster_url: finalPoster,
     indexable: raw.indexable ?? false,
     channel_id: raw.channel_id,
   };

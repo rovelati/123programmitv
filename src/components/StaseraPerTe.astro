@@ -465,7 +465,7 @@ const { candidates, pageSlot = 'stasera' } = Astro.props;
           localStorage.setItem(key, JSON.stringify(nope.slice(-100)));
           track('negative_feedback', { program_id: id, slot: pageSlot, anon_id: anonId });
           candidates = candidates.filter((c) => c.id !== id);
-          root.dataset.candidates = JSON.stringify(candidates);
+          if (root) root.dataset.candidates = JSON.stringify(candidates);
           renderRecs();
         });
       });

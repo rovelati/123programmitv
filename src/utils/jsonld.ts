@@ -438,6 +438,7 @@ export function buildHubChannelJsonLd({
   const pageUrl = canonicalPath ? absoluteUrl(canonicalPath, siteUrl) : channelUrl;
   const resolvedTitle = pageTitle ?? `Programmi ${channel.name} stasera`;
   const pageDesc = pageDescription ?? `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
+  const streamUrl = channel.streamUrl ?? CHANNEL_STREAM_URL[channel.id] ?? null;
 
   // Solo programmi serali coerenti con la pagina canale
   const primeTime = filterStaseraPrograms(programs);
@@ -490,6 +491,11 @@ export function buildHubChannelJsonLd({
       { '@type': 'ListItem', position: 1, name: 'inTV stasera', item: absoluteUrl('/', siteUrl) },
       { '@type': 'ListItem', position: 2, name: channel.name, item: pageUrl },
     ],
+  };
+
+  const webPage: object = {
+    '@context': 'https://schema.org',
+    ...webPageEntity(pageUrl, resolvedTitle, pageDesc),
   };
 
   const channelFaq: object = {
