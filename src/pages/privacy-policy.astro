@@ -1,0 +1,118 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import { sitePath } from '../utils/urls';
+---
+
+<HubLayout
+  title="Privacy Policy — In TV Stasera & App Stasera In TV"
+  description="Informativa sul trattamento dei dati personali ai sensi dell'art. 13 del Regolamento UE 2016/679 (GDPR) per il sito inTVstasera.it e l'applicazione mobile Stasera In TV."
+  canonicalPath="/privacy-policy"
+>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-4" aria-label="Breadcrumb">
+        <a href={sitePath('/')} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Home</a>
+        <span>&rsaquo;</span>
+        <span class="text-slate-700 dark:text-slate-300">Privacy Policy</span>
+      </nav>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-3">
+        Informativa sulla Privacy (Privacy Policy)
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR) &bull; Valida per il portale web e per l'app mobile ufficiale <em>"Stasera In TV"</em>
+      </p>
+    </div>
+
+    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 space-y-8 leading-relaxed text-sm sm:text-base">
+      
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">1. Titolare del Trattamento</h2>
+        <p>
+          Il Titolare del trattamento dei dati personali raccolti tramite il sito web <strong>inTVstasera.it</strong> e l'applicazione mobile <strong>"Stasera In TV"</strong> (ID pacchetto: <code class="text-xs bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">it.intvstasera.staseraintv</code>) è <strong>In TV Stasera</strong>.
+        </p>
+        <p class="mt-2">
+          Email di contatto per questioni di privacy e protezione dati: <a href="mailto:privacy@intvstasera.it" class="text-blue-600 dark:text-blue-400 underline font-medium">privacy@intvstasera.it</a>.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">2. Dati Trattati e Finalità del Trattamento</h2>
+        
+        <div class="space-y-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">A. Dati di Navigazione e Utilizzo Tecnico</h3>
+            <p class="text-sm">
+              I sistemi informatici acquisiscono, nel corso del loro normale esercizio, alcuni dati tecnici la cui trasmissione è implicita nell'uso dei protocolli di comunicazione di Internet (es. indirizzo IP, tipo di browser, orario della richiesta, parametri del dispositivo). Tali dati sono utilizzati al solo fine di ricavare informazioni statistiche anonime sull'uso del servizio, controllarne il corretto funzionamento e garantire la sicurezza informatica (Cloudflare Edge CDN).
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">B. Preferenze salvate in locale sul dispositivo (Privacy First)</h3>
+            <p class="text-sm">
+              L'applicazione mobile e il sito web non richiedono alcuna registrazione di un account né login. Le tue preferenze personali &mdash; inclusi i canali televisivi salvati tra i <em>Preferiti</em>, i promemoria impostati e la scelta del tema grafico &mdash; vengono conservate <strong>esclusivamente nella memoria locale del tuo dispositivo</strong> (tramite AsyncStorage o Web Storage) e non vengono mai inviate o trasmesse a server remoti esterni.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">C. Permessi dell'Applicazione Mobile (Android)</h3>
+            <p class="text-sm">
+              L'applicazione per Android richiede esclusivamente i permessi necessari alla consultazione del palinsesto:
+            </p>
+            <ul class="list-disc pl-5 mt-2 space-y-1 text-xs sm:text-sm">
+              <li><strong>INTERNET</strong>: per scaricare i palinsesti e le immagini dei programmi in tempo reale.</li>
+              <li><strong>POST_NOTIFICATIONS / SCHEDULE_EXACT_ALARM</strong>: opzionali, utilizzati solo se l'utente sceglie spontaneamente di impostare un promemoria per l'inizio di un programma TV. Le notifiche sono gestite localmente dal sistema operativo.</li>
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">D. Statistiche Anonimizzate (Google Analytics)</h3>
+            <p class="text-sm">
+              Utilizziamo Google Analytics con anonimizzazione dell'IP abilitata per valutare l'affidabilità dell'infrastruttura. I dati vengono trattati in forma rigorosamente aggregata senza incrocio con altri database identificativi.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">3. Base Giuridica del Trattamento</h2>
+        <p>
+          Il trattamento dei dati tecnici e funzionali si fonda sulla necessità di eseguire il servizio di consultazione del palinsesto richiesto dall'interessato (art. 6, par. 1, lett. b GDPR) e sul legittimo interesse del titolare a garantire la sicurezza del sistema (art. 6, par. 1, lett. f GDPR). I promemoria e le notifiche si basano sull'attivazione volontaria da parte dell'utente.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">4. Destinatari e Trasferimento dei Dati</h2>
+        <p>
+          Nessun dato personale viene commercializzato o ceduto a scopi di marketing. I dati tecnici possono essere trattati da fornitori tecnologici incaricati quali responsabili del trattamento (ad esempio Cloudflare per il routing e la protezione CDN e Google Ireland Limited per i servizi di telemetria anonimizzata), conformemente alle clausole contrattuali standard approvate dalla Commissione Europea.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">5. Diritti dell'Interessato (Artt. 15-22 GDPR)</h2>
+        <p>
+          Ai sensi del Regolamento UE 2016/679, ciascun utente ha il diritto di:
+        </p>
+        <ul class="list-disc pl-5 mt-2 space-y-1 text-sm">
+          <li>Accedere ai propri dati e richiedere conferma della loro esistenza;</li>
+          <li>Chiedere la rettifica, l'aggiornamento o la cancellazione dei dati;</li>
+          <li>Opporsi in qualsiasi momento al trattamento o richiederne la limitazione;</li>
+          <li>Revocare i consensi prestati sul proprio dispositivo (es. disattivando le notifiche nelle impostazioni di Android o svuotando la cache dell'app per azzerare i preferiti);</li>
+          <li>Proporre reclamo all'Autorità Garante per la Protezione dei Dati Personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">www.garanteprivacy.it</a>).</li>
+        </ul>
+        <p class="mt-4 text-sm">
+          Per qualsiasi richiesta è sufficiente inviare un'email a: <a href="mailto:privacy@intvstasera.it" class="text-blue-600 dark:text-blue-400 underline font-medium">privacy@intvstasera.it</a>.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">6. Cookie Policy Correlata</h2>
+        <p>
+          Per maggiori dettagli sulle tecnologie di archiviazione e sui cookie utilizzati dal nostro portale web, ti invitiamo a consultare la nostra <a href={sitePath('/cookie-policy')} class="text-blue-600 dark:text-blue-400 underline font-semibold">Cookie Policy estesa</a>.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</HubLayout>

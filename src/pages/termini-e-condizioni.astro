@@ -1,0 +1,66 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import { sitePath } from '../utils/urls';
+---
+
+<HubLayout
+  title="Termini e Condizioni — In TV Stasera"
+  description="Termini e condizioni generali di utilizzo del sito inTVstasera.it e dell'applicazione mobile Stasera In TV."
+  canonicalPath="/termini-e-condizioni"
+>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-4" aria-label="Breadcrumb">
+        <a href={sitePath('/')} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Home</a>
+        <span>&rsaquo;</span>
+        <span class="text-slate-700 dark:text-slate-300">Termini e Condizioni</span>
+      </nav>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-3">
+        Termini e Condizioni di Utilizzo
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Ultimo aggiornamento: 3 Ottobre 2026 &bull; Servizio di guida e informazione televisiva
+      </p>
+    </div>
+
+    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 space-y-8 leading-relaxed text-sm sm:text-base">
+      
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">1. Oggetto del Servizio</h2>
+        <p>
+          Il portale <strong>inTVstasera.it</strong> e l'applicazione mobile <strong>Stasera In TV</strong> forniscono gratuitamente al pubblico una guida televisiva informativa, comprendente i palinsesti giornalieri, la programmazione di Prima e Seconda Serata, i programmi in onda adesso e le schede sinottiche relative ai canali televisivi del digitale terrestre, satellitare e tivùsat in Italia.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">2. Proprietà Intellettuale e Marchi</h2>
+        <p>
+          Tutti i marchi commerciali, loghi di canali televisivi, nomi di emittenti e titoli di programmi citati appartengono ai rispettivi legittimi proprietari ed aventi diritto (Rai, Mediaset, Sky, Discovery/Warner Bros, Cairo Communication, ecc.).
+        </p>
+        <p class="mt-2">
+          La loro pubblicazione sulla nostra piattaforma ha esclusiva finalità identificativa, descrittiva e di pubblica informazione giornalistica sul palinsesto radiotelevisivo ai sensi della normativa vigente sul diritto d'autore e sull'uso leale dei marchi.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">3. Esclusione di Responsabilità (Disclaimer)</h2>
+        <p>
+          La redazione si impegna a mantenere i dati di programmazione costantemente aggiornati e sincronizzati con i flussi EPG e con le comunicazioni ufficiali delle reti televisive. Tuttavia, le emittenti possono apportare variazioni improvvise ai palinsesti per esigenze editoriali, edizioni speciali o eventi straordinari non imputabili a inTVstasera.it.
+        </p>
+        <p class="mt-2">
+          Il servizio è fornito "così com'è" senza garanzie implicite od esplicite sull'assoluta e totale assenza di errori orari o modifiche dell'ultimo minuto.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">4. Contatti</h2>
+        <p>
+          Per comunicazioni, segnalazioni sui palinsesti o richieste di informazioni generali: <a href="mailto:info@intvstasera.it" class="text-blue-600 dark:text-blue-400 underline font-medium">info@intvstasera.it</a>.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</HubLayout>

@@ -1,0 +1,102 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import { sitePath } from '../utils/urls';
+---
+
+<HubLayout
+  title="Cookie Policy — In TV Stasera"
+  description="Informativa estesa sull'utilizzo dei cookie e tecnologie similari su inTVstasera.it e sull'applicazione mobile Stasera In TV."
+  canonicalPath="/cookie-policy"
+>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-4" aria-label="Breadcrumb">
+        <a href={sitePath('/')} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Home</a>
+        <span>&rsaquo;</span>
+        <span class="text-slate-700 dark:text-slate-300">Cookie Policy</span>
+      </nav>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-3">
+        Informativa sui Cookie (Cookie Policy)
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Ultimo aggiornamento: 3 Ottobre 2026 &bull; Conforme alle Linee Guida Garante Privacy e Direttiva ePrivacy
+      </p>
+    </div>
+
+    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 space-y-8 leading-relaxed text-sm sm:text-base">
+      
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">1. Cosa sono i Cookie e le tecnologie analoghe</h2>
+        <p>
+          I <strong>cookie</strong> sono piccoli file di testo che i siti web visitati inviano al terminale dell'utente (computer, smartphone, tablet), dove vengono memorizzati per essere poi ritrasmessi agli stessi siti alla successiva visita del medesimo utente.
+        </p>
+        <p class="mt-3">
+          Tecnologie similari, come <em>Web Storage (LocalStorage e SessionStorage)</em> nei browser e <em>AsyncStorage</em> nelle applicazioni mobili native, vengono impiegate per memorizzare in modo sicuro sul dispositivo impostazioni e preferenze di navigazione (ad esempio la modalità tema scuro o l'elenco dei canali televisivi preferiti), senza accedere ai file personali dell'utente.
+        </p>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">2. Tipologie di Cookie e Dati Utilizzati da inTVstasera.it</h2>
+        <p class="mb-4">
+          La nostra piattaforma e l'applicazione mobile adottano un approccio orientato alla riservatezza (<strong>privacy by default</strong>): non effettuiamo profilazione commerciale degli utenti né vendita di dati personali a terze parti.
+        </p>
+
+        <div class="space-y-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">A. Cookie Tecnici e di Funzionalità (Strettamente Necessari)</h3>
+            <p class="text-sm">
+              Questi cookie e chiavi di storage locale sono indispensabili per il corretto funzionamento del sito e dell'app. Permettono la navigazione continua, la gestione della cache dei palinsesti per ridurre il consumo di traffico dati e la memorizzazione della scelta del tema (chiaro/scuro).
+            </p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              Base giuridica: Esecuzione del servizio richiesto dall'utente (Art. 122 del Codice Privacy). Non richiedono consenso preventivo.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">B. Cookie Analitici Anonimizzati (Google Analytics 4)</h3>
+            <p class="text-sm">
+              Utilizziamo Google Analytics 4 esclusivamente per raccogliere metriche aggregate e anonime sulle visite (es. canali più consultati, pagine più visualizzate, tempi di caricamento), al solo scopo di ottimizzare le prestazioni. L'indirizzo IP dell'utente viene automaticamente mascherato ed anonimizzato (<code class="text-xs bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">anonymize_ip: true</code>), impedendo la re-identificazione dell'interessato.
+            </p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              In accordo con le Linee Guida del Garante Privacy, i cookie analitici con IP anonimizzato e senza combinazione con altri trattamenti sono equiparati ai cookie tecnici.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">C. Cookie di Sicurezza e CDN (Cloudflare)</h3>
+            <p class="text-sm">
+              I servizi di Cloudflare possono rilasciare cookie tecnici essenziali (es. identificatori di sessione sicura) finalizzati alla prevenzione di attacchi informatici (DDoS), alla protezione dei server e alla distribuzione rapida dei contenuti via Edge CDN.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">3. Come disabilitare o gestire i Cookie nei Browser</h2>
+        <p class="mb-4">
+          L'utente può in qualsiasi momento scegliere se accettare o rifiutare i cookie modificando le impostazioni del proprio browser. La disabilitazione totale dei cookie tecnici potrebbe tuttavia compromettere la memorizzazione delle preferenze personali (es. tema scuro).
+        </p>
+        <p class="text-sm mb-3">Di seguito i link alle istruzioni per i browser più diffusi:</p>
+        <ul class="list-disc pl-5 space-y-1.5 text-sm text-blue-600 dark:text-blue-400">
+          <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" class="hover:underline">Google Chrome</a></li>
+          <li><a href="https://support.mozilla.org/it/kb/protezione-antitracciamento-avanzata-firefox-desktop" target="_blank" rel="noopener noreferrer" class="hover:underline">Mozilla Firefox</a></li>
+          <li><a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" class="hover:underline">Apple Safari</a></li>
+          <li><a href="https://support.microsoft.com/it-it/microsoft-edge/eliminare-i-cookie-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener noreferrer" class="hover:underline">Microsoft Edge</a></li>
+        </ul>
+      </section>
+
+      <section class="bg-white dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">4. Titolare del Trattamento e Contatti</h2>
+        <p>
+          Il Titolare del trattamento dei dati è <strong>In TV Stasera</strong> (<a href="https://www.intvstasera.it" class="text-blue-600 dark:text-blue-400 hover:underline">www.intvstasera.it</a>).
+        </p>
+        <p class="mt-2">
+          Per qualsiasi domanda relativa all'uso dei cookie o per esercitare i propri diritti in materia di protezione dati personali, è possibile consultare la nostra <a href={sitePath('/privacy-policy')} class="text-blue-600 dark:text-blue-400 underline font-semibold">Privacy Policy</a> o contattare la redazione via email all'indirizzo: <a href="mailto:privacy@intvstasera.it" class="text-blue-600 dark:text-blue-400 underline">privacy@intvstasera.it</a>.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</HubLayout>
