@@ -9,6 +9,8 @@ static-epg-dist/
 .env
 .env.local
 .env.*.local
+*.env
+key-bing*
 
 # Astro
 .astro/
