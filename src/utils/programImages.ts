@@ -30,47 +30,47 @@ export const KNOWN_PROGRAM_POSTERS: Record<string, string> = {
   'tg la7 meteo': 'https://images.unsplash.com/photo-1592210454359-9043f067919b?auto=format&fit=crop&w=800&q=80',
 
   // ── RAI 1 & RAI GROUP ──────────────────────────────────────────────────────
-  'affari tuoi': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/02/1725287895068_2048x1152_logo.jpg',
-  'tg1': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg 1': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'speciale tg1': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg1 sera': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg1 notte': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg2': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg 2': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg3': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'tg 3': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/10/02/1696238210345_2048x1152_logo.jpg',
-  'reazione a catena': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2025/05/30/1748629039568_2048x1152_logo.jpg',
-  'eredita': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/12/16/1702740355368_2048x1152_logo%204.jpg',
-  'l eredita': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2023/12/16/1702740355368_2048x1152_logo%204.jpg',
-  'ulisse': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2025/04/07/1744037486660_2048x1152_logo.jpg',
-  'ulisse il piacere della scoperta': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2025/04/07/1744037486660_2048x1152_logo.jpg',
-  'ballando con le stelle': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/25/1727271420792_2048x1152_logo.jpg',
-  'tale e quale show': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/20/1726847895068_2048x1152_logo.jpg',
-  'domenica in': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/15/1726415895068_2048x1152_logo.jpg',
-  'storie italiane': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/09/1725897895068_2048x1152_logo.jpg',
-  'e sempre mezzogiorno': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/09/1725897895068_2048x1152_logo.jpg',
-  'la vita in diretta': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/09/1725897895068_2048x1152_logo.jpg',
-  'un posto al sole': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/08/23/1724409605739_2048x1152_logo.jpg',
-  'il paradiso delle signore': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/09/1725897895068_2048x1152_logo.jpg',
-  'don matteo': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/03/27/1711545642876_2048x1152_logo.jpg',
-  'doc': 'https://image.tmdb.org/t/p/w780/jF5o5eN9E1uY4hKqQzZ9E1uY4hK.jpg',
-  'doc nelle tue mani': 'https://image.tmdb.org/t/p/w780/jF5o5eN9E1uY4hKqQzZ9E1uY4hK.jpg',
-  'mare fuori': 'https://image.tmdb.org/t/p/w780/sT0sXj8XwLg6R6MhCjJ2r2v4KqO.jpg',
-  'ispettore coliandro': 'https://image.tmdb.org/t/p/w780/a9X4J4X2v4KqO2v4KqO2v4KqO2v.jpg',
-  'l ispettore coliandro': 'https://image.tmdb.org/t/p/w780/a9X4J4X2v4KqO2v4KqO2v4KqO2v.jpg',
-  'montalbano': 'https://image.tmdb.org/t/p/w780/q7X4J4X2v4KqO2v4KqO2v4KqO2v.jpg',
-  'il commissario montalbano': 'https://image.tmdb.org/t/p/w780/q7X4J4X2v4KqO2v4KqO2v4KqO2v.jpg',
+  'affari tuoi': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'tg1': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg 1': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'speciale tg1': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg1 sera': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg1 notte': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg2': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg 2': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg3': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'tg 3': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'reazione a catena': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'eredita': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'l eredita': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'ulisse': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+  'ulisse il piacere della scoperta': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+  'ballando con le stelle': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'tale e quale show': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'domenica in': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'storie italiane': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'e sempre mezzogiorno': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80',
+  'la vita in diretta': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'un posto al sole': 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
+  'il paradiso delle signore': 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
+  'don matteo': 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
+  'doc': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+  'doc nelle tue mani': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+  'mare fuori': 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
+  'ispettore coliandro': 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
+  'l ispettore coliandro': 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
+  'montalbano': 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
+  'il commissario montalbano': 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=800&q=80',
   'che tempo che fa': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
-  'report': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/10/21/1729517594916_2048x1152_logo.jpg',
-  'presa diretta': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/01/1725187895068_2048x1152_logo.jpg',
-  'presadiretta': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/01/1725187895068_2048x1152_logo.jpg',
-  'chi l ha visto': 'https://www.raiplay.it/resizegd/1200x675/dl/img/2024/09/11/1726057895068_2048x1152_logo.jpg',
+  'report': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'presa diretta': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'presadiretta': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+  'chi l ha visto': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
 
   // ── MEDIASET GROUP ────────────────────────────────────────────────────────
-  'la ruota della fortuna': 'https://www.sorrisi.com/wp-content/uploads/2026/09/chiara-sangiovanni-la-ruota-della-fortuna-1200x675.jpg',
-  'ruota della fortuna': 'https://www.sorrisi.com/wp-content/uploads/2026/09/chiara-sangiovanni-la-ruota-della-fortuna-1200x675.jpg',
-  'striscia la notizia': 'https://www.sorrisi.com/wp-content/uploads/2026/01/striscia-la-notizia-in-prima-serata-1200x675.jpg',
+  'la ruota della fortuna': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'ruota della fortuna': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+  'striscia la notizia': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
   'le iene': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
   'le iene show': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
   'le iene presentano': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
@@ -96,9 +96,7 @@ export const KNOWN_PROGRAM_POSTERS: Record<string, string> = {
   'quarto grado': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
   'dritto e rovescio': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
   'forum': 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
-  'beautiful': 'https://image.tmdb.org/t/p/w780/5pBHgfGjWjD9q4pBHgfGjWjD9q4.jpg',
-  'terra amara': 'https://image.tmdb.org/t/p/w780/8ZkP1pG1y1p6d2y1w8x4P2pBHgf.jpg',
-  'endless love': 'https://image.tmdb.org/t/p/w780/jL8Z1Xz7xN2X1y2Z1p6d2y1w8x4.jpg',
+  'the big bang theory': 'https://image.tmdb.org/t/p/w780/euKFiO5M125rpngFRBbSW83beeI.jpg',
 
   // ── LA7 & DISCOVERY / WARNER BROS ──────────────────────────────────────────
   'tg la7': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
@@ -127,6 +125,7 @@ export const CATEGORY_ARTWORK: Record<string, string> = {
   cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80',
   serietv: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
   fiction: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
+  serie: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80',
   sport: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
   calcio: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
   intrattenimento: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
@@ -173,7 +172,7 @@ export function resolveProgramPoster(
   title?: string | null,
   category?: string | null,
   description?: string | null
-): string | null {
+): string {
   const cleaned = cleanTitle(title);
 
   if (cleaned.includes('meteo') || cleaned.includes('previsioni') || cleaned.includes('che tempo fa')) {
@@ -210,7 +209,6 @@ export function resolveProgramPoster(
     if (cleaned.includes('propaganda')) return KNOWN_PROGRAM_POSTERS['propaganda live'];
     if (cleaned.includes('quarto grado')) return KNOWN_PROGRAM_POSTERS['quarto grado'];
     if (cleaned.includes('grande fratello')) return KNOWN_PROGRAM_POSTERS['grande fratello'];
-    if (cleaned.includes('gladiatore')) return KNOWN_PROGRAM_POSTERS['il gladiatore'];
   }
 
   if (currentPoster && typeof currentPoster === 'string' && currentPoster.startsWith('http')) {
@@ -226,9 +224,15 @@ export function resolveProgramPoster(
   }
 
   const desc = (description || '').toLowerCase();
-  if (desc.includes('regia di') || desc.includes('cast:')) {
+  if (desc.includes('regia di') || desc.includes('cast:') || desc.includes('film')) {
     return CATEGORY_ARTWORK.film;
   }
+  if (desc.includes('serie') || desc.includes('stagione') || desc.includes('episodio')) {
+    return CATEGORY_ARTWORK.serietv;
+  }
+  if (desc.includes('calcio') || desc.includes('campionato') || desc.includes('partita')) {
+    return CATEGORY_ARTWORK.sport;
+  }
 
-  return null;
+  return CATEGORY_ARTWORK.film;
 }

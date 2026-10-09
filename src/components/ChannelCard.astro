@@ -121,15 +121,16 @@ const staseraOverlayJson = displayProgram
             >
               <div class="flex gap-2.5">
                 {displayProgram.poster_url && (
-                  <div class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-sm">
+                  <div class="w-16 h-10 sm:w-20 sm:h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-2xs">
                     <img
                       src={displayProgram.poster_url}
                       alt={`Poster ${displayProgram.title}`}
-                      width="48"
-                      height="64"
+                      width="80"
+                      height="48"
                       class="w-full h-full object-cover"
                       loading="lazy"
-                      onerror="this.closest('div').style.display='none'"
+                      decoding="async"
+                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80';"
                     />
                   </div>
                 )}
@@ -209,7 +210,7 @@ function buildCardHTML(prog: any, nextProg: any, isLive: boolean, isUpcoming: bo
   const catHTML = prog.category ? `<span class="uppercase tracking-wide font-bold text-slate-500 dark:text-slate-400">${esc(prog.category)}</span>` : '';
   const logoFallback = esc(channelLogo);
   const posterHTML = prog.poster_url
-    ? `<img src="${esc(prog.poster_url)}" alt="" width="48" height="64" loading="lazy" class="w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0 shadow-sm" onerror="(function(img){var m=(img.getAttribute('src')||'').match(/tmdb\\/(\\d+\\.jpg)/i);if(m&&img.dataset.mirror!=='1'){img.dataset.mirror='1';img.src='https://programmecesoir.fr/images/programs/tmdb/'+m[1];return;}img.onerror=null;img.src='${logoFallback}';img.className='w-10 h-14 sm:w-12 sm:h-16 rounded-lg object-contain p-1.5 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0';})(this)">`
+    ? `<img src="${esc(prog.poster_url)}" alt="" width="80" height="48" loading="lazy" decoding="async" class="w-16 h-10 sm:w-20 sm:h-12 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex-shrink-0 shadow-2xs" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80';">`
     : '';
   const descriptionHTML = prog.description
     ? `<p class="text-[13px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2 mt-1">${esc(prog.description)}</p>`

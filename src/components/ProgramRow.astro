@@ -49,8 +49,8 @@ const overlayData = JSON.stringify({
   role="button"
   tabindex="0"
   class:list={[
-    'grid gap-3 px-4 py-3.5 cursor-pointer',
-    program.poster_url ? 'grid-cols-[52px_48px_1fr] sm:grid-cols-[52px_56px_1fr]' : 'grid-cols-[52px_1fr]',
+    'grid gap-3 px-4 py-3.5 cursor-pointer items-center',
+    program.poster_url ? 'grid-cols-[52px_64px_1fr] sm:grid-cols-[52px_84px_1fr]' : 'grid-cols-[52px_1fr]',
     'hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
     isLive && 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/10',
@@ -58,21 +58,22 @@ const overlayData = JSON.stringify({
   aria-label={`${program.title} — ${startLabel}`}
 >
   <!-- Orario -->
-  <div class="text-right pt-0.5 flex-shrink-0">
-    <span class="text-[15px] font-extrabold text-slate-950 dark:text-slate-100 tabular-nums block">{startLabel}</span>
-    <span class="text-[12px] font-medium text-slate-500 dark:text-slate-400 tabular-nums block">{endLabel}</span>
+  <div class="text-right flex-shrink-0">
+    <span class="text-[14px] sm:text-[15px] font-extrabold text-slate-950 dark:text-slate-100 tabular-nums block">{startLabel}</span>
+    <span class="text-[11px] sm:text-[12px] font-medium text-slate-500 dark:text-slate-400 tabular-nums block">{endLabel}</span>
   </div>
 
   {program.poster_url && (
-    <div class="w-12 h-16 sm:w-14 sm:h-20 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="w-16 h-10 sm:w-21 sm:h-13 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-2xs flex-shrink-0">
       <img
         src={program.poster_url}
         alt={`Poster ${program.title}`}
-        width="56"
-        height="80"
+        width="84"
+        height="52"
         class="w-full h-full object-cover"
         loading="lazy"
-        onerror="this.closest('div').style.display='none'"
+        decoding="async"
+        onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80';"
       />
     </div>
   )}

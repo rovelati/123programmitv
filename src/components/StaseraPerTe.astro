@@ -335,21 +335,22 @@ const { candidates, pageSlot = 'stasera' } = Astro.props;
         .map((r, idx) => {
           const isSaved = savedIds.has(r.id);
           const poster = r.poster_url
-            ? `<div class="w-14 h-[5.25rem] flex-shrink-0 relative">
+            ? `<div class="w-20 h-13 sm:w-24 sm:h-15 flex-shrink-0 relative">
                 <img
                   src="${escapeAttr(r.poster_url)}"
                   alt=""
-                  width="64"
-                  height="96"
-                  class="spt-poster w-14 h-[5.25rem] object-cover rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600"
+                  width="96"
+                  height="60"
+                  class="spt-poster w-full h-full object-cover rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-2xs"
                   loading="lazy"
+                  decoding="async"
                   data-fallback="${escapeAttr(r.channelLogo)}"
                 />
-                <div class="spt-logo-fallback hidden w-14 h-[5.25rem] rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
+                <div class="spt-logo-fallback hidden w-full h-full rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
                   <img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" />
                 </div>
               </div>`
-            : `<div class="w-14 h-[5.25rem] flex-shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
+            : `<div class="w-20 h-13 sm:w-24 sm:h-15 flex-shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1">
                 <img src="${escapeAttr(r.channelLogo)}" alt="" class="w-8 h-8 object-contain opacity-70" width="32" height="32" loading="lazy" />
               </div>`;
           return `
