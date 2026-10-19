@@ -1,0 +1,106 @@
+---
+/**
+ * AdSlot.astro — Componente Google AdSense ottimizzato per UX e Web Vitals su inTV stasera
+ *
+ * Principi di usabilità:
+ * - Etichettatura chiara "Pubblicità" (standard AGCM / IAB / Google AdSense Policy)
+ * - Riserva di spazio (minHeight) per eliminare i layout shifts (CLS = 0)
+ * - Nessuna sovrapposizione su bottoni o elementi di navigazione
+ * - Pieno supporto dark mode e stile armonizzato con le card
+ * - Lazy loading tramite IntersectionObserver (carica solo allo scroll, zero impatto su LCP/INP)
+ */
+import { ADSENSE_CLIENT_ID, ADSENSE_SLOTS } from '../lib/adsense';
+
+interface Props {
+  slot?: string;
+  format?: string;
+  responsive?: string;
+  minHeight?: number;
+  className?: string;
+  label?: string;
+  inFeedWrapper?: boolean;
+}
+
+const {
+  slot = ADSENSE_SLOTS.IN_FEED_CHANNELS,
+  format = 'auto',
+  responsive = 'true',
+  minHeight = 180,
+  className = '',
+  label = 'Pubblicità',
+  inFeedWrapper = false,
+} = Astro.props;
+---
+
+<aside
+  aria-label={label}
+  data-ad-container
+  data-infeed-ad={inFeedWrapper ? 'true' : null}
+  class:list={[
+    'it-ad-slot rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 px-4 py-3 text-center transition-opacity',
+    inFeedWrapper ? 'my-4' : 'my-6',
+    className,
+  ]}
+>
+  <div class="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 select-none">
+    {label}
+  </div>
+  <div
+    class="w-full overflow-hidden flex items-center justify-center mx-auto"
+    style={`min-height: ${minHeight}px;`}
+  >
+    <ins
+      class="adsbygoogle block w-full mx-auto"
+      style={`display: block; min-height: ${minHeight}px; width: 100%;`}
+      data-ad-client={ADSENSE_CLIENT_ID}
+      data-ad-slot={slot}
+      data-ad-format={format}
+      data-full-width-responsive={responsive}
+    ></ins>
+  </div>
+</aside>
+
+<script is:inline>
+  (function () {
+    if (window.__itAdsenseInit) return;
+    window.__itAdsenseInit = true;
+
+    function pushAd(ins) {
+      if (!ins || ins.getAttribute('data-adsbygoogle-status') || ins.dataset.itPushed === 'true') return;
+      if (ins.offsetParent === null) return; // elemento non visibile o display:none
+      try {
+        ins.dataset.itPushed = 'true';
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {}
+    }
+
+    function initAds() {
+      var slots = document.querySelectorAll('ins.adsbygoogle:not([data-it-observed])');
+      for (var i = 0; i < slots.length; i++) {
+        var ins = slots[i];
+        if (ins.closest('#program-overlay')) continue; // non avviare ad dentro il modal programma
+        ins.setAttribute('data-it-observed', 'true');
+
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries, obs) {
+            for (var j = 0; j < entries.length; j++) {
+              if (entries[j].isIntersecting) {
+                pushAd(entries[j].target);
+                obs.unobserve(entries[j].target);
+              }
+            }
+          }, { rootMargin: '250px 0px' });
+          io.observe(ins);
+        } else {
+          setTimeout((function (el) { return function () { pushAd(el); }; })(ins), 200);
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAds);
+    } else {
+      initAds();
+    }
+  })();
+</script>

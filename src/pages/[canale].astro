@@ -7,6 +7,8 @@ import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
@@ -235,6 +237,8 @@ const ogImageAlt  = firstProgramWithPoster
       </div>
     )}
 
+    <AdSlot slot={ADSENSE_SLOTS.CHANNEL_MID_CONTENT} className="my-8" minHeight={180} />
+
     {relatedChannels.length > 0 && (
       <section class="mt-10" aria-labelledby="related-channel-cards-title">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
@@ -260,6 +264,8 @@ const ogImageAlt  = firstProgramWithPoster
         </div>
       </section>
     )}
+
+    <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-4" minHeight={200} />
 
     <SeoHubLinks
       channels={allChannels}

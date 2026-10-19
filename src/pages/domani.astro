@@ -5,6 +5,8 @@ import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
@@ -93,7 +95,7 @@ const ogImageAlt = firstTomorrowWithPoster ? `${firstTomorrowWithPoster.title} -
     </h2>
 
     <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-      {channelsWithPrograms.map(channel => {
+      {channelsWithPrograms.slice(0, 8).map(channel => {
         // Filtra programmi dalle 6 AM Roma (4 UTC)
         const channelPrograms = programs.filter(p => {
           if (p.channel_id !== channel.id) return false;
@@ -103,6 +105,22 @@ const ogImageAlt = firstTomorrowWithPoster ? `${firstTomorrowWithPoster.title} -
         return <ChannelCard {channel} programs={channelPrograms} mode="domani" />;
       })}
     </div>
+
+    {channelsWithPrograms.length > 8 && (
+      <AdSlot slot={ADSENSE_SLOTS.IN_FEED_CHANNELS} inFeedWrapper={true} minHeight={180} />
+      <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mt-4">
+        {channelsWithPrograms.slice(8).map(channel => {
+          const channelPrograms = programs.filter(p => {
+            if (p.channel_id !== channel.id) return false;
+            const d = new Date(p.startTime);
+            return d.getUTCHours() * 60 + d.getUTCMinutes() >= MORNING_START_UTC_MIN;
+          });
+          return <ChannelCard {channel} programs={channelPrograms} mode="domani" />;
+        })}
+      </div>
+    )}
+
+    <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-2" minHeight={200} />
 
     <SeoHubLinks
       channels={channelsWithPrograms}

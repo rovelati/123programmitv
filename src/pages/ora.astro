@@ -6,6 +6,8 @@ import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import StaseraPerTe from '../components/StaseraPerTe.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
@@ -112,11 +114,23 @@ const ogImageAlt = firstProgramWithPoster ? `${firstProgramWithPoster.title} - i
     </h2>
 
     <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-      {channelsWithPrograms.map(channel => {
+      {channelsWithPrograms.slice(0, 8).map(channel => {
         const channelPrograms = programs.filter(p => p.channel_id === channel.id);
         return <ChannelCard {channel} programs={channelPrograms} mode="ora" />;
       })}
     </div>
+
+    {channelsWithPrograms.length > 8 && (
+      <AdSlot slot={ADSENSE_SLOTS.IN_FEED_CHANNELS} inFeedWrapper={true} minHeight={180} />
+      <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mt-4">
+        {channelsWithPrograms.slice(8).map(channel => {
+          const channelPrograms = programs.filter(p => p.channel_id === channel.id);
+          return <ChannelCard {channel} programs={channelPrograms} mode="ora" />;
+        })}
+      </div>
+    )}
+
+    <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-2" minHeight={200} />
 
     <SeoHubLinks
       channels={channelsWithPrograms}

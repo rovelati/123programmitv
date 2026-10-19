@@ -6,6 +6,8 @@ import ProgramRow from '../components/ProgramRow.astro';
 import ChannelNav from '../components/ChannelNav.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
@@ -204,6 +206,8 @@ const ogImageAlt = firstSerieWithPoster ? `${firstSerieWithPoster.title} - Serie
       )}
     </section>
 
+    <AdSlot slot={ADSENSE_SLOTS.CHANNEL_MID_CONTENT} className="my-8" minHeight={180} />
+
     {/* ─── 2. SECONDA SERATA (SUCCESSIVAMENTE · DALLE 23:00) ─── */}
     {secondaSerataGroups.length > 0 && (
       <section aria-labelledby="seconda-serata-heading" class="pt-6 border-t border-slate-200 dark:border-slate-700/60">
@@ -254,6 +258,8 @@ const ogImageAlt = firstSerieWithPoster ? `${firstSerieWithPoster.title} - Serie
         </div>
       </section>
     )}
+
+    <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-4" minHeight={200} />
 
     <SeoHubLinks
       channels={allSerieGroups.map(group => group.channel)}
