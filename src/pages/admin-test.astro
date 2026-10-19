@@ -99,7 +99,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       <div id="loading-spinner" class="flex flex-col items-center justify-center py-16 text-center">
         <div class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-600"></div>
         <p class="mt-4 text-sm font-medium text-slate-600">Interrogazione server-side dei database Contabo in corso…</p>
-        <p class="text-xs text-slate-400">Verifica in tempo reale su 5 database PostgreSQL e ping HTTP</p>
+        <p class="text-xs text-slate-400">Verifica in tempo reale su 6 app TV (database PostgreSQL / cache EPG) e ping HTTP</p>
       </div>
 
       <div id="main-content-view" class="hidden space-y-8">
@@ -108,7 +108,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
           <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Siti Monitorati</span>
             <p id="kpi-total-sites" class="mt-2 text-2xl font-black text-slate-900">—</p>
-            <p class="mt-1 text-xs text-slate-500">IT, FR, DE, UK, AU</p>
+            <p class="mt-1 text-xs text-slate-500">IT, FR, DE, UK, AU, ES</p>
           </div>
           <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Stato Operativo</span>
@@ -337,7 +337,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
           <div class="flex items-center gap-3">
             <span class="text-xl">✅</span>
             <div class="text-sm font-semibold text-emerald-900">
-              Tutti i 5 database e servizi TV sono operativi con palinsesti aggiornati per oggi e domani!
+              Tutte le ${sites.length} applicazioni TV sono operative con palinsesti aggiornati per oggi e domani!
             </div>
           </div>
         `;
