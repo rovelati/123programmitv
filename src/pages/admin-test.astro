@@ -3,8 +3,8 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 
-const title = 'TV Apps Mission Control — Health & Update Monitor';
-const description = 'Monitoraggio in tempo reale server-side dello stato di aggiornamento EPG, database, uptime e analytics delle app TV del network.';
+const title = 'TV Apps Mission Control — Health & Traffic Monitor';
+const description = 'Monitoraggio in tempo reale server-side dello stato EPG, database, GA4 pagine viste e utenti unici, Google Search Console e Bing Webmaster.';
 ---
 
 <HubLayout title={title} description={description} canonicalPath="/admin-test" noindex={true}>
@@ -14,13 +14,13 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       <div>
         <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
           <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live Health Check
+          Live Health & Traffic Monitor
         </div>
         <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          Stato Aggiornamenti App Televisive
+          Mission Control App Televisive
         </h1>
         <p class="mt-2 text-sm text-slate-500 max-w-2xl">
-          Verifica in tempo reale server-side dei database PostgreSQL, programmi di oggi e domani, canali vuoti, latenza HTTP e analytics di indicizzazione su Contabo VPS.
+          Verifica in tempo reale su 6 app TV: database PostgreSQL/EPG, Google Analytics 4 (pagine viste 7gg e utenti unici), Google Search Console (click e sitemap) e Bing Webmaster Tools.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
           <svg id="refresh-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Aggiorna Dati
+          Aggiorna Dati Live
         </button>
         <button
           id="btn-logout"
@@ -98,13 +98,13 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       <!-- Loading State -->
       <div id="loading-spinner" class="flex flex-col items-center justify-center py-16 text-center">
         <div class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-600"></div>
-        <p class="mt-4 text-sm font-medium text-slate-600">Interrogazione server-side dei database Contabo in corso…</p>
-        <p class="text-xs text-slate-400">Verifica in tempo reale su 6 app TV (database PostgreSQL / cache EPG) e ping HTTP</p>
+        <p class="mt-4 text-sm font-medium text-slate-600">Interrogazione server-side di Contabo VPS, GA4 e Google Search Console…</p>
+        <p class="text-xs text-slate-400">Verifica in tempo reale su 6 app TV, metriche di traffico e stato indicizzazione</p>
       </div>
 
       <div id="main-content-view" class="hidden space-y-8">
         <!-- Global KPI Summary Cards -->
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Siti Monitorati</span>
             <p id="kpi-total-sites" class="mt-2 text-2xl font-black text-slate-900">—</p>
@@ -116,19 +116,24 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
             <p id="kpi-warning-sites" class="mt-1 text-xs text-slate-500">—</p>
           </div>
           <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Programmi Totali</span>
-            <p id="kpi-total-programs" class="mt-2 text-2xl font-black text-indigo-600">—</p>
-            <p class="mt-1 text-xs text-slate-500">Palinsesti in memoria</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Palinsesto Oggi</span>
+            <p id="kpi-today-programs" class="mt-2 text-2xl font-black text-indigo-600">—</p>
+            <p id="kpi-tomorrow-programs" class="mt-1 text-xs text-slate-500">— domani</p>
           </div>
           <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Programmi Oggi</span>
-            <p id="kpi-today-programs" class="mt-2 text-2xl font-black text-emerald-600">—</p>
-            <p class="mt-1 text-xs text-slate-500">In onda giornata odierna</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">GA4 Viste (7gg)</span>
+            <p id="kpi-ga4-views" class="mt-2 text-2xl font-black text-emerald-600">—</p>
+            <p id="kpi-ga4-users" class="mt-1 text-xs text-slate-500">— utenti unici</p>
           </div>
-          <div class="col-span-2 sm:col-span-4 lg:col-span-1 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Programmi Domani</span>
-            <p id="kpi-tomorrow-programs" class="mt-2 text-2xl font-black text-sky-600">—</p>
-            <p class="mt-1 text-xs text-slate-500">Disponibili per domani</p>
+          <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Google Clicks (7gg)</span>
+            <p id="kpi-gsc-clicks" class="mt-2 text-2xl font-black text-sky-600">—</p>
+            <p id="kpi-gsc-impressions" class="mt-1 text-xs text-slate-500">— impression</p>
+          </div>
+          <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Bing Indice</span>
+            <p id="kpi-bing-index" class="mt-2 text-2xl font-black text-purple-600">—</p>
+            <p id="kpi-issues-count" class="mt-1 text-xs text-slate-500">—</p>
           </div>
         </div>
 
@@ -138,23 +143,24 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
         <!-- TV Apps Table -->
         <div class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
           <div class="border-b border-slate-100 bg-slate-50/70 px-6 py-4 flex items-center justify-between">
-            <h2 class="text-base font-bold text-slate-900">Panoramica Siti e Stato Database</h2>
-            <span class="text-xs text-slate-500">Aggiornato in tempo reale senza build</span>
+            <h2 class="text-base font-bold text-slate-900">Panoramica Aggiornamenti, Traffico & Indicizzazione</h2>
+            <span class="text-xs text-slate-500">Dati in tempo reale (Contabo VPS + GA4 + GSC + Bing)</span>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/40">
-                  <th class="px-6 py-3.5">Sito / Dominio</th>
-                  <th class="px-4 py-3.5">Stato</th>
-                  <th class="px-4 py-3.5 text-center">Oggi</th>
-                  <th class="px-4 py-3.5 text-center">Domani</th>
-                  <th class="px-4 py-3.5 text-center">Totale DB</th>
-                  <th class="px-4 py-3.5 text-center">Canali / Vuoti</th>
-                  <th class="px-4 py-3.5">HTTP Uptime</th>
+                  <th class="px-5 py-3.5">Sito / Dominio</th>
+                  <th class="px-3 py-3.5">Stato</th>
+                  <th class="px-3 py-3.5 text-center">Oggi / Domani</th>
+                  <th class="px-3 py-3.5 text-center">Canali / Vuoti</th>
+                  <th class="px-4 py-3.5 text-center">GA4 (7gg)</th>
+                  <th class="px-4 py-3.5 text-center">Google GSC (7gg)</th>
+                  <th class="px-3 py-3.5 text-center">Sitemap GSC</th>
+                  <th class="px-3 py-3.5 text-center">Bing Indice</th>
+                  <th class="px-3 py-3.5">HTTP Ping</th>
                   <th class="px-4 py-3.5">Cron VPS</th>
-                  <th class="px-6 py-3.5">Bing SEO</th>
                 </tr>
               </thead>
               <tbody id="sites-table-body" class="divide-y divide-slate-100 text-sm">
@@ -166,7 +172,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
 
         <!-- Detail Cards / Diagnostics -->
         <div class="space-y-4">
-          <h2 class="text-lg font-bold text-slate-900">Dettaglio Diagnostico & Analytics</h2>
+          <h2 class="text-lg font-bold text-slate-900">Diagnostica Approfondita & Analisi Problemi per Sito</h2>
           <div id="sites-detail-cards" class="grid gap-6 md:grid-cols-2">
             <!-- Cards populated dynamically -->
           </div>
@@ -180,7 +186,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
     const VALID_EMAIL = 'romolo.velati@gmail.com';
     const VALID_PASS = 'Abramo*86M';
 
-    // Endpoints: primary is Cloudflare Pages function proxy, fallback is direct Contabo VPS
+    // Primary Cloudflare Pages function proxy, fallback direct Contabo VPS
     const PRIMARY_API = '/api/tv-status';
     const FALLBACK_API = 'https://programmecesoir.fr/api/tv-health/api/tv-status';
 
@@ -246,10 +252,10 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
     });
 
     btnRefresh.addEventListener('click', () => {
-      loadData();
+      loadData(true);
     });
 
-    async function loadData() {
+    async function loadData(forceRefresh = false) {
       const token = getSavedToken();
       if (!token) {
         showLogin();
@@ -260,10 +266,10 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       loadingSpinner.classList.remove('hidden');
       mainContentView.classList.add('hidden');
 
+      const refreshParam = forceRefresh ? '&refresh=1' : '';
       let json = null;
       try {
-        // Try Cloudflare Pages function proxy first
-        const res = await fetch(`${PRIMARY_API}?token=${encodeURIComponent(token)}&t=${Date.now()}`, {
+        const res = await fetch(`${PRIMARY_API}?token=${encodeURIComponent(token)}${refreshParam}&t=${Date.now()}`, {
           headers: { 'Cache-Control': 'no-cache' }
         });
         if (res.ok) {
@@ -274,7 +280,7 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       } catch (err) {
         console.warn('Primary proxy failed, attempting fallback direct VPS endpoint...', err);
         try {
-          const res2 = await fetch(`${FALLBACK_API}?token=${encodeURIComponent(token)}&t=${Date.now()}`, {
+          const res2 = await fetch(`${FALLBACK_API}?token=${encodeURIComponent(token)}${refreshParam}&t=${Date.now()}`, {
             headers: { 'Cache-Control': 'no-cache' }
           });
           if (res2.ok) {
@@ -301,32 +307,55 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
       const sites = data.sites || [];
       lastUpdatedBadge.textContent = 'Aggiornato: ' + new Date().toLocaleTimeString('it-IT');
 
-      // 1. KPI
+      // 1. KPI Cards
       document.getElementById('kpi-total-sites').textContent = data.totalMonitoredSites || sites.length;
-      document.getElementById('kpi-healthy-sites').textContent = data.healthySites + ' Operativi';
+      document.getElementById('kpi-healthy-sites').textContent = (data.healthySites || 0) + ' Operativi';
       document.getElementById('kpi-warning-sites').textContent = 
         `${data.warningSites || 0} Attenzione, ${data.criticalSites || 0} Critici`;
-      document.getElementById('kpi-total-programs').textContent = 
-        (data.totalProgramsIngested || 0).toLocaleString('it-IT');
 
-      const sumToday = sites.reduce((acc, s) => acc + (s.dbMetrics?.todayPrograms || 0), 0);
-      const sumTom = sites.reduce((acc, s) => acc + (s.dbMetrics?.tomorrowPrograms || 0), 0);
+      const sumToday = data.totalTodayPrograms || sites.reduce((acc, s) => acc + (s.dbMetrics?.todayPrograms || 0), 0);
+      const sumTom = data.totalTomorrowPrograms || sites.reduce((acc, s) => acc + (s.dbMetrics?.tomorrowPrograms || 0), 0);
       document.getElementById('kpi-today-programs').textContent = sumToday.toLocaleString('it-IT');
-      document.getElementById('kpi-tomorrow-programs').textContent = sumTom.toLocaleString('it-IT');
+      document.getElementById('kpi-tomorrow-programs').textContent = `${sumTom.toLocaleString('it-IT')} domani`;
 
-      // 2. Alert Box
+      const ga4Views = data.totalGa4PageViews7d || 0;
+      const ga4Users = data.totalGa4ActiveUsers7d || 0;
+      document.getElementById('kpi-ga4-views').textContent = ga4Views.toLocaleString('it-IT');
+      document.getElementById('kpi-ga4-users').textContent = `${ga4Users.toLocaleString('it-IT')} utenti unici`;
+
+      const gscClicks = data.totalGscClicks7d || 0;
+      const gscImpr = data.totalGscImpressions7d || 0;
+      document.getElementById('kpi-gsc-clicks').textContent = gscClicks.toLocaleString('it-IT');
+      document.getElementById('kpi-gsc-impressions').textContent = `${gscImpr.toLocaleString('it-IT')} impression`;
+
+      const bingIndex = data.totalBingInIndex || 0;
+      const totalIssues = data.totalIssuesCount || 0;
+      document.getElementById('kpi-bing-index').textContent = bingIndex.toLocaleString('it-IT');
+      document.getElementById('kpi-issues-count').textContent = totalIssues === 0 
+        ? '0 problemi' 
+        : `${totalIssues} segnalazioni`;
+
+      // 2. Global Alert Box
       const alertBox = document.getElementById('global-alert-box');
-      const issues = sites.filter(s => s.status !== 'HEALTHY');
-      if (issues.length > 0) {
+      const sitesWithIssues = sites.filter(s => (s.issues && s.issues.length > 0) || s.status !== 'HEALTHY');
+
+      if (sitesWithIssues.length > 0) {
         alertBox.className = 'rounded-3xl border border-amber-200 bg-amber-50 p-5';
         alertBox.innerHTML = `
           <div class="flex items-start gap-3">
             <span class="text-xl">⚠️</span>
             <div>
-              <h3 class="font-bold text-amber-900 text-sm">Attenzione richiesta su ${issues.length} applicazione/i:</h3>
-              <ul class="mt-1 list-disc list-inside text-xs text-amber-800 space-y-0.5">
-                ${issues.map(s => `<li><strong>${s.name}</strong>: ${s.statusMessage}</li>`).join('')}
-              </ul>
+              <h3 class="font-bold text-amber-900 text-sm">Problemi e Segnalazioni Rilevate (${sitesWithIssues.length} sito/i):</h3>
+              <div class="mt-2 space-y-2">
+                ${sitesWithIssues.map(s => `
+                  <div class="text-xs text-amber-900">
+                    <span class="font-bold">${s.flag} ${s.name}:</span>
+                    <ul class="list-disc list-inside ml-2 mt-0.5 text-amber-800">
+                      ${(s.issues || [s.statusMessage]).map(iss => `<li>${iss}</li>`).join('')}
+                    </ul>
+                  </div>
+                `).join('')}
+              </div>
             </div>
           </div>
         `;
@@ -337,48 +366,97 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
           <div class="flex items-center gap-3">
             <span class="text-xl">✅</span>
             <div class="text-sm font-semibold text-emerald-900">
-              Tutte le ${sites.length} applicazioni TV sono operative con palinsesti aggiornati per oggi e domani!
+              Tutte le ${sites.length} applicazioni TV sono operative con palinsesti aggiornati, 0 errori sitemap e servizi attivi!
             </div>
           </div>
         `;
         alertBox.classList.remove('hidden');
       }
 
-      // 3. Sites Table Rows
+      // 3. Main Table Rows
       const tbody = document.getElementById('sites-table-body');
       tbody.innerHTML = sites.map(site => {
         const m = site.dbMetrics || {};
         const http = site.httpStatus || {};
         const cron = site.cronStatus || {};
-        const bing = site.analytics || {};
+        const gsc = site.gsc || {};
+        const ga4 = site.ga4 || {};
+        const bing = site.bing || {};
 
         // Status badge
         let statusBadge = '';
         if (site.status === 'HEALTHY') {
-          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">🟢 Operativo</span>';
+          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">🟢 OK</span>';
         } else if (site.status === 'WARNING') {
-          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">🟡 Attenzione</span>';
+          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">🟡 Alert</span>';
         } else {
-          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 animate-pulse">🔴 Critico</span>';
+          statusBadge = '<span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 animate-pulse">🔴 KO</span>';
         }
 
-        // Today programs count & alert
+        // Today / Tomorrow
         const todayCount = m.todayPrograms || 0;
-        const todayDisplay = todayCount === 0
-          ? '<span class="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">0 VUOTO</span>'
-          : `<span class="font-bold text-emerald-700">${todayCount.toLocaleString('it-IT')}</span>`;
-
-        // Tomorrow programs count & alert
         const tomCount = m.tomorrowPrograms || 0;
-        const tomDisplay = tomCount === 0
-          ? '<span class="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">0</span>'
-          : `<span class="font-medium text-slate-700">${tomCount.toLocaleString('it-IT')}</span>`;
+        const progDisplay = todayCount === 0
+          ? '<span class="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">0 VUOTO</span>'
+          : `<div class="text-xs font-bold text-slate-900">${todayCount.toLocaleString('it-IT')} <span class="font-normal text-slate-400">/ ${tomCount.toLocaleString('it-IT')}</span></div>`;
 
         // Empty channels badge
         const emptyChans = m.emptyChannelsCount || 0;
-        const emptyBadge = emptyChans > 0
-          ? `<span class="text-xs text-amber-700 font-medium">(${emptyChans} vuoti)</span>`
-          : '<span class="text-xs text-emerald-600">tutti OK</span>';
+        const chansDisplay = `
+          <div class="text-xs font-medium text-slate-700">${m.channelsCount || 0} canali</div>
+          <div class="text-[11px] ${emptyChans > 0 ? 'text-amber-700 font-semibold' : 'text-emerald-600'}">
+            ${emptyChans > 0 ? `${emptyChans} vuoti` : '0 vuoti'}
+          </div>
+        `;
+
+        // GA4 cell
+        let ga4Display = '—';
+        if (ga4.status === 'ok') {
+          ga4Display = `
+            <div class="text-xs">
+              <span class="font-bold text-emerald-700">${(ga4.pageViews7d || 0).toLocaleString('it-IT')}</span> <span class="text-slate-400">PV</span>
+              <div class="text-[11px] text-slate-500">${(ga4.activeUsers7d || 0).toLocaleString('it-IT')} utenti</div>
+            </div>
+          `;
+        } else if (ga4.status === 'not_configured') {
+          ga4Display = '<span class="text-[11px] text-slate-400 italic">Non config.</span>';
+        } else {
+          ga4Display = '<span class="text-[11px] text-rose-600 font-medium">Errore GA4</span>';
+        }
+
+        // GSC cell
+        let gscDisplay = '—';
+        if (gsc.status === 'ok') {
+          gscDisplay = `
+            <div class="text-xs">
+              <span class="font-bold text-sky-700">${(gsc.clicks7d || 0).toLocaleString('it-IT')}</span> <span class="text-slate-400">clk</span>
+              <div class="text-[11px] text-slate-500">${(gsc.impressions7d || 0).toLocaleString('it-IT')} imp (pos ${gsc.position || '—'})</div>
+            </div>
+          `;
+        } else {
+          gscDisplay = '<span class="text-[11px] text-rose-600">Errore GSC</span>';
+        }
+
+        // Sitemap GSC
+        let sitemapDisplay = '—';
+        if (gsc.status === 'ok') {
+          const smErr = gsc.sitemapErrors || 0;
+          sitemapDisplay = smErr > 0
+            ? `<span class="inline-flex items-center rounded-lg bg-rose-50 px-2 py-0.5 text-xs font-bold text-rose-700">${smErr} errori</span>`
+            : `<span class="inline-flex items-center rounded-lg bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">${gsc.sitemapsCount || 0} OK</span>`;
+        }
+
+        // Bing cell
+        let bingDisplay = '—';
+        if (bing.status === 'ok') {
+          const bErr = bing.crawlErrors || 0;
+          bingDisplay = `
+            <div class="text-xs">
+              <span class="font-bold text-purple-700">${(bing.inIndex || 0).toLocaleString('it-IT')}</span>
+              ${bErr > 0 ? `<div class="text-[11px] text-amber-600 font-semibold">${bErr} err 4xx</div>` : '<div class="text-[11px] text-slate-400">0 errori</div>'}
+            </div>
+          `;
+        }
 
         // HTTP latency badge
         const pingDisplay = http.online
@@ -392,20 +470,9 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
           cronDisplay = `<span class="text-xs text-slate-600" title="${cron.recentLine || ''}">${dt.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</span>`;
         }
 
-        // Bing stats
-        let bingDisplay = '—';
-        if (bing.status === 'ok') {
-          bingDisplay = `
-            <div class="text-xs space-y-0.5">
-              <span class="text-slate-700 font-semibold">${(bing.inIndex || 0).toLocaleString('it-IT')}</span> <span class="text-slate-400">in index</span>
-              ${bing.crawlErrors > 0 ? `<span class="ml-1 text-rose-600 font-semibold">(${bing.crawlErrors} err)</span>` : ''}
-            </div>
-          `;
-        }
-
         return `
           <tr class="hover:bg-slate-50/80 transition">
-            <td class="px-6 py-4">
+            <td class="px-5 py-4">
               <div class="flex items-center gap-2.5">
                 <span class="text-2xl">${site.flag}</span>
                 <div>
@@ -416,33 +483,35 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
                 </div>
               </div>
             </td>
-            <td class="px-4 py-4">${statusBadge}</td>
-            <td class="px-4 py-4 text-center">${todayDisplay}</td>
-            <td class="px-4 py-4 text-center">${tomDisplay}</td>
-            <td class="px-4 py-4 text-center font-mono text-xs text-slate-600 font-semibold">${(m.totalPrograms || 0).toLocaleString('it-IT')}</td>
-            <td class="px-4 py-4 text-center">
-              <div class="text-xs font-semibold text-slate-800">${m.channelsCount || 0} canali</div>
-              <div>${emptyBadge}</div>
-            </td>
-            <td class="px-4 py-4">${pingDisplay}</td>
+            <td class="px-3 py-4">${statusBadge}</td>
+            <td class="px-3 py-4 text-center">${progDisplay}</td>
+            <td class="px-3 py-4 text-center">${chansDisplay}</td>
+            <td class="px-4 py-4 text-center">${ga4Display}</td>
+            <td class="px-4 py-4 text-center">${gscDisplay}</td>
+            <td class="px-3 py-4 text-center">${sitemapDisplay}</td>
+            <td class="px-3 py-4 text-center">${bingDisplay}</td>
+            <td class="px-3 py-4">${pingDisplay}</td>
             <td class="px-4 py-4">${cronDisplay}</td>
-            <td class="px-6 py-4">${bingDisplay}</td>
           </tr>
         `;
       }).join('');
 
-      // 4. Detailed Diagnostic Cards
+      // 4. Detailed Diagnostic Cards per Site
       const cardsContainer = document.getElementById('sites-detail-cards');
       cardsContainer.innerHTML = sites.map(site => {
         const m = site.dbMetrics || {};
         const http = site.httpStatus || {};
         const cron = site.cronStatus || {};
-        const bing = site.analytics || {};
+        const gsc = site.gsc || {};
+        const ga4 = site.ga4 || {};
+        const bing = site.bing || {};
+        const siteIssues = site.issues || [];
 
         const queries = bing.topQueries || [];
 
         return `
-          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <!-- Card Header -->
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-3">
                 <span class="text-3xl">${site.flag}</span>
@@ -458,56 +527,109 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
               </span>
             </div>
 
-            <p class="mt-3 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
-              ${site.statusMessage}
-            </p>
-
-            <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
-              <div class="rounded-2xl border border-slate-100 bg-slate-50/50 p-3">
-                <span class="text-slate-400 block font-medium">Programmi Oggi / Domani</span>
-                <span class="text-base font-extrabold text-slate-900 mt-1 block">
-                  ${m.todayPrograms || 0} <span class="text-slate-400 font-normal">/</span> ${m.tomorrowPrograms || 0}
-                </span>
-                <span class="text-[11px] text-slate-400">Max start: ${m.maxStartTime ? m.maxStartTime.split(' ')[0] : '—'}</span>
+            <!-- Issues / Status Callout -->
+            ${siteIssues.length > 0 ? `
+              <div class="rounded-2xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-900">
+                <div class="font-bold mb-1 flex items-center gap-1.5">
+                  <span>⚠️</span> Segnalazioni rilevate:
+                </div>
+                <ul class="list-disc list-inside space-y-0.5 text-amber-800">
+                  ${siteIssues.map(iss => `<li>${iss}</li>`).join('')}
+                </ul>
               </div>
-              <div class="rounded-2xl border border-slate-100 bg-slate-50/50 p-3">
-                <span class="text-slate-400 block font-medium">Canali & Copertura</span>
-                <span class="text-base font-extrabold text-slate-900 mt-1 block">
-                  ${m.channelsCount || 0} canali
-                </span>
-                <span class="text-[11px] ${m.emptyChannelsCount > 0 ? 'text-amber-600 font-semibold' : 'text-emerald-600'}">
-                  ${m.emptyChannelsCount > 0 ? `${m.emptyChannelsCount} vuoti oggi` : '0 canali vuoti'}
-                </span>
+            ` : `
+              <div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-2.5 text-xs text-emerald-800 font-medium flex items-center gap-1.5">
+                <span>✅</span> Nessun problema rilevato — Tutti i sistemi operativi
+              </div>
+            `}
+
+            <!-- 2x2 Grid: EPG DB & GA4 -->
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <!-- EPG DB Box -->
+              <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 space-y-1">
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Palinsesto & Canali</div>
+                <div class="text-base font-extrabold text-slate-900">
+                  ${m.todayPrograms || 0} <span class="text-slate-400 font-normal">oggi /</span> ${m.tomorrowPrograms || 0} <span class="text-slate-400 font-normal">domani</span>
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  Totale DB: <strong>${(m.totalPrograms || 0).toLocaleString('it-IT')}</strong> (${m.channelsCount || 0} canali, ${m.emptyChannelsCount || 0} vuoti)
+                </div>
+              </div>
+
+              <!-- GA4 Box -->
+              <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 space-y-1">
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Google Analytics 4</div>
+                ${ga4.status === 'ok' ? `
+                  <div class="text-base font-extrabold text-emerald-700">
+                    ${(ga4.pageViews7d || 0).toLocaleString('it-IT')} <span class="text-slate-500 font-normal text-xs">PV (7gg)</span>
+                  </div>
+                  <div class="text-[11px] text-slate-500">
+                    <strong>${(ga4.activeUsers7d || 0).toLocaleString('it-IT')}</strong> utenti unici attivi · <strong>${(ga4.sessions7d || 0).toLocaleString('it-IT')}</strong> sessioni
+                  </div>
+                  <div class="text-[10px] text-slate-400">
+                    Oggi: ${ga4.todayPageViews || 0} PV, ${ga4.todayActiveUsers || 0} utenti
+                  </div>
+                ` : `
+                  <div class="text-xs text-slate-400 italic mt-2">
+                    ${ga4.status === 'not_configured' ? 'Property GA4 non configurata' : (ga4.error || 'Nessun dato')}
+                  </div>
+                `}
               </div>
             </div>
 
-            <!-- Bing Analytics Snippet -->
-            <div class="mt-4 border-t border-slate-100 pt-3">
-              <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-2">
-                <span>Bing Webmaster Analytics</span>
-                <span class="text-slate-400 font-normal">Quota: ${bing.dailyQuotaRemaining || '—'}</span>
+            <!-- GSC Box -->
+            <div class="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 text-xs space-y-2">
+              <div class="flex items-center justify-between text-slate-600 font-bold">
+                <span class="uppercase tracking-wider text-[11px] text-slate-400">Google Search Console (7gg)</span>
+                <span class="text-slate-400 font-normal text-[11px]">Sitemap: ${gsc.sitemapsCount || 0} (${gsc.sitemapErrors || 0} err)</span>
               </div>
-              <div class="grid grid-cols-3 gap-2 text-center text-xs mb-3">
-                <div class="rounded-xl bg-slate-50 p-2">
-                  <div class="text-[10px] text-slate-400 uppercase">In Indice</div>
-                  <div class="font-bold text-slate-900">${(bing.inIndex || 0).toLocaleString('it-IT')}</div>
+              <div class="grid grid-cols-4 gap-2 text-center">
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
+                  <div class="text-[10px] text-slate-400 uppercase">Click</div>
+                  <div class="font-extrabold text-sky-700 text-sm">${(gsc.clicks7d || 0).toLocaleString('it-IT')}</div>
                 </div>
-                <div class="rounded-xl bg-slate-50 p-2">
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
+                  <div class="text-[10px] text-slate-400 uppercase">Impression</div>
+                  <div class="font-extrabold text-slate-900 text-sm">${(gsc.impressions7d || 0).toLocaleString('it-IT')}</div>
+                </div>
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
+                  <div class="text-[10px] text-slate-400 uppercase">CTR</div>
+                  <div class="font-extrabold text-slate-900 text-sm">${gsc.ctr || 0}%</div>
+                </div>
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
+                  <div class="text-[10px] text-slate-400 uppercase">Posizione</div>
+                  <div class="font-extrabold text-slate-900 text-sm">${gsc.position || '—'}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bing Webmaster Box -->
+            <div class="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 text-xs space-y-2">
+              <div class="flex items-center justify-between text-slate-600 font-bold">
+                <span class="uppercase tracking-wider text-[11px] text-slate-400">Bing Webmaster Tools</span>
+                <span class="text-slate-400 font-normal text-[11px]">Quota: ${bing.dailyQuotaRemaining || '—'}</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
+                  <div class="text-[10px] text-slate-400 uppercase">In Indice</div>
+                  <div class="font-bold text-purple-700">${(bing.inIndex || 0).toLocaleString('it-IT')}</div>
+                </div>
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
                   <div class="text-[10px] text-slate-400 uppercase">Scansionate</div>
                   <div class="font-bold text-slate-900">${(bing.crawledPages || 0).toLocaleString('it-IT')}</div>
                 </div>
-                <div class="rounded-xl bg-slate-50 p-2">
+                <div class="rounded-xl bg-white p-2 border border-slate-100">
                   <div class="text-[10px] text-slate-400 uppercase">Errori 4xx/5xx</div>
-                  <div class="font-bold ${bing.crawlErrors > 0 ? 'text-rose-600' : 'text-slate-900'}">${bing.crawlErrors || 0}</div>
+                  <div class="font-bold ${bing.crawlErrors > 0 ? 'text-amber-600' : 'text-slate-900'}">${bing.crawlErrors || 0}</div>
                 </div>
               </div>
 
               ${queries.length > 0 ? `
                 <div class="mt-2 text-xs">
-                  <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Top Query Bing:</span>
+                  <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Top Query Bing:</span>
                   <div class="mt-1 space-y-1">
                     ${queries.slice(0, 3).map(q => `
-                      <div class="flex items-center justify-between text-[11px] text-slate-600 bg-slate-50 px-2 py-1 rounded-lg">
+                      <div class="flex items-center justify-between text-[11px] text-slate-600 bg-white border border-slate-100 px-2 py-1 rounded-lg">
                         <span class="truncate max-w-[200px]" title="${q.query}">${q.query}</span>
                         <span class="font-semibold text-slate-900">${q.clicks} clk <span class="text-slate-400 font-normal">(${q.impressions} imp)</span></span>
                       </div>
@@ -518,10 +640,12 @@ const description = 'Monitoraggio in tempo reale server-side dello stato di aggi
             </div>
 
             <!-- Cron log snippet -->
-            <div class="mt-4 border-t border-slate-100 pt-3 text-[11px] text-slate-400">
-              <span class="font-medium text-slate-500">Cron Rebuild:</span> 
-              ${cron.lastModified ? new Date(cron.lastModified).toLocaleString('it-IT') : 'N/A'}
-              ${cron.recentLine ? `<div class="mt-1 font-mono text-[10px] text-slate-500 truncate" title="${cron.recentLine}">${cron.recentLine}</div>` : ''}
+            <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400 flex items-center justify-between">
+              <div>
+                <span class="font-medium text-slate-500">Cron VPS:</span> 
+                ${cron.lastModified ? new Date(cron.lastModified).toLocaleString('it-IT') : 'N/A'}
+              </div>
+              <div class="font-mono text-slate-400">${http.latencyMs}ms</div>
             </div>
           </div>
         `;
