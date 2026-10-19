@@ -63,7 +63,9 @@ if [ -z "${DATABASE_URL:-}" ]; then
   exit 1
 fi
 
-if [ -f "$ASTRO_DIR/scripts/run-epg-import.sh" ]; then
+if [ "${SKIP_EPG:-0}" = "1" ]; then
+  log "SKIP_EPG=1 set — skipping EPG import and building with existing DB data"
+elif [ -f "$ASTRO_DIR/scripts/run-epg-import.sh" ]; then
   log "Running EPG import into local Postgres..."
   bash "$ASTRO_DIR/scripts/run-epg-import.sh" 2>&1 | tee -a "$LOG"
 else
