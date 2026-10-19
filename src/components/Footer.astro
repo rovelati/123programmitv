@@ -14,6 +14,15 @@ const LEGAL_LINKS = [
   { href: sitePath('/cookie-policy'),     label: 'Cookie Policy' },
   { href: sitePath('/termini-e-condizioni'), label: 'Termini e Condizioni' },
 ];
+
+const INTERNATIONAL_SITES = [
+  { name: 'ProgrammeCeSoir.fr', flag: '🇫🇷', url: 'https://programmecesoir.fr/' },
+  { name: 'FernsehHeute.de', flag: '🇩🇪', url: 'https://fernsehheute.de/' },
+  { name: 'UKTVTonight.co.uk', flag: '🇬🇧', url: 'https://uktvtonight.co.uk/' },
+  { name: 'AussieTVTonight.com', flag: '🇦🇺', url: 'https://aussietvtonight.com/' },
+  { name: 'TeleEstaNoche.es', flag: '🇪🇸', url: 'https://www.teleestanoche.es/' },
+  { name: 'TVWieczor.pl', flag: '🇵🇱', url: 'https://tvwieczor.pl/' },
+];
 ---
 
 <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 mt-12 text-sm text-slate-500 dark:text-slate-400">
@@ -36,6 +45,18 @@ const LEGAL_LINKS = [
         <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Programmi stasera in TV</a>
         {CATEGORY_HUBS.map(cat => (
           <a href={cat.href} class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{cat.label}</a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="mb-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+      <h2 class="text-slate-900 dark:text-slate-100 font-semibold mb-3 text-xs uppercase tracking-wider">Guida TV Internazionale</h2>
+      <nav class="flex flex-wrap gap-x-5 gap-y-2 text-xs" aria-label="Guida TV Internazionale">
+        {INTERNATIONAL_SITES.map(site => (
+          <a href={site.url} class="inline-flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <span>{site.flag}</span>
+            <span>{site.name}</span>
+          </a>
         ))}
       </nav>
     </div>
