@@ -195,6 +195,9 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     <!-- ═══ JSON-LD Structured Data ═══════════════════════════════════════ -->
     {schemas.length > 0 && <SchemaInjector {schemas} />}
 
+    <!-- ═══ UniConsent CMP (Consent Management Platform) ═══════════════════ -->
+    <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="8d3a6d7837"></script>
+
     <!-- ═══ Google Analytics 4 ════════════════════════════════════════════ -->
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-824117SV8J"></script>
     <script is:inline>
