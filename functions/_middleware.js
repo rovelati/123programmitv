@@ -46,6 +46,7 @@ export async function onRequest(context) {
     || pathname.startsWith('/favicon/')
     || pathname.startsWith('/og/')
     || pathname.startsWith('/search-console/')
+    || pathname.startsWith('/api/')
   ) {
     return context.next();
   }
