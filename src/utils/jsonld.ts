@@ -18,6 +18,7 @@ import type { Channel, Program } from '../types';
 import { getChannelLogo } from './channelLogos';
 import { absoluteUrl, SITE_ORIGIN } from './urls';
 import { filterStaseraPrograms } from './timeSlots';
+import { getChannelStaseraDescription, SEO_DESCRIPTIONS } from './seoDescriptions';
 import { getChannelGeo } from './channelGeo';
 
 const SITE_URL   = SITE_ORIGIN;
@@ -437,7 +438,7 @@ export function buildHubChannelJsonLd({
   const channelUrl = absoluteUrl(`/${channel.id}`, siteUrl);
   const pageUrl = canonicalPath ? absoluteUrl(canonicalPath, siteUrl) : channelUrl;
   const resolvedTitle = pageTitle ?? `Programmi ${channel.name} stasera`;
-  const pageDesc = pageDescription ?? `Guida TV ${channel.name}: tutti i programmi in onda stasera. Orari e palinsesti aggiornati.`;
+  const pageDesc = pageDescription ?? getChannelStaseraDescription(channel.name);
   const streamUrl = channel.streamUrl ?? CHANNEL_STREAM_URL[channel.id] ?? null;
 
   // Solo programmi serali coerenti con la pagina canale
@@ -555,7 +556,7 @@ export function buildHubHomeJsonLd({
 }): object[] {
   const pageUrl = absoluteUrl(canonicalPath, siteUrl);
   const title = pageTitle ?? `Programmi TV stasera — ${today}`;
-  const description = pageDescription ?? 'Guida TV italiana: tutti i programmi stasera su RAI, Mediaset, La7 e canali tematici.';
+  const description = pageDescription ?? SEO_DESCRIPTIONS.home;
 
   return [
     { '@context': 'https://schema.org', ...websiteEntity() },

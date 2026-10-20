@@ -3,11 +3,12 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 import { sitePath } from '../utils/urls';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 ---
 
 <HubLayout
   title="Privacy Policy — In TV Stasera & App Stasera In TV"
-  description="Informativa sul trattamento dei dati personali ai sensi dell'art. 13 del Regolamento UE 2016/679 (GDPR) per il sito inTVstasera.it e l'applicazione mobile Stasera In TV."
+  description={SEO_DESCRIPTIONS.privacyPolicy}
   canonicalPath="/privacy-policy"
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">

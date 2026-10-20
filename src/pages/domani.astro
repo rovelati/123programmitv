@@ -10,6 +10,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 
 const tomorrow = getTomorrowInRome();
 const dateLabel = formatDateIT(tomorrow);
@@ -31,7 +32,7 @@ const channelsWithPrograms = channels.filter(ch =>
 );
 
 const title = `inTV domani: guida ai programmi TV di domani`;
-const description = `inTV domani: scopri i programmi TV di domani sui principali canali italiani con orari, film, serie TV, sport e prima serata aggiornati.`;
+const description = SEO_DESCRIPTIONS.domani;
 const keywords = `inTV domani, programmi tv domani, guida tv domani, programmi domani sera, palinsesto tv domani, prima serata domani`;
 
 const schemas = buildHubHomeJsonLd({

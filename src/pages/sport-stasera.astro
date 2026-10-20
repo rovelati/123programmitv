@@ -11,6 +11,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 import type { Channel, Program } from '../types';
 
 const today = getTodayInRome();
@@ -133,7 +134,7 @@ const schemas = buildHubCategoryJsonLd({
 });
 
 const title       = `Sport stasera in TV: calcio, motori ed eventi di oggi`;
-const description = `Sport stasera in TV: eventi di oggi, calcio, tennis, basket, Formula 1, MotoGP, orari e canali italiani aggiornati.`;
+const description = SEO_DESCRIPTIONS.sport;
 const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi stasera, partite stasera in tv`;
 
 const firstSportWithPoster = sportPrograms.find(p => p.poster_url);

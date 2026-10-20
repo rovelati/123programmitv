@@ -11,6 +11,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 import type { Channel, Program } from '../types';
 
 const today = getTodayInRome();
@@ -114,7 +115,7 @@ const schemas = buildHubCategoryJsonLd({
 });
 
 const title       = `Serie TV stasera: episodi e fiction di oggi in TV`;
-const description = `Serie TV stasera in TV: episodi, fiction, telefilm, orari e canali italiani aggiornati per la programmazione di oggi.`;
+const description = SEO_DESCRIPTIONS.serie;
 const keywords    = `serie tv stasera, serie stasera in tv, telefilm stasera, fiction stasera, episodi stasera`;
 
 const firstSerieWithPoster = seriePrograms.find(p => p.poster_url);

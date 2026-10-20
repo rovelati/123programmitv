@@ -12,6 +12,7 @@ import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
 import { buildEveningCandidates } from '../utils/eveningPrefs';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 
 const today = getTodayInRome();
 const dateLabel = formatDateIT(today);
@@ -36,7 +37,7 @@ const primeTimeCount = channelsWithPrograms.filter(ch =>
 ).length;
 
 const title = `inTV stasera: guida ai programmi TV di stasera`;
-const description = `inTV stasera: scopri programmi, film, serie TV, show e sport in onda questa sera sui principali canali italiani. Orari e programmazione TV aggiornati.`;
+const description = SEO_DESCRIPTIONS.home;
 const keywords = `inTV stasera, programmi tv stasera, cosa c'è in tv stasera, film in tv stasera, guida tv stasera, programmi prima serata, programmi tv prima serata`;
 
 const schemas = buildHubHomeJsonLd({

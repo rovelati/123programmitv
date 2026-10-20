@@ -12,6 +12,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
+import { getChannelStaseraDescription } from '../utils/seoDescriptions';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
 import { getChannelGeo } from '../utils/channelGeo';
@@ -77,7 +78,7 @@ const stream = getChannelStream(channel.id);
 const channelGeo = getChannelGeo(channel.id);
 
 const title       = `${channel.name} stasera: programmi TV e prima serata`;
-const description = `Programmi ${channel.name} stasera: guida TV della sera con prima serata e seconda serata, orari aggiornati.`;
+const description = getChannelStaseraDescription(channel.name);
 const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
 const schemas = buildHubChannelJsonLd({

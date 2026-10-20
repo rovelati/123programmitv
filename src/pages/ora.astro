@@ -11,6 +11,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 import { buildEveningCandidates } from '../utils/eveningPrefs';
 
 const today = getTodayInRome();
@@ -26,7 +27,7 @@ const channelsWithPrograms = channels.filter(ch =>
 );
 
 const title = `inTV ora: cosa c'è in TV adesso sui canali`;
-const description = `inTV ora: scopri i programmi attualmente in onda sui principali canali TV italiani, con orari, durata e cosa vedere subito.`;
+const description = SEO_DESCRIPTIONS.ora;
 const keywords = `inTV ora, cosa c'è in tv ora, programmi tv ora, in onda adesso, tv adesso, cosa vedere ora in tv, guida tv ora`;
 
 const schemas = buildHubHomeJsonLd({

@@ -11,6 +11,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 import type { Channel, Program } from '../types';
 
 const today = getTodayInRome();
@@ -147,7 +148,7 @@ const schemas = buildHubCategoryJsonLd({
 });
 
 const title       = `Film stasera in TV: tutti i film di oggi in onda`;
-const description = `Film stasera in TV: tutti i titoli di oggi, orari, canali e trame dei film in onda su RAI, Mediaset, Sky e canali italiani.`;
+const description = SEO_DESCRIPTIONS.film;
 const keywords    = `film stasera, film stasera in tv, cinema stasera, film questa sera, programmazione cinema tv`;
 
 const firstFilmWithPoster = filmPrograms.find(p => p.poster_url);

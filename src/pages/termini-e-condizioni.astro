@@ -3,11 +3,12 @@ export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
 import { sitePath } from '../utils/urls';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 ---
 
 <HubLayout
   title="Termini e Condizioni — In TV Stasera"
-  description="Termini e condizioni generali di utilizzo del sito inTVstasera.it e dell'applicazione mobile Stasera In TV."
+  description={SEO_DESCRIPTIONS.terminiCondizioni}
   canonicalPath="/termini-e-condizioni"
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
