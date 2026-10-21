@@ -28,6 +28,8 @@ const HEAD_URLS = [
   '/film-stasera',
   '/serie-stasera',
   '/sport-stasera',
+  '/frequenze-dtt',
+  '/uscite-serie-tv',
   '/rai-1',
   '/canale-5',
   '/italia-1',
