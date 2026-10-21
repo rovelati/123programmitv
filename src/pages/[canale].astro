@@ -16,6 +16,7 @@ import { getChannelStaseraDescription } from '../utils/seoDescriptions';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
 import { getChannelGeo } from '../utils/channelGeo';
+import { getDttChannelBySlug } from '../data/dttChannels';
 import type { Channel, Program } from '../types';
 
 export async function getStaticPaths() {
@@ -76,6 +77,7 @@ const { channel, programs, allChannels, relatedChannels, today } = Astro.props;
 const dateLabel = formatDateIT(today);
 const stream = getChannelStream(channel.id);
 const channelGeo = getChannelGeo(channel.id);
+const dttInfo = getDttChannelBySlug(channel.id);
 
 const title       = `${channel.name} stasera: programmi TV e prima serata`;
 const description = getChannelStaseraDescription(channel.name);
@@ -173,6 +175,51 @@ const ogImageAlt  = firstProgramWithPoster
           <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
             Area di copertura: {channelGeo.coverage}
           </p>
+        </div>
+      </div>
+    )}
+
+    {dttInfo && (
+      <div class="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 shadow-xs">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-700/60">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
+              📺
+            </span>
+            <span class="font-extrabold text-slate-900 dark:text-slate-100">
+              Digitale Terrestre:
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black bg-blue-600 text-white shadow-2xs">
+              Canale LCN {dttInfo.lcn}
+            </span>
+            {dttInfo.lcnHd && (
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-700/60">
+                HD {dttInfo.lcnHd}
+              </span>
+            )}
+          </div>
+          <a href="/frequenze-dtt/" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold text-xs inline-flex items-center gap-1">
+            <span>Tutte le frequenze DTT</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Multiplex (Mux)</span>
+            <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.mux}</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Frequenza UHF</span>
+            <strong class="text-slate-800 dark:text-slate-200 font-mono mt-0.5 block">{dttInfo.uhf} ({dttInfo.freqMhz} MHz)</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Qualità & Standard</span>
+            <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.quality} · {dttInfo.standard}</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Trasmissione</span>
+            <strong class="text-emerald-600 dark:text-emerald-400 mt-0.5 block">In chiaro (100% Free)</strong>
+          </div>
         </div>
       </div>
     )}

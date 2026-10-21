@@ -17,6 +17,7 @@ export const SEO_DESCRIPTIONS = {
   cookiePolicy: 'Cookie Policy di inTVstasera.it: informativa completa su cookie tecnici e analitici per proteggere la tua privacy sul sito web e sull\'app mobile Stasera In TV.',
   terminiCondizioni: 'Termini e condizioni d\'uso di inTVstasera.it: consulta le regole del servizio di guida ai programmi TV, diritti, copyright e dell\'applicazione Stasera In TV.',
   privacyPolicy: 'Privacy Policy di inTVstasera.it: informativa sul trattamento dati personali (GDPR) per tutelare la tua navigazione sul portale e sull\'app mobile Stasera In TV.',
+  frequenzeDtt: 'Frequenze TV e canali digitale terrestre in Italia: tabella LCN aggiornata, multiplex Mux Rai e Mediaset. Trova subito la frequenza del tuo canale TV preferito!',
 } as const;
 
 /**

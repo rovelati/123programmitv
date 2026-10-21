@@ -36,6 +36,7 @@ const HUB_PAGES = [
   { loc: `${SITE_URL}/film-stasera/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/serie-stasera/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/sport-stasera/`, changefreq: 'daily', priority: '0.85' },
+  { loc: `${SITE_URL}/frequenze-dtt/`, changefreq: 'weekly', priority: '0.85' },
 ];
 
 const TOP_CHANNEL_IDS = new Set(['rai-1', 'canale-5', 'italia-1', 'la7', 'rete-4', 'rai-2', 'rai-3']);

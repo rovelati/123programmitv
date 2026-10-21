@@ -60,6 +60,7 @@ function getTargetedUrls(slot) {
       `${SITE_URL}/film-stasera/`,
       `${SITE_URL}/serie-stasera/`,
       `${SITE_URL}/sport-stasera/`,
+      `${SITE_URL}/frequenze-dtt/`,
       `${SITE_URL}/stasera/`
     );
     for (const ch of TOP_CHANNELS) {
