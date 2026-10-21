@@ -59,6 +59,7 @@ function getTargetedUrls(slot) {
       `${SITE_URL}/`,
       `${SITE_URL}/film-stasera/`,
       `${SITE_URL}/serie-stasera/`,
+      `${SITE_URL}/uscite-serie-tv/`,
       `${SITE_URL}/sport-stasera/`,
       `${SITE_URL}/frequenze-dtt/`,
       `${SITE_URL}/stasera/`

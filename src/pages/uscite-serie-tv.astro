@@ -1,0 +1,518 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { UPCOMING_SERIES } from '../data/upcomingSeries';
+import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
+
+const title = 'Uscite Serie TV e Prossimi Episodi: Calendario e Countdown';
+const description = SEO_DESCRIPTIONS.usciteSerieTv;
+const keywords = 'quando esce serie tv, calendario uscite serie tv, countdown serie tv, a che ora esce su netflix, prossimi episodi serie tv, data uscita serie tv';
+const canonicalPath = '/uscite-serie-tv';
+
+// FAQ & ItemList for Rich Results
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'A che ora escono i nuovi episodi delle serie TV su Netflix in Italia?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Su Netflix in Italia i nuovi episodi e le stagioni complete vengono rilasciati quasi sempre alle ore 09:00 del mattino (fuso orario italiano CET/CEST), corrispondenti alla mezzanotte dell\'ora del Pacifico (PST) della sede centrale in California.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'A che ora escono le puntate su Sky e NOW in contemporanea USA?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Per le grandi produzioni HBO (come House of the Dragon e The Last of Us), gli episodi debuttano in simulcast alle ore 03:00 della notte in lingua originale con sottotitoli, per poi essere disponibili on demand dalle prime ore del mattino e trasmessi la sera stessa alle 21:15 doppiati in italiano.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'A che ora escono le nuove serie su Prime Video e Disney+?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Su Disney+ le novità debuttano alle ore 09:00 del mattino, mentre su Amazon Prime Video gli episodi originali vengono spesso resi disponibili già tra la mezzanotte e le ore 01:00 UTC (ore 02:00-03:00 italiane).',
+        },
+      },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Calendario Uscite Serie TV e Nuove Stagioni',
+    description: 'Elenco prossime uscite serie TV con data di rilascio e orario per Netflix, Prime Video, Disney+ e Sky.',
+    numberOfItems: UPCOMING_SERIES.length,
+    itemListElement: UPCOMING_SERIES.map((s, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: `${s.title} (Stagione ${s.season})`,
+      description: `Uscita prevista il ${new Date(s.releaseDate).toLocaleDateString('it-IT')} su ${s.platform}.`,
+    })),
+  },
+];
+---
+
+<HubLayout {title} {description} {keywords} {canonicalPath} {schemas}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+    <Breadcrumb items={[
+      { label: 'inTV stasera', href: '/' },
+      { label: 'Uscite Serie TV & Countdown' },
+    ]} />
+  </div>
+
+  <!-- HERO SECTION -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8 border-b border-slate-100 dark:border-slate-800">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
+        ⏱️ Calendario Uscite & Countdown Live
+      </span>
+      <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+        Aggiornato in Tempo Reale
+      </span>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-3">
+      Quando Escono le <span class="text-rose-600 dark:text-rose-400">Serie TV</span>: Countdown Uscite
+    </h1>
+
+    <p class="text-slate-600 dark:text-slate-300 text-base sm:text-lg max-w-3xl leading-relaxed mb-6">
+      Non chiederti più <em>«a che ora esce la prossima puntata?»</em>. Consulta le date ufficiali di rilascio in Italia,
+      gli orari precisi di pubblicazione e il conto alla rovescia in tempo reale per le serie più attese su Netflix, Prime Video, Disney+, Sky e Apple TV+.
+    </p>
+
+    <!-- KPI STATS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl">
+      <div class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Serie Monitorate</span>
+        <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-0.5">{UPCOMING_SERIES.length} Titoli</div>
+        <p class="text-[11px] text-slate-500">I franchise più seguiti</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Countdown</span>
+        <div class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">Live</div>
+        <p class="text-[11px] text-slate-500">Aggiornato al secondo</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Orari Ufficiali</span>
+        <div class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">Ora Italiana</div>
+        <p class="text-[11px] text-slate-500">Fuso CET / CEST esatto</p>
+      </div>
+      <div class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Piattaforme</span>
+        <div class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-0.5">Streaming & TV</div>
+        <p class="text-[11px] text-slate-500">Netflix, Sky, Prime, Disney+</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTRI & SEARCH -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
+      <div class="relative flex-1 max-w-md">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <input
+          type="text"
+          id="series-search"
+          placeholder="Cerca serie TV... es. Mercoledì, Last of Us, Boys"
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all shadow-xs"
+        />
+      </div>
+
+      <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+        <span>In arrivo:</span>
+        <strong id="visible-series-count" class="text-slate-900 dark:text-slate-100 font-bold">{UPCOMING_SERIES.length}</strong>
+        <span>serie TV</span>
+      </div>
+    </div>
+
+    <!-- Platform pills -->
+    <div class="flex flex-wrap items-center gap-2 pb-2" id="filter-platforms">
+      <button
+        data-platform="all"
+        class="platform-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-rose-600 text-white shadow-xs"
+      >
+        Tutte le Piattaforme ({UPCOMING_SERIES.length})
+      </button>
+      <button
+        data-platform="Netflix"
+        class="platform-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+      >
+        Netflix
+      </button>
+      <button
+        data-platform="Prime Video"
+        class="platform-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+      >
+        Prime Video
+      </button>
+      <button
+        data-platform="Disney+"
+        class="platform-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+      >
+        Disney+
+      </button>
+      <button
+        data-platform="Sky / NOW"
+        class="platform-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+      >
+        Sky / NOW
+      </button>
+      <button
+        data-platform="Apple TV+"
+        class="platform-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+      >
+        Apple TV+
+      </button>
+    </div>
+  </section>
+
+  <!-- SERIES GRID -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-14">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="series-grid">
+      {UPCOMING_SERIES.map(series => {
+        const dateObj = new Date(series.releaseDate);
+        const dateStr = dateObj.toLocaleDateString('it-IT', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+
+        return (
+          <article
+            class="series-card bg-white dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+            data-title={series.title.toLowerCase()}
+            data-original={series.originalTitle.toLowerCase()}
+            data-platform={series.platform}
+            data-date={series.releaseDate}
+          >
+            <!-- Header Image with Badges -->
+            <div class="relative aspect-16/10 overflow-hidden bg-slate-900">
+              <img
+                src={series.posterUrl}
+                alt={`Poster ${series.title}`}
+                class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+
+              <!-- Platform Badge -->
+              <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                <span class={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider shadow-md ${series.platformColor}`}>
+                  {series.platform}
+                </span>
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-900/80 text-amber-400 backdrop-blur-xs border border-white/10">
+                  ⭐ {series.rating.toFixed(1)}
+                </span>
+              </div>
+
+              <!-- Status Badge -->
+              <div class="absolute top-3 right-3">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide bg-rose-600/90 text-white shadow-sm backdrop-blur-xs">
+                  {series.status}
+                </span>
+              </div>
+
+              <!-- Title overlay bottom -->
+              <div class="absolute bottom-3 left-4 right-4">
+                <span class="text-[11px] font-bold text-rose-300 uppercase tracking-wider block mb-0.5">
+                  {series.genre}
+                </span>
+                <h2 class="text-xl font-black text-white leading-tight drop-shadow-sm">
+                  {series.title}
+                </h2>
+                <p class="text-xs text-slate-300 font-medium">
+                  Stagione {series.season} · Episodio {series.episode}: <span class="text-white font-semibold">«{series.episodeTitle}»</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Content & Countdown -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <!-- Live Countdown Box -->
+              <div class="mb-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-700/80 text-center">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1.5">
+                  Tempo Rimanente al Rilascio
+                </span>
+
+                <!-- Countdown Units -->
+                <div class="countdown-timer flex items-center justify-center gap-2" data-target={series.releaseDate}>
+                  <div class="flex flex-col items-center">
+                    <span class="days-val font-mono font-black text-xl text-slate-900 dark:text-slate-100">00</span>
+                    <span class="text-[9px] uppercase font-bold text-slate-400">Giorni</span>
+                  </div>
+                  <span class="font-bold text-slate-400 text-sm mb-3">:</span>
+                  <div class="flex flex-col items-center">
+                    <span class="hours-val font-mono font-black text-xl text-slate-900 dark:text-slate-100">00</span>
+                    <span class="text-[9px] uppercase font-bold text-slate-400">Ore</span>
+                  </div>
+                  <span class="font-bold text-slate-400 text-sm mb-3">:</span>
+                  <div class="flex flex-col items-center">
+                    <span class="minutes-val font-mono font-black text-xl text-slate-900 dark:text-slate-100">00</span>
+                    <span class="text-[9px] uppercase font-bold text-slate-400">Min</span>
+                  </div>
+                  <span class="font-bold text-slate-400 text-sm mb-3">:</span>
+                  <div class="flex flex-col items-center">
+                    <span class="seconds-val font-mono font-black text-xl text-rose-600 dark:text-rose-400">00</span>
+                    <span class="text-[9px] uppercase font-bold text-slate-400">Sec</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Date & Synopsis -->
+              <div class="space-y-2 mb-4">
+                <div class="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <span class="text-rose-500 font-bold">📅</span>
+                  <span class="font-semibold capitalize">{dateStr}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <span class="text-slate-400 font-bold">⏰</span>
+                  <span>{series.releaseTimeNote}</span>
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3 pt-1">
+                  {series.synopsis}
+                </p>
+              </div>
+
+              <!-- Footer Actions -->
+              <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  class="share-btn text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 inline-flex items-center gap-1.5 transition-colors"
+                  data-share-title={`Countdown uscita ${series.title}`}
+                  data-share-url={`https://www.intvstasera.it/uscite-serie-tv/#${series.id}`}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  <span>Condividi</span>
+                </button>
+
+                <a
+                  href="/serie-stasera/"
+                  class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Serie in TV stasera</span>
+                  <span>&rarr;</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- GUIDA AGLI ORARI STREAMING -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-gradient-to-br from-slate-50 to-rose-50/30 dark:from-slate-900 dark:to-slate-800/80 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="max-w-3xl">
+        <span class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-2 block">
+          Guida Ufficiale agli Orari di Uscita
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-4">
+          A che ora escono i nuovi episodi in Italia?
+        </h2>
+        <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+          Ogni piattaforma streaming adotta orari di rilascio specifici legati al proprio fuso orario di riferimento:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+            <div class="font-black text-red-600 text-sm mb-1">Netflix & Disney+</div>
+            <div class="text-lg font-black text-slate-900 dark:text-slate-100 mb-1">Ore 09:00</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Orario standard per l'Italia, calcolato sulla mezzanotte della costa Pacifica (PST) statunitense.
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+            <div class="font-black text-sky-600 text-sm mb-1">Sky & NOW (HBO)</div>
+            <div class="text-lg font-black text-slate-900 dark:text-slate-100 mb-1">Ore 03:00</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              In contemporanea notturna con la messa in onda americana della domenica sera su HBO.
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+            <div class="font-black text-blue-600 text-sm mb-1">RaiPlay & Mediaset</div>
+            <div class="text-lg font-black text-slate-900 dark:text-slate-100 mb-1">Ore 00:01</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Le anteprime digitali delle fiction italiane sbarcano in piattaforma appena scoccata la mezzanotte.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+    <div class="border-t border-slate-200 dark:border-slate-800 pt-10">
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-6">
+        Domande Frequenti sulle Uscite delle Serie TV
+      </h2>
+
+      <div class="space-y-4 max-w-4xl">
+        <details class="group bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-2xs cursor-pointer">
+          <summary class="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base list-none flex items-center justify-between gap-3">
+            <span>Perché alcune serie rilasciano un episodio a settimana e altre tutta la stagione insieme?</span>
+            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Netflix predilige storicamente il modello <em>binge-watching</em> (tutti gli episodi insieme), anche se per i titoli di punta divide sempre più spesso le stagioni in Volume 1 e Volume 2. Disney+, Prime Video, Apple TV+ e Sky adottano invece quasi sempre la cadenza settimanale per alimentare la discussione e l'interesse del pubblico nel tempo.
+          </p>
+        </details>
+
+        <details class="group bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-2xs cursor-pointer">
+          <summary class="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base list-none flex items-center justify-between gap-3">
+            <span>Come ricevere un promemoria per il rilascio della puntata?</span>
+            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Puoi aggiungere questa pagina ai tuoi preferiti o cliccare su <em>Condividi</em> per salvare la scheda del conto alla rovescia nelle tue chat o note, così da verificare in qualunque momento i minuti esatti mancanti al rilascio.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+</HubLayout>
+
+<!-- CLIENT SCRIPT: LIVE COUNTDOWN & FILTERS -->
+<script is:inline>
+  (function() {
+    // 1. LIVE COUNTDOWN TICKER
+    const timers = document.querySelectorAll('.countdown-timer');
+
+    function updateCountdowns() {
+      const now = new Date().getTime();
+
+      timers.forEach(timer => {
+        const targetAttr = timer.getAttribute('data-target');
+        if (!targetAttr) return;
+
+        const target = new Date(targetAttr).getTime();
+        const diff = target - now;
+
+        const daysEl = timer.querySelector('.days-val');
+        const hoursEl = timer.querySelector('.hours-val');
+        const minsEl = timer.querySelector('.minutes-val');
+        const secsEl = timer.querySelector('.seconds-val');
+
+        if (diff <= 0) {
+          if (daysEl) daysEl.textContent = '00';
+          if (hoursEl) hoursEl.textContent = '00';
+          if (minsEl) minsEl.textContent = '00';
+          if (secsEl) {
+            secsEl.textContent = 'ORA!';
+            secsEl.classList.remove('text-rose-600');
+            secsEl.classList.add('text-emerald-500');
+          }
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minsEl) minsEl.textContent = String(minutes).padStart(2, '0');
+        if (secsEl) secsEl.textContent = String(seconds).padStart(2, '0');
+      });
+    }
+
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+
+    // 2. SEARCH & PLATFORM FILTERS
+    const searchInput = document.getElementById('series-search');
+    const filterButtons = document.querySelectorAll('.platform-btn');
+    const cards = document.querySelectorAll('.series-card');
+    const visibleCount = document.getElementById('visible-series-count');
+
+    let currentPlatform = 'all';
+    let currentSearch = '';
+
+    function filterCards() {
+      let count = 0;
+      cards.forEach(card => {
+        const title = card.getAttribute('data-title') || '';
+        const original = card.getAttribute('data-original') || '';
+        const platform = card.getAttribute('data-platform') || '';
+
+        const matchesPlatform = (currentPlatform === 'all') || (platform === currentPlatform);
+        const matchesSearch = !currentSearch ||
+          title.includes(currentSearch) ||
+          original.includes(currentSearch);
+
+        if (matchesPlatform && matchesSearch) {
+          card.style.display = '';
+          count++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (visibleCount) {
+        visibleCount.textContent = count;
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        currentSearch = (e.target.value || '').trim().toLowerCase();
+        filterCards();
+      });
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        filterButtons.forEach(b => {
+          b.classList.remove('active', 'bg-rose-600', 'text-white');
+          b.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+        });
+        this.classList.add('active', 'bg-rose-600', 'text-white');
+        this.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+
+        currentPlatform = this.getAttribute('data-platform') || 'all';
+        filterCards();
+      });
+    });
+
+    // 3. SHARE BUTTONS
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const shareUrl = this.getAttribute('data-share-url') || window.location.href;
+        const shareTitle = this.getAttribute('data-share-title') || document.title;
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: shareTitle, url: shareUrl });
+          } catch(e) {}
+        } else {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('Link copiato negli appunti!');
+          });
+        }
+      });
+    });
+  })();
+</script>

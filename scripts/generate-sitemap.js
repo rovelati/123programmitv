@@ -35,6 +35,7 @@ const HUB_PAGES = [
   { loc: `${SITE_URL}/domani/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/film-stasera/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/serie-stasera/`, changefreq: 'daily', priority: '0.85' },
+  { loc: `${SITE_URL}/uscite-serie-tv/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/sport-stasera/`, changefreq: 'daily', priority: '0.85' },
   { loc: `${SITE_URL}/frequenze-dtt/`, changefreq: 'weekly', priority: '0.85' },
 ];

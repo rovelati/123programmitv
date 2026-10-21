@@ -18,6 +18,7 @@ export const SEO_DESCRIPTIONS = {
   terminiCondizioni: 'Termini e condizioni d\'uso di inTVstasera.it: consulta le regole del servizio di guida ai programmi TV, diritti, copyright e dell\'applicazione Stasera In TV.',
   privacyPolicy: 'Privacy Policy di inTVstasera.it: informativa sul trattamento dati personali (GDPR) per tutelare la tua navigazione sul portale e sull\'app mobile Stasera In TV.',
   frequenzeDtt: 'Frequenze TV e canali digitale terrestre in Italia: tabella LCN aggiornata, multiplex Mux Rai e Mediaset. Trova subito la frequenza del tuo canale TV preferito!',
+  usciteSerieTv: 'Quando escono i nuovi episodi delle tue serie TV preferite? Scopri il calendario uscite con countdown in tempo reale per Netflix, Prime e Sky. Non perderti nulla!',
 } as const;
 
 /**
