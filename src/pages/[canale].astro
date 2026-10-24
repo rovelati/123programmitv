@@ -154,75 +154,6 @@ const ogImageAlt  = firstProgramWithPoster
         </a>
       )}
     </div>
-
-    {channelGeo && (
-      <div class="mt-4 p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start sm:items-center gap-2.5 shadow-xs">
-        <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
-          📍
-        </span>
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-extrabold text-slate-900 dark:text-slate-100">
-              {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede'}:
-            </span>
-            <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
-            {channelGeo.badge && (
-              <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                {channelGeo.badge}
-              </span>
-            )}
-          </div>
-          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-            Area di copertura: {channelGeo.coverage}
-          </p>
-        </div>
-      </div>
-    )}
-
-    {dttInfo && (
-      <div class="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 shadow-xs">
-        <div class="flex items-center justify-between flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-700/60">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
-              📺
-            </span>
-            <span class="font-extrabold text-slate-900 dark:text-slate-100">
-              Digitale Terrestre:
-            </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black bg-blue-600 text-white shadow-2xs">
-              Canale LCN {dttInfo.lcn}
-            </span>
-            {dttInfo.lcnHd && (
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-700/60">
-                HD {dttInfo.lcnHd}
-              </span>
-            )}
-          </div>
-          <a href="/frequenze-dtt/" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold text-xs inline-flex items-center gap-1">
-            <span>Tutte le frequenze DTT</span>
-            <span>&rarr;</span>
-          </a>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div>
-            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Multiplex (Mux)</span>
-            <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.mux}</strong>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Frequenza UHF</span>
-            <strong class="text-slate-800 dark:text-slate-200 font-mono mt-0.5 block">{dttInfo.uhf} ({dttInfo.freqMhz} MHz)</strong>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Qualità & Standard</span>
-            <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.quality} · {dttInfo.standard}</strong>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Trasmissione</span>
-            <strong class="text-emerald-600 dark:text-emerald-400 mt-0.5 block">In chiaro (100% Free)</strong>
-          </div>
-        </div>
-      </div>
-    )}
   </section>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
     <ChannelNav currentChannelId={channel.id} />
@@ -310,6 +241,79 @@ const ogImageAlt  = firstProgramWithPoster
             </div>
           ))}
         </div>
+      </section>
+    )}
+
+    {(dttInfo || channelGeo) && (
+      <section class="mt-10 space-y-4" aria-label={`Frequenze Digitale Terrestre e copertura ${channel.name}`}>
+        {dttInfo && (
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 shadow-xs">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200/80 dark:border-slate-700/60">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
+                  📺
+                </span>
+                <span class="font-extrabold text-slate-900 dark:text-slate-100">
+                  Digitale Terrestre:
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-black bg-blue-600 text-white shadow-2xs">
+                  Canale LCN {dttInfo.lcn}
+                </span>
+                {dttInfo.lcnHd && (
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-700/60">
+                    HD {dttInfo.lcnHd}
+                  </span>
+                )}
+              </div>
+              <a href="/frequenze-dtt/" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold text-xs inline-flex items-center gap-1">
+                <span>Tutte le frequenze DTT</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Multiplex (Mux)</span>
+                <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.mux}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Frequenza UHF</span>
+                <strong class="text-slate-800 dark:text-slate-200 font-mono mt-0.5 block">{dttInfo.uhf} ({dttInfo.freqMhz} MHz)</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Qualità & Standard</span>
+                <strong class="text-slate-800 dark:text-slate-200 mt-0.5 block">{dttInfo.quality} · {dttInfo.standard}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Trasmissione</span>
+                <strong class="text-emerald-600 dark:text-emerald-400 mt-0.5 block">In chiaro (100% Free)</strong>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {channelGeo && (
+          <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start sm:items-center gap-2.5 shadow-xs">
+            <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
+              📍
+            </span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-extrabold text-slate-900 dark:text-slate-100">
+                  {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede'}:
+                </span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
+                {channelGeo.badge && (
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                    {channelGeo.badge}
+                  </span>
+                )}
+              </div>
+              <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+                Area di copertura: {channelGeo.coverage}
+              </p>
+            </div>
+          </div>
+        )}
       </section>
     )}
 

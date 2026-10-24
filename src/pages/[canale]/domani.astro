@@ -116,30 +116,6 @@ const ogImageAlt = firstProgramWithPoster
         </a>
       </div>
     )}
-
-    {channelGeo && (
-      <div class="mt-4 p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start sm:items-center gap-2.5 shadow-xs">
-        <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
-          📍
-        </span>
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-extrabold text-slate-900 dark:text-slate-100">
-              {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede'}:
-            </span>
-            <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
-            {channelGeo.badge && (
-              <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                {channelGeo.badge}
-              </span>
-            )}
-          </div>
-          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-            Area di copertura: {channelGeo.coverage}
-          </p>
-        </div>
-      </div>
-    )}
   </section>
 
   <!-- Link rapidi -->
@@ -199,6 +175,30 @@ const ogImageAlt = firstProgramWithPoster
     ) : (
       <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
         <HubGrid {programs} {channel} />
+      </div>
+    )}
+
+    {channelGeo && (
+      <div class="mt-8 p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-start sm:items-center gap-2.5 shadow-xs">
+        <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-blue-200 dark:border-blue-800/50">
+          📍
+        </span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-extrabold text-slate-900 dark:text-slate-100">
+              {channelGeo.isLocal ? 'Territorio & Sede' : 'Sede'}:
+            </span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{channelGeo.city} ({channelGeo.region})</span>
+            {channelGeo.badge && (
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                {channelGeo.badge}
+              </span>
+            )}
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+            Area di copertura: {channelGeo.coverage}
+          </p>
+        </div>
       </div>
     )}
 
