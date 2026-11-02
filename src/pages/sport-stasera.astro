@@ -133,9 +133,9 @@ const schemas = buildHubCategoryJsonLd({
   today,
 });
 
-const title       = `Sport stasera in TV: calcio, motori ed eventi di oggi`;
+const title       = `Sport stasera in TV: calcio in chiaro, partite ed eventi di oggi`;
 const description = SEO_DESCRIPTIONS.sport;
-const keywords    = `sport stasera in tv, calcio stasera in tv, eventi sportivi stasera, partite stasera in tv`;
+const keywords    = `sport stasera in tv, calcio stasera in tv, sport in tv stasera in chiaro, partite stasera in tv, sport tv stasera, sport in tv oggi`;
 
 const firstSportWithPoster = sportPrograms.find(p => p.poster_url);
 const ogImage    = firstSportWithPoster?.poster_url ?? '/og/default.png';
@@ -153,10 +153,10 @@ const ogImageAlt = firstSportWithPoster ? `${firstSportWithPoster.title} - Sport
 
   <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-b border-slate-100 dark:border-slate-700">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">
-      ⚽ Sport stasera in TV — <span class="text-blue-600">{dateLabel}</span>
+      ⚽ Sport stasera in TV: <span class="text-blue-600">calcio in chiaro e partite di oggi</span>
     </h1>
     <p class="text-slate-500 dark:text-slate-400 text-sm">
-      {totalSport} {totalSport === 1 ? 'evento sportivo' : 'eventi sportivi'} in onda questa sera.
+      {totalSport} {totalSport === 1 ? 'evento sportivo' : 'eventi sportivi'} in onda questa sera ({dateLabel}). Palinsesto aggiornato con partite di calcio, tennis, basket e motori in chiaro su DTT e su Sky.
     </p>
   </section>
 

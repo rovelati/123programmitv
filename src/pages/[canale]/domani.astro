@@ -9,7 +9,7 @@ import SeoHubLinks from '../../components/SeoHubLinks.astro';
 import { fetchChannels, fetchProgramsForDate } from '../../lib/epg';
 import { getTomorrowInRome, formatDateIT } from '../../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../../utils/jsonld';
-import { getChannelDomaniDescription } from '../../utils/seoDescriptions';
+import { getChannelDomaniDescription, getChannelDomaniTitle } from '../../utils/seoDescriptions';
 import { HUB_CHANNELS } from '../../utils/channelSlug';
 import { getChannelGeo } from '../../utils/channelGeo';
 import { getChannelStream } from '../../utils/channelStreams';
@@ -44,16 +44,16 @@ const dateLabel = formatDateIT(tomorrow);
 const channelGeo = getChannelGeo(channel.id);
 const stream = getChannelStream(channel.id);
 
-const title       = `${channel.name} domani: programmi TV e palinsesto`;
-const description = getChannelDomaniDescription(channel.name);
-const keywords    = `programmi ${channel.name.toLowerCase()} domani, ${channel.name.toLowerCase()} domani, guida tv ${channel.name.toLowerCase()} domani`;
+const title       = getChannelDomaniTitle(channel.name, channel.id);
+const description = getChannelDomaniDescription(channel.name, channel.id);
+const keywords    = `programmi ${channel.name.toLowerCase()} domani, ${channel.name.toLowerCase()} domani, guida tv ${channel.name.toLowerCase()} domani, palinsesto ${channel.name.toLowerCase()} domani`;
 const canonicalPath = `/${channel.id}/domani`;
 const schemas = buildHubChannelJsonLd({
   channel,
   programs,
   today: tomorrow,
   canonicalPath,
-  pageTitle: `${channel.name} domani: programmi TV e palinsesto`,
+  pageTitle: title,
   pageDescription: description,
 });
 

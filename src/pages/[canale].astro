@@ -12,7 +12,7 @@ import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
-import { getChannelStaseraDescription } from '../utils/seoDescriptions';
+import { getChannelStaseraDescription, getChannelStaseraTitle } from '../utils/seoDescriptions';
 import { HUB_CHANNELS } from '../utils/channelSlug';
 import { getChannelStream } from '../utils/channelStreams';
 import { getChannelGeo } from '../utils/channelGeo';
@@ -79,16 +79,16 @@ const stream = getChannelStream(channel.id);
 const channelGeo = getChannelGeo(channel.id);
 const dttInfo = getDttChannelBySlug(channel.id);
 
-const title       = `${channel.name} stasera: programmi TV e prima serata`;
-const description = getChannelStaseraDescription(channel.name);
-const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, cosa c'è stasera su ${channel.name.toLowerCase()}`;
+const title       = getChannelStaseraTitle(channel.name, channel.id);
+const description = getChannelStaseraDescription(channel.name, channel.id);
+const keywords    = `programmi ${channel.name.toLowerCase()} stasera, ${channel.name.toLowerCase()} stasera, guida tv ${channel.name.toLowerCase()}, programmazione ${channel.name.toLowerCase()} oggi, palinsesto ${channel.name.toLowerCase()}`;
 const canonicalPath = `/${channel.id}`;
 const schemas = buildHubChannelJsonLd({
   channel,
   programs,
   today,
   canonicalPath,
-  pageTitle: `${channel.name} stasera: programmi TV e prima serata`,
+  pageTitle: title,
   pageDescription: description,
 });
 
@@ -124,14 +124,28 @@ const ogImageAlt  = firstProgramWithPoster
       </div>
       <div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          {channel.name} stasera: <span class="text-blue-600">programmi e palinsesto</span>
+          {channel.name} stasera e oggi: <span class="text-blue-600">programmi e palinsesto</span>
         </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{dateLabel} · dalle 20:30 alle 02:00</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{dateLabel} · dalle 20:30 alle 02:00 e palinsesto completo</p>
       </div>
     </div>
-    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">
-      Palinsesto serale di {channel.name}: prima serata, seconda serata e programmi TV in onda questa sera.
-    </p>
+    {channel.id === 'inter-tv' ? (
+      <div class="p-3.5 mb-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-xs sm:text-sm text-blue-950 dark:text-blue-200 leading-relaxed">
+        ⚽ <strong>Canale Ufficiale FC Internazionale:</strong> palinsesto serale aggiornato con orari repliche delle partite di Serie A e Champions League, interviste esclusive ai calciatori nerazzurri, rassegna stampa e approfondimenti di giornata.
+      </div>
+    ) : channel.id === '20' ? (
+      <div class="p-3.5 mb-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs sm:text-sm text-amber-950 dark:text-amber-200 leading-relaxed">
+        📺 <strong>Canale 20 Mediaset (LCN 20 e 520 HD):</strong> scopri i film d'azione, prime visioni cinematografiche, serie TV e i grandi eventi sportivi in onda stasera e oggi in prima serata.
+      </div>
+    ) : channel.id === 'la7d' ? (
+      <div class="p-3.5 mb-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs sm:text-sm text-rose-950 dark:text-rose-200 leading-relaxed">
+        🎭 <strong>La7d (Canale 29 DTT):</strong> programmazione serale e di oggi con film, grandi commedie, serie cult e repliche dei programmi storici La7.
+      </div>
+    ) : (
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">
+        Palinsesto di {channel.name}: prima serata, seconda serata e programmi TV in onda questa sera.
+      </p>
+    )}
 
     <div class="flex flex-wrap items-center gap-3">
       {stream && (

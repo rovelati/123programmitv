@@ -38,6 +38,17 @@ const primaryLinks = [
   { href: sitePath('/serie-stasera'), label: 'Serie TV stasera' },
   { href: sitePath('/sport-stasera'), label: 'Sport in TV stasera' },
 ];
+
+const trendingChannels = [
+  { href: sitePath('/inter-tv'), label: 'Inter TV' },
+  { href: sitePath('/20'), label: 'Canale 20' },
+  { href: sitePath('/la7d'), label: 'La7d' },
+  { href: sitePath('/eurosport'), label: 'Eurosport' },
+  { href: sitePath('/sky-sport-calcio'), label: 'Sky Sport Calcio' },
+  { href: sitePath('/rai-2'), label: 'Rai 2' },
+  { href: sitePath('/rai-3'), label: 'Rai 3' },
+  { href: sitePath('/mediaset-27-twentyseven'), label: 'Canale 27' },
+].filter(c => c.href !== sitePath(`/${currentChannelId}`));
 ---
 
 <aside class:list={[
@@ -63,6 +74,23 @@ const primaryLinks = [
       ))}
     </div>
   </nav>
+
+  {trendingChannels.length > 0 && (
+    <nav aria-label="Canali in primo piano" class:list={[compact ? 'mb-3' : 'mb-4']}>
+      {!compact && (
+        <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
+          Canali in primo piano
+        </h3>
+      )}
+      <div class="flex flex-wrap gap-2">
+        {trendingChannels.map(item => (
+          <a href={item.href} class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 text-xs font-semibold transition-colors">
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  )}
 
   {channelLinks.length > 0 && (
     <nav aria-label="Programmi TV per canale">
