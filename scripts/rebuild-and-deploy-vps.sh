@@ -46,6 +46,10 @@ else
 fi
 
 load_env DATABASE_URL
+if [[ "${DATABASE_URL:-}" == *"supabase.com"* ]] || [[ "${DATABASE_URL:-}" == *"dokgijnuiahqeayctoui"* ]]; then
+  log "Overriding obsolete Supabase DATABASE_URL with local Contabo Postgres (programmitv)..."
+  export DATABASE_URL="postgresql://postgres@127.0.0.1:5432/programmitv"
+fi
 load_env CF_API_KEY
 load_env CF_API_EMAIL
 load_env CF_ACCOUNT_ID
