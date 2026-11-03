@@ -196,6 +196,16 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
     {schemas.length > 0 && <SchemaInjector {schemas} />}
 
     <!-- ═══ UniConsent CMP (Consent Management Platform) ═══════════════════ -->
+    <script is:inline>
+      window.__unic_config_v2 = {
+        company: "inTV stasera",
+        policyUrl: "https://www.intvstasera.it/privacy-policy/",
+        publisherCountryCode: "IT",
+        unic_company: "inTV stasera",
+        unic_language: "it",
+        forceLang: "it"
+      };
+    </script>
     <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="8d3a6d7837"></script>
 
     <!-- ═══ Google AdSense ═════════════════════════════════════════════════ -->

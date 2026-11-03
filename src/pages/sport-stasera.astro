@@ -126,12 +126,35 @@ const secondaSerataGroups = allSportGroups
 
 const totalSport = sportPrograms.length;
 
-const schemas = buildHubCategoryJsonLd({
-  categoryName: 'Sport',
-  categorySlug: 'sport-stasera',
-  programs: sportPrograms,
-  today,
-});
+const sportFaqs = [
+  {
+    question: "Quali eventi sportivi sono visibili gratis e in chiaro sul digitale terrestre stasera?",
+    answer: "I canali di riferimento per lo sport in chiaro in Italia sono Rai Sport HD (canale 58 DTT, con ciclismo, atletica, nuoto, basket e pallavolo), SuperTennis (canale 64 DTT, tornei ATP e WTA), TV8 (canale 8 DTT, con gare di Formula 1, MotoGP e migliori match di Europa e Conference League) e le reti generaliste come Rai 1, Canale 5 e Italia 1 per le partite della Nazionale e la Coppa Italia.",
+  },
+  {
+    question: "Come posso sapere se una gara o partita è trasmessa in diretta o in differita?",
+    answer: "Su inTV stasera indichiamo espressamente nelle schede descrittive se la trasmissione è una diretta (live), una sintesi o una replica/differita, con l'orario effettivo di fischio d'inizio o semaforo verde.",
+  },
+  {
+    question: "Dove posso rivedere gli highlight e le interviste post-partita?",
+    answer: "I programmi di approfondimento come La Domenica Sportiva (Rai 2), Pressing (Italia 1) e i notiziari sportivi continui di Rai Sport e Sportitalia sono disponibili on-demand subito dopo la messa in onda su RaiPlay e Mediaset Infinity.",
+  },
+];
+
+const sportFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: sportFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.answer,
+    },
+  })),
+};
+
+const allSchemas = [...schemas, sportFaqSchema];
 
 const title       = `Sport stasera in TV: calcio in chiaro, partite ed eventi di oggi`;
 const description = SEO_DESCRIPTIONS.sport;
@@ -142,7 +165,7 @@ const ogImage    = firstSportWithPoster?.poster_url ?? '/og/default.png';
 const ogImageAlt = firstSportWithPoster ? `${firstSportWithPoster.title} - Sport stasera in TV` : title;
 ---
 
-<HubLayout {title} {description} {keywords} canonicalPath="/sport-stasera" {schemas} {ogImage} {ogImageAlt}>
+<HubLayout {title} {description} {keywords} canonicalPath="/sport-stasera" schemas={allSchemas} {ogImage} {ogImageAlt}>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <Breadcrumb items={[
@@ -278,6 +301,74 @@ const ogImageAlt = firstSportWithPoster ? `${firstSportWithPoster.title} - Sport
         </div>
       </section>
     )}
+
+    <!-- ─── GUIDA SPORT IN TV ─── -->
+    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm leading-relaxed">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">⚽</span>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Guida allo Sport in TV: come seguire le dirette in chiaro stasera
+        </h2>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+        <p>
+          Il palinsesto sportivo italiano offre grandi appuntamenti in chiaro senza bisogno di abbonamenti a pagamento. Ecco le principali emittenti su cui sintonizzarsi per seguire le dirette e gli approfondimenti:
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-4 my-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🏆 Rai Sport HD (Ch 58)</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              La casa degli sport olimpici: atletica leggera, ciclismo (Giro d'Italia, classiche di primavera), nuoto, sci alpino, basket di Serie A e volley maschile e femminile.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🎾 SuperTennis (Ch 64)</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Il canale della Federazione Italiana Tennis: tornei del circuito WTA, Coppa Davis, tornei ATP 250 e 500, oltre ai match dei campioni italiani ed internazionali.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🏁 TV8 & Mediaset (Ch 8 & 20)</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              TV8 trasmette in chiaro le qualifiche e le gare di Formula 1 e MotoGP (in diretta o differita serale) e match di Europa League. Italia 1 e Canale 20 trasmettono in esclusiva le gare di Coppa Italia.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FAQ SPORT IN TV ─── -->
+    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="text-2xl">❓</span>
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Domande Frequenti sullo Sport di Stasera in TV
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Partite in chiaro, orari di inizio gare, canali DTT e streaming.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        {sportFaqs.map((faq) => (
+          <details class="group bg-white dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700 p-4 transition-all">
+            <summary class="flex justify-between items-center font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-pointer list-none">
+              <span>{faq.question}</span>
+              <span class="text-blue-600 dark:text-blue-400 transition-transform group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <p class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {faq.answer}
+            </p>
+          </details>
+        ))}
+      </div>
+    </section>
 
     <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-4" minHeight={200} />
 

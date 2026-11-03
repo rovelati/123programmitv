@@ -1,0 +1,205 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+
+const title = 'Contatti & Segnalazioni — inTV stasera';
+const description = 'Mettiti in contatto con la redazione di inTV stasera per segnalare variazioni nei palinsesti, richiedere rettifiche o proporre collaborazioni.';
+const canonicalPath = '/contatti/';
+
+const contactSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: title,
+  description,
+  url: 'https://www.intvstasera.it/contatti/',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'inTV stasera',
+    url: 'https://www.intvstasera.it/',
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email: 'redazione@intvstasera.it',
+        areaServed: 'IT',
+        availableLanguage: ['Italian', 'English'],
+      },
+      {
+        '@type': 'ContactPoint',
+        contactType: 'technical support',
+        email: 'segnalazioni@intvstasera.it',
+        areaServed: 'IT',
+      },
+    ],
+  },
+};
+---
+
+<HubLayout {title} {description} {canonicalPath} schemas={[contactSchema]}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Contatti' }]} />
+
+    <header class="mb-10 text-center sm:text-left">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 mb-3">
+        📬 Servizio Lettori & Redazione
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-4">
+        Contatta la Redazione di inTV stasera
+      </h1>
+      <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+        Hai notato una variazione improvvisa nel palinsesto del tuo canale preferito? Vuoi suggerire un miglioramento o inviare un comunicato stampa televisivo? Siamo a tua completa disposizione.
+      </p>
+    </header>
+
+    <div class="grid sm:grid-cols-3 gap-6 mb-12">
+      <!-- Card 1: Redazione -->
+      <div class="p-6 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xl font-bold mb-3">
+            ✍️
+          </div>
+          <h2 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Redazione & Contenuti</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+            Per proposte editoriali, segnalazione di nuovi programmi, interviste e comunicati stampa da parte delle emittenti.
+          </p>
+        </div>
+        <a href="mailto:redazione@intvstasera.it" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+          redazione@intvstasera.it →
+        </a>
+      </div>
+
+      <!-- Card 2: Segnalazioni Errori -->
+      <div class="p-6 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300 flex items-center justify-center text-xl font-bold mb-3">
+            ⚡
+          </div>
+          <h2 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Cambi di Palinsesto</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+            Un programma è stato anticipato o cancellato all'ultimo minuto? Segnalacelo per consentirci di aggiornare la guida in tempo reale.
+          </p>
+        </div>
+        <a href="mailto:segnalazioni@intvstasera.it" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
+          segnalazioni@intvstasera.it →
+        </a>
+      </div>
+
+      <!-- Card 3: Ufficio Stampa & Privacy -->
+      <div class="p-6 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-xl font-bold mb-3">
+            🛡️
+          </div>
+          <h2 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Info Generali & Privacy</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+            Per questioni legali, richieste relative al trattamento dati GDPR e informazioni di carattere generale sul portale.
+          </p>
+        </div>
+        <a href="mailto:info@intvstasera.it" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+          info@intvstasera.it →
+        </a>
+      </div>
+    </div>
+
+    <!-- Modulo di Contatto Diretto -->
+    <section class="bg-white dark:bg-slate-800/60 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm mb-12">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+        Invia un messaggio alla redazione
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6">
+        I campi contrassegnati con l'asterisco sono obbligatori. Rispondiamo normalmente entro 24-48 ore lavorative.
+      </p>
+
+      <form class="space-y-4" onsubmit="event.preventDefault(); alert('Grazie per il tuo messaggio! La redazione ti risponderà al più presto.'); this.reset();">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nome e Cognome *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              placeholder="Es. Mario Rossi"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Indirizzo Email *</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="es. mario.rossi@example.com"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="subject" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Oggetto della richiesta *</label>
+          <select
+            id="subject"
+            name="subject"
+            required
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="cambio-palinsesto">Segnalazione variazione / orario errato</option>
+            <option value="collaborazione">Proposta editoriale o comunicato stampa</option>
+            <option value="suggerimento">Suggerimento tecnico o nuova funzionalità</option>
+            <option value="privacy">Richiesta privacy / GDPR</option>
+            <option value="altro">Altro</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="message" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Messaggio *</label>
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            required
+            placeholder="Scrivi qui il tuo messaggio, specificando canale, data e orario se si tratta di una segnalazione palinsesto..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+
+        <div class="flex items-start gap-2 pt-2">
+          <input
+            type="checkbox"
+            id="privacy"
+            name="privacy"
+            required
+            class="mt-1 rounded text-blue-600 focus:ring-blue-500"
+          />
+          <label for="privacy" class="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+            Ho letto e accetto l'<a href="/privacy-policy/" class="text-blue-600 hover:underline">Informativa sulla Privacy</a>. I dati inviati saranno utilizzati esclusivamente per rispondere alla richiesta.
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-colors cursor-pointer"
+        >
+          Invia Messaggio →
+        </button>
+      </form>
+    </section>
+
+    <!-- FAQ Utili -->
+    <section class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-600 dark:text-slate-400 space-y-3">
+      <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm">Domande frequenti per il supporto:</h3>
+      <p>
+        <strong>1. Quanto tempo impiega la guida ad aggiornarsi dopo un cambio palinsesto?</strong><br />
+        Il nostro sistema ricalcola i dati EPG ogni 60 minuti. Se l'emittente comunica la variazione con sufficiente anticipo, la scheda del programma viene aggiornata nel giro di un'ora.
+      </p>
+      <p>
+        <strong>2. Posso rivedere un programma trasmesso ieri?</strong><br />
+        inTV stasera è una guida televisiva informativa e non trasmette video in streaming diretto. Trovi i link e le indicazioni ufficiali per RaiPlay, Mediaset Infinity, Discovery+ e NOW all'interno delle nostre guide editoriali.
+      </p>
+    </section>
+
+  </div>
+</HubLayout>

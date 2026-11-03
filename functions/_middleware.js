@@ -20,6 +20,16 @@ export async function onRequest(context) {
 
   const { pathname } = url;
 
+  // Aliases for English AdSense / standard crawlers
+  if (pathname === '/about' || pathname === '/about/') {
+    url.pathname = '/chi-siamo/';
+    return Response.redirect(url.toString(), 301);
+  }
+  if (pathname === '/contact' || pathname === '/contact/') {
+    url.pathname = '/contatti/';
+    return Response.redirect(url.toString(), 301);
+  }
+
   const legacyMatch = pathname.match(LEGACY_CHANNEL_PATH);
   if (legacyMatch) {
     const [, canale, slot] = legacyMatch;

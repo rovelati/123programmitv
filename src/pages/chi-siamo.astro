@@ -1,0 +1,167 @@
+---
+export const prerender = true;
+
+import HubLayout from '../layouts/HubLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+
+const title = 'Chi Siamo & Linea Editoriale — inTV stasera';
+const description = 'Scopri chi siamo, la nostra missione e i criteri editoriali con cui la redazione di inTV stasera analizza, seleziona e aggiorna i palinsesti della televisione italiana.';
+const canonicalPath = '/chi-siamo/';
+
+const aboutSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: title,
+  description,
+  url: 'https://www.intvstasera.it/chi-siamo/',
+  publisher: {
+    '@type': 'Organization',
+    name: 'inTV stasera',
+    url: 'https://www.intvstasera.it/',
+    logo: 'https://www.intvstasera.it/favicon.svg',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'redazione@intvstasera.it',
+      contactType: 'editorial',
+      areaServed: 'IT',
+      availableLanguage: 'Italian',
+    },
+  },
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'inTV stasera',
+    description: 'Guida indipendente ai programmi della prima serata e della televisione digitale terrestre e satellitare in Italia.',
+    foundingDate: '2024',
+    knowsAbout: [
+      'Televisione Italiana',
+      'Palinsesti Digitale Terrestre',
+      'Cinema in TV',
+      'Serie TV e Fiction',
+      'Sport in TV',
+    ],
+  },
+};
+---
+
+<HubLayout {title} {description} {canonicalPath} schemas={[aboutSchema]}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Chi Siamo' }]} />
+
+    <header class="mb-10 text-center sm:text-left">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 mb-3">
+        🛡️ Trasparenza & E-E-A-T
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-4">
+        Chi Siamo: la guida TV pensata per chi guarda la prima serata
+      </h1>
+      <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+        <strong>inTV stasera</strong> nasce con un obiettivo preciso: liberare il telespettatore dalla confusione di palinsesti dispersivi e carichi di pubblicità invasiva, offrendo una guida rapida, affidabile e curata per scegliere cosa guardare stasera in TV in meno di 30 secondi.
+      </p>
+    </header>
+
+    <div class="space-y-10 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+
+      <!-- Sezione 1: La Nostra Missione -->
+      <section class="bg-white dark:bg-slate-800/60 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+          <span>🎯</span> La Nostra Missione
+        </h2>
+        <p class="mb-4">
+          La televisione lineare italiana comprende oltre 50 canali nazionali gratuiti sul digitale terrestre, affiancati da canali satellitari e piattaforme on-demand. Tuttavia, individuare l'orario reale di inizio di un film o l'episodio esatto di una serie TV è spesso frustrante a causa delle continue variazioni dell'access prime time (i programmi tra il telegiornale e la prima serata).
+        </p>
+        <p>
+          Il nostro impegno quotidiano è fornire <strong>orari corretti, trame chiare e schede prive di ambiguità</strong>, consentendo agli appassionati di cinema, serie TV, informazione e sport di orientarsi subito tra le reti Rai, Mediaset, Discovery/Warner, Cairo Communication e canali tematici.
+        </p>
+      </section>
+
+      <!-- Sezione 2: Metodologia di Raccolta e Aggiornamento Dati -->
+      <section class="bg-white dark:bg-slate-800/60 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+          <span>⚙️</span> Come Lavoriamo: Dati EPG e Verifica Continua
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-4 mb-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Aggiornamento Orario Continuo</h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+              I flussi informativi EPG vengono sincronizzati e ricalcolati più volte al giorno per recepire slittamenti, edizioni straordinarie dei telegiornali o cambi di palinsesto dell'ultimo minuto.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Normalizzazione e Riconoscimento Trame</h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+              Ogni programma viene analizzato da algoritmi proprietari e validato dalla redazione per distinguere correttamente film, prime TV, repliche, edizioni di serie e partite sportive in diretta.
+            </p>
+          </div>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          *Nota sui palinsesti: in caso di edizioni speciali dei notiziari o eventi straordinari, gli orari effettivi di messa in onda possono subire lievi variazioni decise in tempo reale dalle emittenti.
+        </p>
+      </section>
+
+      <!-- Sezione 3: La Redazione e i Referenti Editoriali -->
+      <section class="bg-white dark:bg-slate-800/60 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+          <span>👥</span> Team e Referenti Editoriali
+        </h2>
+        <p class="mb-6">
+          Il nostro team è composto da appassionati ed esperti di media, con competenze multidisciplinari nel settore televisivo, cinematografico e dello sviluppo web:
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 font-black text-lg flex items-center justify-center mx-auto mb-2">
+              DM
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm">Davide Morabito</h3>
+            <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1">Caporedattore Palinsesti & Cinema</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Cura le selezioni dei film imperdibili della serata e l'accuratezza delle sinossi cinematografiche.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+            <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 font-black text-lg flex items-center justify-center mx-auto mb-2">
+              EB
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm">Elena Brambilla</h3>
+            <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold mb-1">Serie TV & Fiction</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Specializzata nella cronologia delle stagioni, uscite internazionali e disponibilità streaming on-demand.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-center">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 font-black text-lg flex items-center justify-center mx-auto mb-2">
+              MV
+            </div>
+            <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm">Marco Valenti</h3>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mb-1">Sport & Grandi Eventi</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Segue la programmazione delle dirette sportive, anticipi calcistici, motori, ciclismo e tennis in chiaro.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sezione 4: Indipendenza, Pubblicità e Trasparenza -->
+      <section class="bg-white dark:bg-slate-800/60 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+          <span>⚖️</span> Indipendenza Editoriale & Pubblicità Trasparente
+        </h2>
+        <p class="mb-3">
+          <strong>inTV stasera</strong> è una testata editoriale online indipendente: non appartiene a nessun gruppo radiotelevisivo (né Rai, né Mediaset, né Sky, né Warner Bros. Discovery). I giudizi e i consigli di visione espressi nelle nostre guide sono guidati unicamente dall'interesse e dal tempo dei nostri lettori.
+        </p>
+        <p class="mb-3">
+          Il portale si sostiene esclusivamente attraverso formati pubblicitari trasparenti e conformi alle norme IAB e GDPR (gestiti tramite Consent Management Platform certificata). Non raccogliamo dati personali per profilazioni opache e rispettiamo scrupolosamente la privacy dei visitatori.
+        </p>
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-wrap gap-4 text-xs font-semibold">
+          <a href="/privacy-policy/" class="text-blue-600 hover:underline">Informativa Privacy →</a>
+          <a href="/cookie-policy/" class="text-blue-600 hover:underline">Cookie Policy →</a>
+          <a href="/termini-e-condizioni/" class="text-blue-600 hover:underline">Termini e Condizioni d'Uso →</a>
+          <a href="/contatti/" class="text-blue-600 hover:underline">Scrivi alla Redazione →</a>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</HubLayout>
