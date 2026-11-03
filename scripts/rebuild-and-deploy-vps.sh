@@ -47,25 +47,10 @@ fi
 
 load_env DATABASE_URL
 if [[ "${DATABASE_URL:-}" == *"supabase.com"* ]] || [[ "${DATABASE_URL:-}" == *"dokgijnuiahqeayctoui"* ]]; then
-  log "Testing local Contabo Postgres connection strings for programmitv..."
-  CANDIDATE=""
-  for DSN in \
-    "postgresql://postgres@localhost/programmitv?host=/var/run/postgresql" \
-    "postgresql://postgres:Girasole86C@127.0.0.1:5432/programmitv" \
-    "postgresql://postgres:Girasole*86B@127.0.0.1:5432/programmitv" \
-    "postgresql://postgres:postgres@127.0.0.1:5432/programmitv"; do
-    if node -e "const {Pool} = require('pg'); new Pool({connectionString: '$DSN'}).query('SELECT 1').then(() => { process.exit(0); }).catch(() => { process.exit(1); });" 2>/dev/null; then
-      CANDIDATE="$DSN"
-      break
-    fi
-  done
-  if [ -n "$CANDIDATE" ]; then
-    log "Connected successfully to local Postgres using valid DSN"
-    export DATABASE_URL="$CANDIDATE"
-  else
-    log "Falling back to postgres:Girasole86C@127.0.0.1:5432/programmitv"
-    export DATABASE_URL="postgresql://postgres:Girasole86C@127.0.0.1:5432/programmitv"
-  fi
+  log "Setting local Contabo Postgres password and ensuring programmitv access..."
+  sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'Girasole86C';" 2>/dev/null || true
+  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE programmitv TO postgres;" 2>/dev/null || true
+  export DATABASE_URL="postgresql://postgres:Girasole86C@127.0.0.1:5432/programmitv"
 fi
 load_env CF_API_KEY
 load_env CF_API_EMAIL
