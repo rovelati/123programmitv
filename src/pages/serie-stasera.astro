@@ -135,6 +135,13 @@ const serieFaqSchema = {
   })),
 };
 
+const schemas = buildHubCategoryJsonLd({
+  categoryName: 'Serie TV',
+  categorySlug: 'serie-stasera',
+  programs: seriePrograms,
+  today,
+});
+
 const allSchemas = [...schemas, serieFaqSchema];
 
 const title       = `Serie TV stasera: episodi e fiction di oggi in TV`;

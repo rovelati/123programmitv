@@ -172,6 +172,13 @@ const filmFaqSchema = {
   })),
 };
 
+const schemas = buildHubCategoryJsonLd({
+  categoryName: 'Film',
+  categorySlug: 'film-stasera',
+  programs: filmPrograms,
+  today,
+});
+
 const allSchemas = [...schemas, filmFaqSchema];
 
 const title       = `Film stasera in TV: tutti i film di prima e seconda serata di oggi`;

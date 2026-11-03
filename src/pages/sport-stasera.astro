@@ -154,6 +154,13 @@ const sportFaqSchema = {
   })),
 };
 
+const schemas = buildHubCategoryJsonLd({
+  categoryName: 'Sport',
+  categorySlug: 'sport-stasera',
+  programs: sportPrograms,
+  today,
+});
+
 const allSchemas = [...schemas, sportFaqSchema];
 
 const title       = `Sport stasera in TV: calcio in chiaro, partite ed eventi di oggi`;
