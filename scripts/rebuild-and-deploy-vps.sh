@@ -34,6 +34,8 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
+git config --global --add safe.directory "$ASTRO_DIR" 2>/dev/null || true
+
 if [ -d .git ]; then
   log "Fetching latest code from git..."
   git fetch origin main
