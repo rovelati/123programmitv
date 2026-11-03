@@ -55,6 +55,9 @@ fi
 load_env CF_API_KEY
 load_env CF_API_EMAIL
 load_env CF_ACCOUNT_ID
+export CF_API_KEY="${CF_API_KEY:-9578b8b72ddb8947067606c42533c784203b6}"
+export CF_API_EMAIL="${CF_API_EMAIL:-romolo.velati@gmail.com}"
+export CF_ACCOUNT_ID="${CF_ACCOUNT_ID:-383050c9ba92a1ab1144bc18d44f586c}"
 load_env GOOGLE_SA_KEY_FILE
 load_env GOOGLE_SA_KEY_JSON
 export SITE_URL="https://www.intvstasera.it"
