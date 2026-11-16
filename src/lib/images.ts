@@ -78,17 +78,21 @@ export const FALLBACK_POOLS = {
     'https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=1280&q=80'  // Movie projector
   ],
 
-  // Serie TV / Fiction
+  // Serie TV / Fiction (Brand-free cinematography & home theatre screens)
   series: [
-    'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=1280&q=80', // Living room TV screen
-    'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1280&q=80'  // Streaming cinema screen
+    'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1280&q=80', // Modern TV display in minimalist living room (no brand logo)
+    'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1280&q=80', // Movie film camera & clapperboard
+    'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1280&q=80'  // Cinematic film screen
   ],
 
-  // Documentari / Natura / Storia
+  // Documentari / Viaggi / Natura / Storia / Bellezze del mondo
   documentary: [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80', // Majestic mountain valley & lake
+    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1280&q=80', // Scenic travel road trip & nature
+    'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1280&q=80', // World travels & discovery
     'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1280&q=80', // Wilderness landscape
     'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1280&q=80', // Coast ocean
-    'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1280&q=80'  // Historical ruins / culture
+    'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1280&q=80'  // Historical ruins & architecture
   ],
 
   // Talk Show / Intrattenimento / Varietà
@@ -117,6 +121,11 @@ export const FALLBACK_POOLS = {
 
 /** Programmi TV italiani iconici con foto dedicate HD */
 export const POPULAR_ITALIAN_SHOWS: Record<string, string> = {
+  // Documentari e viaggi italiani
+  'emozioni dal mondo': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80',
+  'mangiare con gusto': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
+  'l ingrediente perfetto': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
+  'casa alice': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
   'affari tuoi': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
   'la ruota della fortuna': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
   'l eredita': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
@@ -253,7 +262,8 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
 export function getFallbackImage(p: ProgramLike): string {
   const t = (p.title || '').toLowerCase().trim();
   const c = (p.category || '').toLowerCase().trim();
-  const fullText = `${t} ${c}`;
+  const d = (p.description || '').toLowerCase().trim();
+  const fullText = `${t} ${c} ${d}`;
 
   // 1. Meteo
   if (fullText.includes('meteo') || fullText.includes('previsioni') || fullText.includes('che tempo fa')) {
@@ -306,19 +316,23 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.sports_general, p);
   }
 
-  // 9. Film / Cinema
+  // 9. Documentari / Natura / Viaggi / Scienza / Cultura
+  if (
+    fullText.includes('doc') || fullText.includes('documentario') || fullText.includes('documentari') ||
+    fullText.includes('viaggi') || fullText.includes('viaggio') || fullText.includes('emozioni dal mondo') ||
+    fullText.includes('storia') || fullText.includes('natura') || fullText.includes('scienza') || fullText.includes('reportage')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.documentary, p);
+  }
+
+  // 10. Film / Cinema
   if (fullText.includes('film') || fullText.includes('cinema') || fullText.includes('commedia') || fullText.includes('thriller') || fullText.includes('drammatico')) {
     return pickFromPool(FALLBACK_POOLS.movies, p);
   }
 
-  // 10. Serie TV / Fiction
-  if (fullText.includes('serie') || fullText.includes('fiction') || fullText.includes('sitcom') || fullText.includes('soap') || fullText.includes('telenovela') || fullText.includes('poliziesco')) {
-    return pickFromPool(FALLBACK_POOLS.series, p);
-  }
-
-  // 11. Documentari / Natura / Scienza
-  if (fullText.includes('doc') || fullText.includes('documentario') || fullText.includes('storia') || fullText.includes('natura') || fullText.includes('scienza') || fullText.includes('reportage')) {
-    return pickFromPool(FALLBACK_POOLS.documentary, p);
+  // 11. Cucina / Food / Cooking
+  if (fullText.includes('cucina') || fullText.includes('chef') || fullText.includes('ricette') || fullText.includes('cooking') || fullText.includes('food') || fullText.includes('mangiare con gusto')) {
+    return pickFromPool(FALLBACK_POOLS.cooking, p);
   }
 
   // 12. Show / Varietà
@@ -326,9 +340,9 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.talkshow, p);
   }
 
-  // 13. Cucina
-  if (fullText.includes('cucina') || fullText.includes('chef') || fullText.includes('ricette') || fullText.includes('cooking') || fullText.includes('food')) {
-    return pickFromPool(FALLBACK_POOLS.cooking, p);
+  // 13. Serie TV / Fiction
+  if (fullText.includes('serie') || fullText.includes('fiction') || fullText.includes('sitcom') || fullText.includes('soap') || fullText.includes('telenovela') || fullText.includes('poliziesco')) {
+    return pickFromPool(FALLBACK_POOLS.series, p);
   }
 
   // 14. Shopping

@@ -50,18 +50,20 @@ const remainingMins = Math.max(0, Math.round((endMs - nowMs) / 60000));
 // Category normalization for client-side filtering
 const titleLower = (program.title || '').toLowerCase().trim();
 const catLower = (program.category || '').toLowerCase().trim();
+const descLower = (program.description || '').toLowerCase().trim();
+const allText = `${titleLower} ${catLower} ${descLower}`;
 
 let normCat = 'general';
-if (catLower.includes('film') || catLower.includes('cinema') || catLower.includes('commedia') || catLower.includes('thriller') || catLower.includes('drammatico')) {
+if (catLower.includes('film') || catLower.includes('cinema') || catLower.includes('commedia') || catLower.includes('thriller') || catLower.includes('drammatico') || catLower.includes('spielfilm')) {
   normCat = 'film';
+} else if (allText.includes('doc') || allText.includes('documentario') || allText.includes('documentari') || allText.includes('cultura') || allText.includes('natura') || allText.includes('storia') || allText.includes('viaggi') || allText.includes('emozioni dal mondo')) {
+  normCat = 'dok';
 } else if (catLower.includes('serie') || catLower.includes('fiction') || catLower.includes('sitcom') || catLower.includes('soap') || catLower.includes('telenovela')) {
   normCat = 'serie';
 } else if (catLower.includes('sport') || catLower.includes('calcio') || catLower.includes('tennis') || catLower.includes('motori') || catLower.includes('basket')) {
   normCat = 'sport';
-} else if (catLower.includes('notizie') || catLower.includes('tg') || catLower.includes('telegiornale') || catLower.includes('informazione') || catLower.includes('attualità') || catLower.includes('meteo')) {
+} else if (catLower.includes('notizie') || catLower.includes('tg') || catLower.includes('telegiornale') || catLower.includes('informazione') || catLower.includes('attualità') || catLower.includes('meteo') || catLower.includes('nachrichten')) {
   normCat = 'news';
-} else if (catLower.includes('doc') || catLower.includes('documentario') || catLower.includes('cultura') || catLower.includes('natura') || catLower.includes('storia')) {
-  normCat = 'dok';
 }
 
 const channelPageUrl = `/${program.channel_id}/`;
