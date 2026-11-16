@@ -319,24 +319,26 @@ export function getFallbackImage(p: ProgramLike): string {
   // 9. Documentari / Natura / Viaggi / Scienza / Cultura
   if (
     fullText.includes('doc') || fullText.includes('documentario') || fullText.includes('documentari') ||
-    fullText.includes('viaggi') || fullText.includes('viaggio') || fullText.includes('emozioni dal mondo') ||
-    fullText.includes('storia') || fullText.includes('natura') || fullText.includes('scienza') || fullText.includes('reportage')
+    fullText.includes('dokumentation') || fullText.includes('wissenschaft') ||
+    fullText.includes('viaggi') || fullText.includes('viaggio') || fullText.includes('reise') ||
+    fullText.includes('emozioni dal mondo') || fullText.includes('storia') || fullText.includes('natura') ||
+    fullText.includes('scienza') || fullText.includes('reportage')
   ) {
     return pickFromPool(FALLBACK_POOLS.documentary, p);
   }
 
-  // 10. Film / Cinema
-  if (fullText.includes('film') || fullText.includes('cinema') || fullText.includes('commedia') || fullText.includes('thriller') || fullText.includes('drammatico')) {
-    return pickFromPool(FALLBACK_POOLS.movies, p);
-  }
-
-  // 11. Cucina / Food / Cooking
-  if (fullText.includes('cucina') || fullText.includes('chef') || fullText.includes('ricette') || fullText.includes('cooking') || fullText.includes('food') || fullText.includes('mangiare con gusto')) {
+  // 10. Cucina / Food / Cooking
+  if (fullText.includes('cucina') || fullText.includes('kochen') || fullText.includes('chef') || fullText.includes('ricette') || fullText.includes('cooking') || fullText.includes('food') || fullText.includes('mangiare con gusto')) {
     return pickFromPool(FALLBACK_POOLS.cooking, p);
   }
 
-  // 12. Show / Varietà
-  if (fullText.includes('show') || fullText.includes('varietà') || fullText.includes('intrattenimento') || fullText.includes('talk') || fullText.includes('quiz') || fullText.includes('game show') || fullText.includes('reality')) {
+  // 11. Film / Cinema
+  if (fullText.includes('film') || fullText.includes('cinema') || fullText.includes('commedia') || fullText.includes('thriller') || fullText.includes('drammatico') || fullText.includes('spielfilm')) {
+    return pickFromPool(FALLBACK_POOLS.movies, p);
+  }
+
+  // 12. Show / Varietà / Intrattenimento
+  if (fullText.includes('show') || fullText.includes('varietà') || fullText.includes('intrattenimento') || fullText.includes('unterhaltung') || fullText.includes('talk') || fullText.includes('quiz') || fullText.includes('game show') || fullText.includes('reality')) {
     return pickFromPool(FALLBACK_POOLS.talkshow, p);
   }
 
