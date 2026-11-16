@@ -130,7 +130,9 @@ interface RawProgram {
   end_time: string | Date;
   date: string | Date;
   genre: string | null;
+  rating?: string | number | null;
   poster_url: string | null;
+  backdrop_url?: string | null;
   indexable: boolean | null;
 }
 
@@ -194,6 +196,9 @@ function mapProgram(raw: RawProgram): Program {
     description: raw.description ?? '',
     slug: raw.slug ?? undefined,
     poster_url: finalPoster,
+    backdrop_url: raw.backdrop_url ? resolvePosterUrl(raw.backdrop_url) : null,
+    rating: raw.rating ?? null,
+    imdb_rating: raw.rating ?? null,
     indexable: raw.indexable ?? false,
     channel_id: raw.channel_id,
   };
@@ -225,7 +230,9 @@ export async function fetchProgramsForDate(date: string, channelId?: string): Pr
         end_time,
         date,
         genre,
+        rating,
         poster_url,
+        backdrop_url,
         indexable
       FROM programs
       WHERE date = $1
@@ -259,7 +266,9 @@ export async function fetchProgramBySlug(channelId: string, slug: string): Promi
       end_time,
       date,
       genre,
+      rating,
       poster_url,
+      backdrop_url,
       indexable
     FROM programs
     WHERE channel_id = $1 AND slug = $2
@@ -285,4 +294,221 @@ export async function fetchIndexableFilms(sinceHours = 24): Promise<{ channel_id
     LIMIT 200
   `, [since]);
   return rows;
+}
+
+export interface SlotCardData {
+  id: string;
+  channel_id: string;
+  channel_name: string;
+  channel_logo: string;
+  channel_number: number;
+  channel_stream?: string;
+  stream_label?: string;
+  title: string;
+  sub_title?: string;
+  description?: string;
+  category?: string;
+  start_time: string;
+  end_time: string;
+  poster_url?: string | null;
+  backdrop_url?: string | null;
+  rating?: number | string | null;
+  next_title?: string;
+  next_time?: string;
+  slot: 'live' | 'morning' | 'prime' | 'late';
+}
+
+/**
+ * Calcola tutte le card per tutte le fasce (live, morning, prime, late)
+ * per consentire il filtraggio client-side fluido senza ricaricamento.
+ */
+export function buildAllSlotCards(channels: Channel[], programs: Program[]): SlotCardData[] {
+  const cards: SlotCardData[] = [];
+  const nowMs = Date.now();
+
+  // Mappa programmi per canale
+  const progsByChannel = new Map<string, Program[]>();
+  for (const p of programs) {
+    const list = progsByChannel.get(p.channel_id || '') || [];
+    list.push(p);
+    progsByChannel.set(p.channel_id || '', list);
+  }
+
+  // Ordina programmi per start_time
+  for (const list of progsByChannel.values()) {
+    list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }
+
+  // 1. LIVE CARDS
+  for (const ch of channels) {
+    const chProgs = progsByChannel.get(ch.id);
+    if (!chProgs || chProgs.length === 0) continue;
+
+    let currentIdx = chProgs.findIndex(p => {
+      const s = new Date(p.startTime).getTime();
+      const e = new Date(p.endTime).getTime();
+      return nowMs >= s && nowMs < e;
+    });
+
+    if (currentIdx === -1) {
+      currentIdx = chProgs.findIndex(p => new Date(p.startTime).getTime() > nowMs);
+    }
+    if (currentIdx === -1) {
+      currentIdx = chProgs.length - 1;
+    }
+
+    const currentProg = chProgs[currentIdx];
+    const nextProg = currentIdx + 1 < chProgs.length ? chProgs[currentIdx + 1] : undefined;
+    const nextTimeStr = nextProg
+      ? new Date(nextProg.startTime).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+      : '';
+
+    cards.push({
+      id: currentProg.id,
+      channel_id: ch.id,
+      channel_name: ch.name,
+      channel_logo: ch.logo,
+      channel_number: ch.number,
+      title: currentProg.title,
+      description: currentProg.description,
+      category: currentProg.category,
+      start_time: currentProg.startTime,
+      end_time: currentProg.endTime,
+      poster_url: currentProg.poster_url,
+      backdrop_url: currentProg.backdrop_url,
+      rating: currentProg.rating,
+      next_title: nextProg ? nextProg.title : undefined,
+      next_time: nextTimeStr,
+      slot: 'live'
+    });
+  }
+
+  // 2. PRIME TIME CARDS (21:00 - 21:45 in Italia)
+  for (const ch of channels) {
+    const chProgs = progsByChannel.get(ch.id);
+    if (!chProgs || chProgs.length === 0) continue;
+
+    let primeProg = chProgs.find(p => {
+      const d = new Date(p.startTime);
+      const hours = (d.getUTCHours() + 1) % 24; // Europe/Rome
+      const mins = d.getUTCMinutes();
+      const timeNum = hours * 60 + mins;
+      return timeNum >= 20 * 60 + 30 && timeNum <= 22 * 60; // 20:30 - 22:00
+    });
+
+    if (!primeProg) {
+      primeProg = chProgs.find(p => {
+        const d = new Date(p.startTime);
+        const hours = (d.getUTCHours() + 1) % 24;
+        return hours >= 20 && hours <= 23;
+      });
+    }
+
+    if (primeProg) {
+      const pIdx = chProgs.findIndex(p => p.id === primeProg!.id);
+      const nextProg = pIdx !== -1 && pIdx + 1 < chProgs.length ? chProgs[pIdx + 1] : undefined;
+      const nextTimeStr = nextProg
+        ? new Date(nextProg.startTime).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+        : '';
+
+      cards.push({
+        id: primeProg.id,
+        channel_id: ch.id,
+        channel_name: ch.name,
+        channel_logo: ch.logo,
+        channel_number: ch.number,
+        title: primeProg.title,
+        description: primeProg.description,
+        category: primeProg.category,
+        start_time: primeProg.startTime,
+        end_time: primeProg.endTime,
+        poster_url: primeProg.poster_url,
+        backdrop_url: primeProg.backdrop_url,
+        rating: primeProg.rating,
+        next_title: nextProg ? nextProg.title : undefined,
+        next_time: nextTimeStr,
+        slot: 'prime'
+      });
+    }
+  }
+
+  // 3. MORNING CARDS (06:00 - 12:00)
+  for (const ch of channels) {
+    const chProgs = progsByChannel.get(ch.id);
+    if (!chProgs || chProgs.length === 0) continue;
+
+    const mornProg = chProgs.find(p => {
+      const d = new Date(p.startTime);
+      const hours = (d.getUTCHours() + 1) % 24;
+      return hours >= 6 && hours < 12;
+    });
+
+    if (mornProg) {
+      const pIdx = chProgs.findIndex(p => p.id === mornProg.id);
+      const nextProg = pIdx !== -1 && pIdx + 1 < chProgs.length ? chProgs[pIdx + 1] : undefined;
+      const nextTimeStr = nextProg
+        ? new Date(nextProg.startTime).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+        : '';
+
+      cards.push({
+        id: mornProg.id,
+        channel_id: ch.id,
+        channel_name: ch.name,
+        channel_logo: ch.logo,
+        channel_number: ch.number,
+        title: mornProg.title,
+        description: mornProg.description,
+        category: mornProg.category,
+        start_time: mornProg.startTime,
+        end_time: mornProg.endTime,
+        poster_url: mornProg.poster_url,
+        backdrop_url: mornProg.backdrop_url,
+        rating: mornProg.rating,
+        next_title: nextProg ? nextProg.title : undefined,
+        next_time: nextTimeStr,
+        slot: 'morning'
+      });
+    }
+  }
+
+  // 4. LATE NIGHT CARDS (dalle 22:30 in poi)
+  for (const ch of channels) {
+    const chProgs = progsByChannel.get(ch.id);
+    if (!chProgs || chProgs.length === 0) continue;
+
+    const lateProg = chProgs.find(p => {
+      const d = new Date(p.startTime);
+      const hours = (d.getUTCHours() + 1) % 24;
+      return hours >= 22 || hours < 2;
+    });
+
+    if (lateProg) {
+      const pIdx = chProgs.findIndex(p => p.id === lateProg.id);
+      const nextProg = pIdx !== -1 && pIdx + 1 < chProgs.length ? chProgs[pIdx + 1] : undefined;
+      const nextTimeStr = nextProg
+        ? new Date(nextProg.startTime).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+        : '';
+
+      cards.push({
+        id: lateProg.id,
+        channel_id: ch.id,
+        channel_name: ch.name,
+        channel_logo: ch.logo,
+        channel_number: ch.number,
+        title: lateProg.title,
+        description: lateProg.description,
+        category: lateProg.category,
+        start_time: lateProg.startTime,
+        end_time: lateProg.endTime,
+        poster_url: lateProg.poster_url,
+        backdrop_url: lateProg.backdrop_url,
+        rating: lateProg.rating,
+        next_title: nextProg ? nextProg.title : undefined,
+        next_time: nextTimeStr,
+        slot: 'late'
+      });
+    }
+  }
+
+  return cards;
 }

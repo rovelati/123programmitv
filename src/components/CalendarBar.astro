@@ -1,0 +1,103 @@
+---
+interface Props {
+  activeSlot?: 'live' | 'morning' | 'prime' | 'late';
+}
+
+const { activeSlot = 'prime' } = Astro.props;
+
+const labels = {
+  prime: '⭐ 20:30 Stasera',
+  live: '🔴 In onda adesso',
+  morning: '🌅 Mattina',
+  late: '🌙 22:00 Notte',
+  filterAll: 'Tutti i canali',
+  movies: '🎬 Film',
+  series: '📺 Serie TV',
+  sports: '⚽ Sport',
+  news: '📰 News & TG'
+};
+---
+
+<div class="border-t border-gray-800/60 bg-[#0B0F19]/95 backdrop-blur-md border-b border-gray-800/80 px-3 sm:px-6 py-1.5 sm:py-2 overflow-x-auto scrollbar-none shadow-md">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-6 min-w-max">
+    
+    <!-- Time Slot Buttons: Stasera | In onda | Mattina | 22:00 -->
+    <div class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold" id="slot-button-group">
+      <button
+        type="button"
+        class={`time-slot-btn px-3 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${activeSlot === 'prime' ? 'bg-[#DA291C] text-white shadow-lg shadow-red-900/40 font-black scale-[1.02]' : 'bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60'}`}
+        data-slot="prime"
+        aria-label={labels.prime}
+      >
+        <span>{labels.prime}</span>
+      </button>
+
+      <button
+        type="button"
+        class={`time-slot-btn px-3 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${activeSlot === 'live' ? 'bg-[#DA291C] text-white shadow-lg shadow-red-900/40 font-black scale-[1.02]' : 'bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60'}`}
+        data-slot="live"
+        aria-label={labels.live}
+      >
+        <span>{labels.live}</span>
+      </button>
+
+      <button
+        type="button"
+        class={`time-slot-btn px-3 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${activeSlot === 'morning' ? 'bg-[#DA291C] text-white shadow-lg shadow-red-900/40 font-black scale-[1.02]' : 'bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60'}`}
+        data-slot="morning"
+        aria-label={labels.morning}
+      >
+        <span>{labels.morning}</span>
+      </button>
+
+      <button
+        type="button"
+        class={`time-slot-btn px-3 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${activeSlot === 'late' ? 'bg-[#DA291C] text-white shadow-lg shadow-red-900/40 font-black scale-[1.02]' : 'bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60'}`}
+        data-slot="late"
+        aria-label={labels.late}
+      >
+        <span>{labels.late}</span>
+      </button>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="flex items-center gap-1 sm:gap-1.5 text-xs font-medium" id="cat-button-group">
+      <button
+        type="button"
+        class="cat-filter-btn px-3 py-1.5 rounded-xl bg-gray-800 text-white font-bold border border-gray-700 cursor-pointer transition-colors"
+        data-cat="all"
+      >
+        {labels.filterAll}
+      </button>
+      <button
+        type="button"
+        class="cat-filter-btn px-3 py-1.5 rounded-xl bg-gray-900/80 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-transparent cursor-pointer transition-colors"
+        data-cat="film"
+      >
+        {labels.movies}
+      </button>
+      <button
+        type="button"
+        class="cat-filter-btn px-3 py-1.5 rounded-xl bg-gray-900/80 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-transparent cursor-pointer transition-colors"
+        data-cat="serie"
+      >
+        {labels.series}
+      </button>
+      <button
+        type="button"
+        class="cat-filter-btn px-3 py-1.5 rounded-xl bg-gray-900/80 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-transparent cursor-pointer transition-colors"
+        data-cat="sport"
+      >
+        {labels.sports}
+      </button>
+      <button
+        type="button"
+        class="cat-filter-btn px-3 py-1.5 rounded-xl bg-gray-900/80 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-transparent cursor-pointer transition-colors"
+        data-cat="news"
+      >
+        {labels.news}
+      </button>
+    </div>
+
+  </div>
+</div>

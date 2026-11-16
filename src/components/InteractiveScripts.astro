@@ -1,0 +1,248 @@
+---
+interface Props {
+  defaultSlot?: 'live' | 'morning' | 'prime' | 'late';
+}
+
+const { defaultSlot = 'prime' } = Astro.props;
+
+const toastMsg = 'Promemoria attivato! Riceverai una notifica prima dell’inizio.';
+---
+
+<!-- Floating Toast Notification -->
+<div id="toast-notify" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-gray-900 border border-red-500/50 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3">
+  <div class="w-8 h-8 rounded-full bg-[#DA291C] flex items-center justify-center shrink-0">
+    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+  <div>
+    <h4 id="toast-title" class="text-xs font-black uppercase text-red-400">Promemoria</h4>
+    <p id="toast-body" class="text-sm font-medium text-gray-200">{toastMsg}</p>
+  </div>
+</div>
+
+<script is:inline define:vars={{ toastMsg, defaultSlot }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    var activeSlot = defaultSlot || 'prime';
+    var activeCat = 'all';
+
+    var currentPath = window.location.pathname;
+    var isOra = currentPath === '/ora' || currentPath === '/ora/';
+
+    var slotBtns = document.querySelectorAll('.time-slot-btn');
+    var catBtns = document.querySelectorAll('.cat-filter-btn');
+    var snapItems = document.querySelectorAll('.snap-item');
+
+    var slotTitles = {
+      live: {
+        title: 'Programmi TV in onda adesso sui canali italiani',
+        desc: 'Cosa c\'è in TV in questo momento su Rai 1, Canale 5, Italia 1, La7, Nove e oltre 50 canali del digitale terrestre',
+        badge: 'In Onda Adesso'
+      },
+      morning: {
+        title: 'Programmi TV di oggi: mattina e daytime',
+        desc: 'Telegiornali, rubriche, cartoni animati, talk e serie della fascia mattutina',
+        badge: 'Mattina'
+      },
+      prime: {
+        title: 'Cosa c\'è stasera in TV · Prima Serata (dalle 20:30)',
+        desc: 'Tutti i film, le serie TV con voto IMDb, gli show e le fiction in prima serata sui canali italiani',
+        badge: '⭐ Prima Serata'
+      },
+      late: {
+        title: 'Programmi TV stasera in seconda serata (dalle 22:00)',
+        desc: 'Film di seconda serata, approfondimenti, dibattiti giornalistici e telefilm della notte',
+        badge: '🌙 Seconda Serata'
+      }
+    };
+
+    function updateTitleBar(slot) {
+      var conf = slotTitles[slot] || slotTitles['prime'];
+      var h1El = document.getElementById('page-section-h1-text');
+      var descEl = document.getElementById('page-section-desc');
+      var badgeEl = document.getElementById('page-section-badge-text');
+      if (h1El && conf.title) h1El.textContent = conf.title;
+      if (descEl && conf.desc) descEl.textContent = conf.desc;
+      if (badgeEl && conf.badge) badgeEl.textContent = conf.badge;
+    }
+
+    function applyFilters(animateFocus) {
+      var firstVisible = null;
+
+      snapItems.forEach(function(item) {
+        var itemSlot = item.getAttribute('data-slot') || 'prime';
+        var itemCat = (item.getAttribute('data-category') || 'general').toLowerCase();
+        var rawCat = (item.getAttribute('data-raw-category') || '').toLowerCase();
+
+        var slotMatch = (itemSlot === activeSlot);
+        var catMatch = (activeCat === 'all' || itemCat === activeCat || rawCat.indexOf(activeCat) !== -1);
+
+        if (slotMatch && catMatch) {
+          item.classList.remove('hidden');
+          item.style.display = '';
+          if (!firstVisible) firstVisible = item;
+        } else {
+          item.classList.add('hidden');
+          item.style.display = 'none';
+        }
+      });
+
+      if (animateFocus) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (firstVisible) {
+          firstVisible.classList.add('ring-2', 'ring-[#DA291C]', 'ring-offset-2', 'ring-offset-[#0B0F19]');
+          setTimeout(function() {
+            firstVisible.classList.remove('ring-2', 'ring-[#DA291C]', 'ring-offset-2', 'ring-offset-[#0B0F19]');
+          }, 1200);
+        }
+      }
+    }
+
+    function setSlot(targetSlot, updateHistory) {
+      if (!targetSlot) return;
+      activeSlot = targetSlot;
+      updateTitleBar(activeSlot);
+
+      slotBtns.forEach(function(b) {
+        if (b.getAttribute('data-slot') === activeSlot) {
+          b.classList.add('bg-[#DA291C]', 'text-white', 'shadow-lg', 'shadow-red-900/40', 'font-black', 'scale-[1.02]');
+          b.classList.remove('bg-gray-800/90', 'text-gray-300', 'border-gray-700/60');
+        } else {
+          b.classList.remove('bg-[#DA291C]', 'text-white', 'shadow-lg', 'shadow-red-900/40', 'font-black', 'scale-[1.02]');
+          b.classList.add('bg-gray-800/90', 'text-gray-300', 'border', 'border-gray-700/60');
+        }
+      });
+
+      if (updateHistory) {
+        try {
+          if (activeSlot === 'prime') {
+            window.history.pushState({ slot: 'prime' }, '', '/');
+          } else if (activeSlot === 'live') {
+            window.history.pushState({ slot: 'live' }, '', '/ora/');
+          } else {
+            window.history.pushState({ slot: activeSlot }, '', '/?slot=' + activeSlot);
+          }
+        } catch (e) {}
+      }
+
+      applyFilters(true);
+    }
+
+    // 1. Time Slot Button Click (In onda, Mattina, Prima Serata, Seconda Serata)
+    slotBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var targetSlot = btn.getAttribute('data-slot');
+        setSlot(targetSlot, true);
+      });
+    });
+
+    // 2. Category Filter Click (Tutti, Film, Serie TV, Sport, News)
+    catBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activeCat = btn.getAttribute('data-cat') || 'all';
+
+        catBtns.forEach(function(b) {
+          b.classList.remove('bg-gray-800', 'text-white', 'border-gray-700', 'font-bold');
+          b.classList.add('bg-gray-900/80', 'text-gray-400', 'border-transparent');
+        });
+
+        btn.classList.add('bg-gray-800', 'text-white', 'border-gray-700', 'font-bold');
+        btn.classList.remove('bg-gray-900/80', 'text-gray-400', 'border-transparent');
+
+        applyFilters(true);
+      });
+    });
+
+    // 3. Browser Back / Forward History Navigation
+    window.addEventListener('popstate', function(e) {
+      if (e.state && e.state.slot) {
+        setSlot(e.state.slot, false);
+      } else {
+        var p = window.location.pathname;
+        if (p.indexOf('/ora') !== -1) {
+          setSlot('live', false);
+        } else {
+          setSlot('prime', false);
+        }
+      }
+    });
+
+    // Initial filter execution
+    applyFilters(false);
+
+    // 4. Push Notification Reminders
+    var remindBtns = document.querySelectorAll('.push-remind-btn');
+    var toast = document.getElementById('toast-notify');
+    var toastTitle = document.getElementById('toast-title');
+    var toastBody = document.getElementById('toast-body');
+
+    function showToast(title, body) {
+      if (toastTitle && title) toastTitle.textContent = title;
+      if (toastBody && body) toastBody.textContent = body;
+      if (toast) {
+        toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(function() {
+          toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+          toast.classList.remove('translate-y-0', 'opacity-100');
+        }, 4000);
+      }
+    }
+
+    remindBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var progTitle = btn.getAttribute('data-title') || 'Programma';
+        var progTime = btn.getAttribute('data-time') || '';
+        var progChannel = btn.getAttribute('data-channel') || '';
+
+        if (!('Notification' in window)) {
+          showToast(progTitle, 'Promemoria salvato per ' + progTime + ' su ' + progChannel + '!');
+          return;
+        }
+
+        Notification.requestPermission().then(function(permission) {
+          if (permission === 'granted') {
+            showToast(progTitle, toastMsg + ' (' + progChannel + ' - ' + progTime + ')');
+            try {
+              var reminders = JSON.parse(localStorage.getItem('intv_reminders') || '[]');
+              reminders.push({ title: progTitle, time: progTime, channel: progChannel, created: Date.now() });
+              localStorage.setItem('intv_reminders', JSON.stringify(reminders));
+            } catch (e) {}
+          } else {
+            showToast(progTitle, 'Promemoria salvato per le ore ' + progTime);
+          }
+        });
+      });
+    });
+
+    // 5. Live Timeline Real-Time Progress Updater (every 30 seconds)
+    function updateLiveTimelines() {
+      var now = Date.now();
+      var fills = document.querySelectorAll('.live-progress-fill');
+      fills.forEach(function(bar) {
+        var start = Number(bar.getAttribute('data-start'));
+        var end = Number(bar.getAttribute('data-end'));
+        if (!start || !end || end <= start) return;
+        var duration = end - start;
+        var elapsed = Math.min(100, Math.max(0, Math.round(((now - start) / duration) * 100)));
+        bar.style.width = elapsed + '%';
+      });
+
+      var texts = document.querySelectorAll('.live-remaining-text');
+      texts.forEach(function(txt) {
+        var end = Number(txt.getAttribute('data-end'));
+        if (!end) return;
+        var remMins = Math.max(0, Math.round((end - now) / 60000));
+        if (remMins > 0) {
+          txt.textContent = remMins + ' min rimasti';
+        } else {
+          txt.textContent = 'In conclusione';
+        }
+      });
+    }
+
+    updateLiveTimelines();
+    setInterval(updateLiveTimelines, 30000);
+  });
+</script>

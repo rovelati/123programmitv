@@ -4,11 +4,14 @@ export const prerender = true;
 import HubLayout from '../layouts/HubLayout.astro';
 import ChannelCard from '../components/ChannelCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
+import CalendarBar from '../components/CalendarBar.astro';
+import SnapCard from '../components/SnapCard.astro';
+import InteractiveScripts from '../components/InteractiveScripts.astro';
 import StaseraPerTe from '../components/StaseraPerTe.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { ADSENSE_SLOTS } from '../lib/adsense';
-import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
+import { fetchChannels, fetchProgramsForDate, buildAllSlotCards } from '../lib/epg';
 import { getTodayInRome, formatDateIT, filterStaseraPrograms } from '../utils/timeSlots';
 import { buildHubHomeJsonLd } from '../utils/jsonld';
 import { buildEveningCandidates } from '../utils/eveningPrefs';
@@ -88,6 +91,8 @@ const faqJsonLd = {
 
 const allSchemas = [...schemas, faqJsonLd];
 
+const slotCards = buildAllSlotCards(channels, programs);
+
 const featuredWithPoster = eveningCandidates.find(c => Boolean(c?.poster_url))
   ?? programs.find(p => p.poster_url && filterStaseraPrograms([p]).length > 0)
   ?? programs.find(p => p.poster_url);
@@ -98,76 +103,46 @@ const ogImageAlt = featuredWithPoster ? `${featuredWithPoster.title} - inTV stas
 
 <HubLayout {title} {description} {keywords} canonicalPath="/" schemas={allSchemas} {ogImage} {ogImageAlt}>
 
-  <!-- ─── HERO ─── -->
-  <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 py-5 sm:py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+  <!-- ─── BARRA NAVIGAZIONE ORARI & CATEGORIE (Ferrari Red & Dark) ─── -->
+  <CalendarBar activeSlot="prime" />
 
-      <div class="flex items-center gap-3 mb-3">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-          📺 inTV stasera
-        </span>
-        <span class="text-slate-400 dark:text-slate-500 text-sm font-medium">
-          Prime time dalle 20:30 · {primeTimeCount} canali
+  <!-- ─── SEZIONE INTESTAZIONE TITOLO SLEEK & COMPATTA ─── -->
+  <section class="max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-1">
+    <div class="flex items-center justify-between gap-3 border-b border-gray-800/60 pb-2">
+      <div class="min-w-0 flex items-center gap-2">
+        <h1 class="text-sm sm:text-base font-black text-white tracking-tight flex items-center gap-2 truncate">
+          <span id="page-section-h1-text">Cosa c'è stasera in TV · Prima Serata (dalle 20:30)</span>
+        </h1>
+        <span class="text-xs text-gray-400 truncate hidden xl:inline">
+          • <span id="page-section-desc">Tutti i film, serie TV, fiction e programmi di prima serata su oltre 50 canali italiani</span>
         </span>
       </div>
+      <span class="text-[11px] font-bold text-amber-400 bg-amber-950/50 border border-amber-800/40 px-2.5 py-0.5 rounded-lg shrink-0 flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="page-section-badge-text">⭐ Prima Serata</span>
+      </span>
+    </div>
+  </section>
 
-      <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-2">
-        inTV stasera: <span class="text-blue-600">programmi TV di stasera</span>
-      </h1>
-
-      <p class="text-base sm:text-lg font-medium capitalize text-slate-500 dark:text-slate-400 mb-2">
-        inTV stasera — {dateLabel} · Prime time dalle 20:30
-      </p>
-
-      <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-4 max-w-3xl leading-relaxed">
-        Scopri cosa c'è inTV stasera sui principali canali italiani: film, serie TV, programmi, show, sport e programmi della prima serata, con orari aggiornati.
-      </p>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <a href="/ora/" class="inline-flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-          Cosa c'è in TV ora →
-        </a>
-        <a href="/domani/" class="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 font-medium hover:underline">
-          Programmi TV di domani →
-        </a>
-      </div>
-
+  <!-- ─── FEED WIDESCREEN 16:9 SNAPCARD CON CAMBIO SLOT ISTANTANEO ─── -->
+  <section class="max-w-6xl mx-auto px-3 sm:px-6 py-2">
+    <div class="space-y-4">
+      {slotCards.map((prog) => (
+        <SnapCard
+          program={prog}
+          isLive={prog.slot === 'live'}
+          slot={prog.slot}
+          initiallyHidden={prog.slot !== 'prime'}
+        />
+      ))}
     </div>
   </section>
 
   <StaseraPerTe candidates={eveningCandidates} pageSlot="stasera" />
 
-  <!-- ─── LISTA CANALI ─── -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+  <!-- ─── NAVIGAZIONE CANALI RAPIDA ─── -->
+  <section class="max-w-6xl mx-auto px-3 sm:px-6 py-4">
     <ChannelNav />
-
-    <!-- Filtri rapidi categorie -->
-    <nav class="flex flex-wrap gap-2 mb-5" aria-label="Categorie stasera">
-      <a href="/film-stasera/" class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 text-xs font-semibold transition-colors">🎬 Film stasera</a>
-      <a href="/serie-stasera/" class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white text-blue-700 dark:text-blue-300 text-xs font-semibold transition-colors">📺 Serie TV stasera</a>
-      <a href="/sport-stasera/" class="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 hover:bg-green-600 hover:text-white text-green-700 dark:text-green-300 text-xs font-semibold transition-colors">⚽ Sport stasera</a>
-    </nav>
-
-    <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-3">
-      Programmi TV prima serata · dalle 20:30
-    </h2>
-
-    <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-      {channelsWithPrograms.slice(0, 8).map(channel => {
-        const channelPrograms = programs.filter(p => p.channel_id === channel.id);
-        return <ChannelCard {channel} programs={channelPrograms} mode="stasera" />;
-      })}
-    </div>
-
-    {channelsWithPrograms.length > 8 && (
-      <AdSlot slot={ADSENSE_SLOTS.IN_FEED_CHANNELS} inFeedWrapper={true} minHeight={180} />
-      <div class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mt-4">
-        {channelsWithPrograms.slice(8).map(channel => {
-          const channelPrograms = programs.filter(p => p.channel_id === channel.id);
-          return <ChannelCard {channel} programs={channelPrograms} mode="stasera" />;
-        })}
-      </div>
-    )}
 
     <!-- ─── GUIDA EDITORIALE ALLA PRIMA SERATA TV ─── -->
     <section class="my-12 p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm leading-relaxed">
@@ -251,5 +226,7 @@ const ogImageAlt = featuredWithPoster ? `${featuredWithPoster.title} - inTV stas
     />
 
   </section>
+
+  <InteractiveScripts defaultSlot="prime" />
 
 </HubLayout>

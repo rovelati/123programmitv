@@ -8,6 +8,9 @@ export interface Program {
   description: string;
   slug?: string;
   poster_url?: string | null;
+  backdrop_url?: string | null;
+  rating?: number | string | null;
+  imdb_rating?: number | string | null;
   indexable?: boolean; // true solo per film con synopsis > 300 parole
   isLive?: boolean;
   channel_id?: string;

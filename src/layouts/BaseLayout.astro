@@ -72,12 +72,22 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
 ---
 
 <!doctype html>
-<html lang="it">
+<html lang="it" class="dark scroll-smooth">
   <head>
+    <!-- UniConsent CMP (IAB TCF v2.2 & Google Consent Mode v2) -->
+    <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="5d3bad073e"></script>
+
+    <!-- Google Tag Manager / GA4 -->
+    <script is:inline async src="https://www.googletagmanager.com/gtm.js?id=GTM-WF5MSLH5"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#DA291C" />
 
     <!-- Anti-FOUC: applica .dark PRIMA del render — nessun flash -->
     <!-- data-cfasync="false": esclude da Cloudflare Rocket Loader (deve girare sincrono) -->
@@ -173,40 +183,23 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
     />
 
-    <!-- ═══ Favicon & Web App ════════════════════════════════════════════ -->
-    <!-- ICO multi-size per browser legacy -->
-    <link rel="icon" href="/favicon/favicon.ico" sizes="any" />
-    <!-- PNG per browser moderni -->
-    <link rel="icon" type="image/png" href="/favicon/favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="/favicon/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
-    <!-- Apple Touch Icon (iOS home screen) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-    <!-- Web App Manifest (Android / PWA / Edge) -->
+    <!-- ═══ Favicon & Web App (Rosso Ferrari #DA291C) ════════════════════ -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <!-- Microsoft Windows & Edge Integration -->
-    <meta name="application-name" content="In TV Stasera" />
-    <meta name="msapplication-TileColor" content="#2563eb" />
-    <meta name="msapplication-TileImage" content="/web-app-manifest-192x192.png" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <!-- Microsoft Windows Desktop -->
+    <meta name="application-name" content="inTV stasera" />
+    <meta name="msapplication-TileColor" content="#DA291C" />
+    <meta name="msapplication-TileImage" content="/mstile-150x150.png" />
     <meta name="msapplication-tooltip" content="Guida TV Italiana Stasera e Ora" />
     <meta name="msapplication-starturl" content="/" />
 
     <!-- ═══ JSON-LD Structured Data ═══════════════════════════════════════ -->
     {schemas.length > 0 && <SchemaInjector {schemas} />}
-
-    <!-- ═══ UniConsent CMP (Consent Management Platform) ═══════════════════ -->
-    <script is:inline>
-      window.__unic_config_v2 = {
-        company: "inTV stasera",
-        policyUrl: "https://www.intvstasera.it/privacy-policy/",
-        publisherCountryCode: "IT",
-        unic_company: "inTV stasera",
-        unic_language: "it",
-        forceLang: "it"
-      };
-    </script>
-    <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="8d3a6d7837"></script>
 
     <!-- ═══ Google AdSense ═════════════════════════════════════════════════ -->
     <meta name="google-adsense-account" content="ca-pub-2168172914069272" />
@@ -216,17 +209,8 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2168172914069272"
       crossorigin="anonymous"
     ></script>
-
-    <!-- ═══ Google Analytics 4 ════════════════════════════════════════════ -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-824117SV8J"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-824117SV8J', { anonymize_ip: true });
-    </script>
   </head>
-  <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans antialiased">
+  <body class="bg-[#0B0F19] text-gray-100 font-sans antialiased selection:bg-[#DA291C] selection:text-white">
     <slot />
   </body>
 </html>
