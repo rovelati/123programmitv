@@ -1,0 +1,750 @@
+---
+import type { Channel, Program } from '../types';
+import { getChannelStream } from '../utils/channelStreams';
+import { getChannelLogo } from '../utils/channelLogos';
+import { getDttChannelBySlug } from '../data/dttChannels';
+import { localizeCategory, cleanDescription, formatImdbRating } from '../lib/format';
+import { getProgramHeroImg } from '../lib/images';
+import AdSlot from './AdSlot.astro';
+import { ADSENSE_SLOTS } from '../lib/adsense';
+
+interface Props {
+  channel: Channel;
+  programs: Program[];
+  allChannels?: Channel[];
+  liveCards?: any[];
+}
+
+const { channel, programs, allChannels = [], liveCards = [] } = Astro.props;
+
+// Current timestamp
+const nowMs = Date.now();
+
+// Sort channel programs by start_time
+const sortedPrograms = [...programs].sort((a, b) => {
+  const tA = new Date(a.startTime || (a as any).start_time).getTime();
+  const tB = new Date(b.startTime || (b as any).start_time).getTime();
+  return tA - tB;
+});
+
+// Identify program currently live on air (or next starting soon)
+let liveIdx = sortedPrograms.findIndex(p => {
+  const s = new Date(p.startTime || (p as any).start_time).getTime();
+  const e = new Date(p.endTime || (p as any).end_time).getTime();
+  return nowMs >= s && nowMs < e;
+});
+
+if (liveIdx === -1) {
+  liveIdx = sortedPrograms.findIndex(p => new Date(p.startTime || (p as any).start_time).getTime() > nowMs);
+}
+if (liveIdx === -1 && sortedPrograms.length > 0) {
+  liveIdx = sortedPrograms.length - 1;
+}
+
+const liveProgram = liveIdx >= 0 ? sortedPrograms[liveIdx] : undefined;
+
+// Formatting helpers in Rome Timezone
+const formatTime = (iso: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+};
+
+// Rome date bounds: calculate 02:00 of the following night
+const nowRomeStr = new Date().toLocaleString('en-US', { timeZone: 'Europe/Rome' });
+const nowRome = new Date(nowRomeStr);
+const rYear = nowRome.getFullYear();
+const rMonth = nowRome.getMonth();
+const rDate = nowRome.getDate();
+
+// 06:00 today & 02:00 tomorrow
+const today0600Ms = new Date(rYear, rMonth, rDate, 6, 0, 0).getTime();
+const cutoff0200Ms = new Date(rYear, rMonth, rDate + 1, 2, 0, 0).getTime();
+
+// Filter programs:
+// 1. Earlier today (from 06:00 until liveIdx)
+const earlierPrograms = liveIdx > 0
+  ? sortedPrograms.slice(0, liveIdx).filter(p => new Date(p.startTime || (p as any).start_time).getTime() >= today0600Ms)
+  : [];
+
+// 2. Upcoming schedule (from liveIdx + 1 onwards up to 02:00 of next day)
+const upcomingPrograms = liveIdx >= 0
+  ? sortedPrograms.slice(liveIdx + 1).filter(p => new Date(p.startTime || (p as any).start_time).getTime() <= cutoff0200Ms)
+  : [];
+
+// Pre-calculate view models with formatted times & prime-time flags
+const earlierWithMeta = earlierPrograms.map(p => ({
+  ...p,
+  description: cleanDescription(p.description),
+  category: localizeCategory(p.category || (p as any).genre),
+  sTime: formatTime(p.startTime || (p as any).start_time),
+  eTime: formatTime(p.endTime || (p as any).end_time),
+  thumb: getProgramHeroImg(p),
+  rating: formatImdbRating(p.rating, p.title, p.category || (p as any).genre)
+}));
+
+const upcomingWithMeta = upcomingPrograms.map(p => {
+  const timeStr = formatTime(p.startTime || (p as any).start_time);
+  const [hStr, mStr] = timeStr.split(':');
+  const hours = parseInt(hStr, 10);
+  const mins = parseInt(mStr, 10);
+  const timeNum = hours * 60 + mins;
+  // Italian prime time: typically 20:30 to 21:45
+  const isPrimeTime = (timeNum >= 20 * 60 + 20 && timeNum <= 21 * 60 + 45);
+
+  return {
+    ...p,
+    description: cleanDescription(p.description),
+    category: localizeCategory(p.category || (p as any).genre),
+    sTime: timeStr,
+    eTime: formatTime(p.endTime || (p as any).end_time),
+    thumb: getProgramHeroImg(p),
+    rating: formatImdbRating(p.rating, p.title, p.category || (p as any).genre),
+    isPrimeTime,
+    sub_title: (p as any).sub_title
+  };
+});
+
+// Calculate elapsed percentage for live program
+let elapsedPercent = 0;
+let remainingMins = 0;
+let startTimeStr = '';
+let endTimeStr = '';
+const liveCleanDesc = cleanDescription(liveProgram?.description);
+const liveDisplayCat = localizeCategory(liveProgram?.category || (liveProgram as any)?.genre);
+const liveRating = formatImdbRating(liveProgram?.rating, liveProgram?.title, liveProgram?.category || (liveProgram as any)?.genre);
+
+if (liveProgram) {
+  const startMs = new Date(liveProgram.startTime || (liveProgram as any).start_time).getTime();
+  const endMs = new Date(liveProgram.endTime || (liveProgram as any).end_time).getTime();
+  const durationMs = Math.max(1, endMs - startMs);
+  elapsedPercent = Math.min(100, Math.max(0, Math.round(((nowMs - startMs) / durationMs) * 100)));
+  remainingMins = Math.max(0, Math.round((endMs - nowMs) / 60000));
+  startTimeStr = formatTime(liveProgram.startTime || (liveProgram as any).start_time);
+  endTimeStr = formatTime(liveProgram.endTime || (liveProgram as any).end_time);
+}
+
+// Next upcoming program
+const nextProgram = upcomingWithMeta[0];
+
+// Channel branding and streams
+const channelLogo = getChannelLogo(channel.id, channel.logo);
+const streamData = getChannelStream(channel.id);
+const streamUrl = streamData?.url || `https://www.google.com/search?q=${encodeURIComponent('diretta streaming ' + channel.name)}`;
+const streamLabel = streamData?.label || channel.name;
+const streamOfficialTooltip = `Vedi streaming su sito ufficiale di ${channel.name}`;
+const dttInfo = getDttChannelBySlug(channel.id);
+const lcn = channel.number || dttInfo?.lcn;
+
+const liveHeroImg = getProgramHeroImg(liveProgram);
+
+// Related channels (excluding current)
+const relatedChannels = allChannels.filter(c => c.id !== channel.id).slice(0, 12);
+
+// Other live programs for recommendations
+const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
+  id: c.id,
+  channel_id: c.id,
+  channel_name: c.name,
+  channel_logo: getChannelLogo(c.id, c.logo),
+  title: `Programmi ${c.name}`,
+  category: 'TV',
+  start_time: new Date().toISOString(),
+  description: `Guida e diretta streaming per ${c.name}`
+}))).filter(c => c.channel_id !== channel.id).slice(0, 6);
+---
+
+<div class="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-8">
+
+  <!-- Breadcrumbs & Live Italian Clock Bar -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs bg-[#111827]/60 border border-gray-800/80 px-4 py-2.5 rounded-xl">
+    <nav class="flex items-center gap-2 text-gray-400 font-medium" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-white transition-colors">inTV stasera</a>
+      <span class="text-gray-600">/</span>
+      <span class="text-gray-300 font-semibold">{channel.name}</span>
+    </nav>
+    <div class="flex items-center gap-2 text-gray-300 font-mono text-[11px] bg-black/40 px-3 py-1 rounded-lg border border-white/5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+      <span class="text-gray-400">Ora italiana (Roma):</span>
+      <span id="live-italian-clock" class="font-bold text-white tracking-wider">--:--:--</span>
+    </div>
+  </div>
+
+  <!-- Channel Brand Header -->
+  <div class="bg-[#111827] border border-gray-800/90 rounded-2xl p-5 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
+    <div class="flex items-center gap-4 sm:gap-6">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 bg-black/80 rounded-2xl p-2.5 border border-white/10 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
+        {channelLogo ? (
+          <img
+            src={channelLogo}
+            alt={`Logo ${channel.name}`}
+            class="max-w-full max-h-full object-contain"
+            style="max-height: 80px; max-width: 80px; object-fit: contain;"
+            onerror="this.style.display='none'"
+          />
+        ) : (
+          <span class="text-sm font-black text-white">{channel.name}</span>
+        )}
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            {channel.name}: Programmi TV oggi e stasera
+          </h1>
+          {lcn ? (
+            <span class="text-[11px] font-black uppercase bg-[#DA291C]/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded">
+              LCN {lcn}
+            </span>
+          ) : null}
+          <span class="text-[11px] font-bold text-gray-400 uppercase bg-gray-800 px-2 py-0.5 rounded">
+            Digitale Terrestre · DTT
+          </span>
+        </div>
+        <p class="text-sm text-gray-300 mt-1.5 font-medium">
+          Palinsesto completo di {channel.name} oggi e stasera in TV con orari, film, serie e diretta streaming ufficiale.
+        </p>
+      </div>
+    </div>
+
+    <!-- Official Stream Button -->
+    <div class="w-full md:w-auto shrink-0 flex flex-col gap-1.5">
+      <a
+        href={streamUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center justify-center gap-2 bg-[#DA291C] hover:bg-red-700 text-white font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-red-900/40 hover:scale-[1.02] transition-all"
+        title={streamOfficialTooltip}
+      >
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+        <span>Guarda {channel.name} in streaming</span>
+      </a>
+      {streamData?.login_required && (
+        <span class="text-[10px] text-amber-400/90 text-center">
+          * Richiede registrazione / login gratuito
+        </span>
+      )}
+    </div>
+  </div>
+
+  <!-- SECTION 1: IN ONDA ADESSO (Extended Visual Hero Card) -->
+  {liveProgram ? (
+    <section class="space-y-3" aria-labelledby="live-hero-heading" data-start={liveProgram.startTime || (liveProgram as any).start_time} data-end={liveProgram.endTime || (liveProgram as any).end_time}>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-[#DA291C] animate-pulse"></span>
+          <h2 id="live-hero-heading" class="text-sm font-black tracking-wider text-red-400 uppercase">
+            IN ONDA ADESSO
+          </h2>
+        </div>
+        <span class="text-xs text-gray-400 font-medium">
+          {startTimeStr} - {endTimeStr}
+        </span>
+      </div>
+
+      <div class="bg-[#111827] border-2 border-red-900/50 hover:border-red-600/60 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+          
+          <!-- 16:9 Cinematic Visual Banner with Overlay Play -->
+          <div class="relative lg:col-span-7 aspect-video bg-black/60 overflow-hidden group">
+            <img
+              src={liveHeroImg}
+              alt={liveProgram.title}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-black/50"></div>
+
+            <!-- Top Overlay Badges -->
+            <div class="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
+              <div class="flex items-center gap-2 bg-[#DA291C] text-white px-3 py-1.5 rounded-xl text-xs font-black shadow-lg animate-pulse">
+                <span class="w-2 h-2 rounded-full bg-white"></span>
+                <span>IN ONDA ORA</span>
+              </div>
+              <div class="bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-bold text-white border border-white/10">
+                {startTimeStr} - {endTimeStr}
+              </div>
+            </div>
+
+            <!-- Center Play Button with Tooltip on Hover -->
+            <a
+              href={streamUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="absolute inset-0 flex flex-col items-center justify-center group/play z-20"
+              title={streamOfficialTooltip}
+              aria-label={streamOfficialTooltip}
+            >
+              <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-[#DA291C]/90 text-white flex items-center justify-center shadow-2xl shadow-red-900/60 group-hover/play:scale-110 group-hover/play:bg-[#DA291C] transition-all duration-300 border border-white/40 sm:border-2 backdrop-blur-sm">
+                <svg class="w-5 h-5 sm:w-8 sm:h-8 text-white translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <!-- On mouse-over tooltip pill -->
+              <div class="hidden sm:inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-black/85 backdrop-blur-md text-white text-[11px] font-semibold border border-white/20 shadow-xl opacity-0 group-hover/play:opacity-100 transform translate-y-1 group-hover/play:translate-y-0 transition-all duration-200 pointer-events-none max-w-[90%] truncate">
+                <span class="truncate">{streamOfficialTooltip}</span>
+                <svg class="w-3 h-3 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </div>
+            </a>
+
+            <!-- Progress Bar on Image Bottom -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 z-10">
+              <div class="flex items-center justify-between text-xs text-white/95 font-semibold mb-1.5 drop-shadow">
+                <span>{startTimeStr}</span>
+                <span id="live-hero-remaining">{remainingMins > 0 ? `${remainingMins} min rimasti` : 'In conclusione'}</span>
+                <span>{endTimeStr}</span>
+              </div>
+              <div class="w-full h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+                <div
+                  id="live-hero-progress"
+                  class="h-full bg-[#DA291C] rounded-full transition-all duration-500"
+                  style={`width: ${elapsedPercent}%`}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata & Direct Controls -->
+          <div class="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between bg-[#111827]">
+            <div>
+              <div class="flex items-center gap-2 mb-3 flex-wrap">
+                {liveDisplayCat && (
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-red-400 bg-red-950/60 border border-red-800/50 px-2.5 py-0.5 rounded">
+                    {liveDisplayCat}
+                  </span>
+                )}
+                {liveRating && (
+                  <a
+                    href={`https://www.google.com/search?q=${encodeURIComponent(liveProgram.title + ' recensione voto imdb')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 text-xs font-black bg-[#F5C518] hover:bg-yellow-400 text-black px-2 py-0.5 rounded shadow-sm transition-colors"
+                  >
+                    <span class="text-[10px] font-black bg-black text-[#F5C518] px-1 py-0.2 rounded font-sans leading-none">IMDb</span>
+                    <span>★ {liveRating}</span>
+                  </a>
+                )}
+              </div>
+
+              <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug mb-3">
+                {liveProgram.title}
+              </h3>
+              {(liveProgram as any).sub_title && (
+                <p class="text-xs font-bold text-red-400 mb-2">
+                  {(liveProgram as any).sub_title}
+                </p>
+              )}
+              <p class="text-sm text-gray-300 leading-relaxed line-clamp-4 mb-4">
+                {liveCleanDesc || 'Nessuna descrizione disponibile.'}
+              </p>
+            </div>
+
+            <!-- Action Link & Next Program Snippet -->
+            <div class="pt-4 border-t border-gray-800/80 space-y-3">
+              <a
+                href={streamUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full flex items-center justify-center gap-2 bg-[#DA291C] hover:bg-red-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-red-900/30 hover:scale-[1.01] transition-all"
+              >
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                <span>Guarda in streaming su {streamLabel}</span>
+              </a>
+
+              {nextProgram && (
+                <div class="text-xs text-gray-400 flex items-center justify-between pt-1 border-t border-gray-800/40">
+                  <span class="truncate">A SEGUIRE: <strong class="text-gray-200">{nextProgram.title}</strong></span>
+                  <span class="shrink-0 text-red-400 font-mono font-bold ml-2">{nextProgram.sTime}</span>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+  ) : (
+    <div class="text-center py-10 px-4 bg-[#111827] rounded-2xl border border-gray-800 shadow-lg">
+      <p class="text-gray-300 font-bold">Palinsesto in aggiornamento per {channel.name}</p>
+    </div>
+  )}
+
+  <!-- Ad Slot -->
+  <AdSlot slot={ADSENSE_SLOTS.CHANNEL_MID_CONTENT} className="my-6" minHeight={120} />
+
+  <!-- SECTION 2: PALINSESTO A SEGUIRE (Fino alle 02:00 di notte) -->
+  <section class="space-y-4" aria-labelledby="schedule-heading">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800 pb-3">
+      <div>
+        <h2 id="schedule-heading" class="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
+          <span>Palinsesto fino alle 02:00 di notte</span>
+        </h2>
+        <p class="text-xs text-gray-400 mt-0.5">
+          Tutti i programmi di oggi e prima serata su {channel.name} con orari precisi, trame e valutazioni.
+        </p>
+      </div>
+
+      <!-- Toggle Earlier Shows from Today (06:00 - now) -->
+      {earlierPrograms.length > 0 && (
+        <button
+          type="button"
+          id="toggle-earlier-btn"
+          class="text-xs font-bold text-gray-400 hover:text-white bg-gray-800/80 hover:bg-gray-700 border border-gray-700/70 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto cursor-pointer"
+          data-show-text="Mostra programmi precedenti di oggi (dalle 06:00)"
+          data-hide-text="Nascondi programmi precedenti"
+        >
+          <span>Mostra programmi precedenti di oggi (dalle 06:00)</span>
+        </button>
+      )}
+    </div>
+
+    <!-- Earlier Programs Container (Collapsible) -->
+    {earlierWithMeta.length > 0 && (
+      <div id="earlier-programs-container" class="hidden space-y-2.5 pb-2">
+        <div class="text-[11px] font-black uppercase tracking-wider text-gray-500 px-1 py-1">
+          🌅 Programmi trasmessi stamattina e oggi
+        </div>
+        {earlierWithMeta.map(p => (
+          <div class="bg-[#111827]/60 hover:bg-[#111827] border border-gray-800/70 hover:border-gray-700 rounded-xl p-3 sm:p-4 transition-all flex items-start sm:items-center justify-between gap-3 opacity-75 hover:opacity-100">
+            <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+              <span class="text-xs font-black text-gray-400 bg-gray-800/90 border border-gray-700/50 px-2 py-1 rounded-lg shrink-0 font-mono">
+                {p.sTime}
+              </span>
+              <div class="w-14 h-9 rounded-lg overflow-hidden bg-black/60 shrink-0 hidden xs:block">
+                <img src={p.thumb} alt={p.title} class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-sm font-bold text-gray-200 truncate">{p.title}</h4>
+                {p.description && <p class="text-xs text-gray-400 line-clamp-1 mt-0.5">{p.description}</p>}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              {p.rating && (
+                <span class="text-[10px] font-black bg-[#F5C518]/20 text-[#F5C518] border border-[#F5C518]/30 px-1.5 py-0.5 rounded">
+                  ★ {p.rating}
+                </span>
+              )}
+              {p.category && (
+                <span class="text-[10px] font-bold text-gray-400 uppercase bg-gray-800/60 px-2 py-0.5 rounded hidden sm:inline">
+                  {p.category}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <!-- Timeline of Upcoming Programs (from live now up to 02:00) -->
+    <div class="space-y-3" id="timeline-list">
+      {upcomingWithMeta.map(p => (
+        <div
+          class={`program-timeline-card rounded-2xl p-4 sm:p-5 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border ${
+            p.isPrimeTime
+              ? 'bg-gradient-to-r from-[#181824] via-[#111827] to-[#181824] border-red-500/50 shadow-xl shadow-red-950/20 hover:border-red-400'
+              : 'bg-[#111827]/80 hover:bg-[#111827] border-gray-800/80 hover:border-gray-700 shadow-md'
+          }`}
+          data-start={p.startTime || (p as any).start_time}
+          data-end={p.endTime || (p as any).end_time}
+        >
+          <!-- Left: Time + Visual 16:9 Thumbnail + Program Info -->
+          <div class="flex items-start gap-4 min-w-0 flex-1">
+            <!-- Start Time Badge -->
+            <div class="flex flex-col items-center shrink-0">
+              <span class={`text-sm sm:text-base font-black px-2.5 py-1.5 rounded-xl border font-mono ${
+                p.isPrimeTime
+                  ? 'bg-[#DA291C] text-white border-red-400 shadow-md animate-pulse'
+                  : 'bg-gray-800/90 text-red-400 border-gray-700/80'
+              }`}>
+                {p.sTime}
+              </span>
+              <span class="text-[10px] text-gray-500 font-mono mt-1">{p.eTime}</span>
+            </div>
+
+            <!-- 16:9 Thumbnail Image -->
+            <div class="w-24 sm:w-32 aspect-video rounded-xl overflow-hidden bg-black/60 shrink-0 border border-white/10 group relative">
+              <img
+                src={p.thumb}
+                alt={p.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
+              />
+              {p.isPrimeTime && (
+                <div class="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded shadow">
+                  Prima Serata
+                </div>
+              )}
+            </div>
+
+            <!-- Title & Synopsis -->
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                {p.isPrimeTime && (
+                  <span class="text-[10px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/40 px-2 py-0.2 rounded">
+                    ⭐ Prima Serata
+                  </span>
+                )}
+                {p.category && (
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-gray-300 bg-gray-800/80 border border-gray-700/60 px-2 py-0.2 rounded">
+                    {p.category}
+                  </span>
+                )}
+                {p.rating && (
+                  <a
+                    href={`https://www.google.com/search?q=${encodeURIComponent(p.title + ' film recensione voto')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1 text-[11px] font-black bg-[#F5C518] hover:bg-yellow-400 text-black px-1.5 py-0.2 rounded shadow-sm transition-colors"
+                    title={`Voto: ${p.rating}/10`}
+                  >
+                    <span class="text-[9px] font-black bg-black text-[#F5C518] px-0.8 rounded leading-none">IMDb</span>
+                    <span>★ {p.rating}</span>
+                  </a>
+                )}
+              </div>
+
+              <h3 class="text-base sm:text-lg font-black text-white hover:text-red-300 transition-colors leading-snug">
+                {p.title}
+              </h3>
+              {(p as any).sub_title && (
+                <p class="text-xs text-red-400 font-semibold mt-0.5 truncate">{(p as any).sub_title}</p>
+              )}
+              {p.description && (
+                <p class="text-xs text-gray-300 line-clamp-2 mt-1 leading-relaxed">
+                  {p.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <!-- Right: Reminder Button -->
+          <div class="shrink-0 self-end sm:self-center">
+            <button
+              type="button"
+              class="push-remind-btn flex items-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-xs py-2 px-3 rounded-xl border border-gray-700 hover:border-gray-600 transition-all cursor-pointer"
+              data-title={p.title}
+              data-time={p.sTime}
+              data-channel={channel.name}
+              title={`Ricordamelo: ${p.title}`}
+            >
+              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span>Ricordamelo</span>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- SECTION 3: SEO VISUAL TIPS (Cosa guardare adesso sugli altri canali) -->
+  {otherLive.length > 0 && (
+    <section class="space-y-4 pt-4 border-t border-gray-800/80" aria-labelledby="visual-tips-heading">
+      <div>
+        <h2 id="visual-tips-heading" class="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
+          <span>🎬 Cosa vedere adesso sugli altri canali</span>
+        </h2>
+        <p class="text-xs text-gray-400 mt-0.5">
+          Film in onda e top programmi con voti e anteprime in diretta.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {otherLive.map(c => {
+          const sTime = formatTime(c.start_time || c.startTime);
+          const channelPage = `/${c.channel_id}/`;
+          const cLogo = getChannelLogo(c.channel_id, c.channel_logo);
+          const cHero = getProgramHeroImg(c);
+          const cRating = formatImdbRating(c.rating, c.title, c.category);
+
+          return (
+            <article class="bg-[#111827] border border-gray-800 hover:border-gray-700 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between group">
+              <div class="relative aspect-video bg-black/60 overflow-hidden">
+                <img
+                  src={cHero}
+                  alt={c.title}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-black/60"></div>
+                
+                <!-- Channel Pill on Image -->
+                <div class="absolute top-2.5 left-2.5 z-10">
+                  <a
+                    href={channelPage}
+                    class="flex items-center gap-1.5 bg-black/80 hover:bg-black px-2.5 py-1 rounded-lg border border-white/15 text-xs font-bold text-white shadow max-w-[120px]"
+                  >
+                    {cLogo ? (
+                      <span class="inline-flex items-center justify-center h-4 max-h-4 max-w-[60px] overflow-hidden shrink-0">
+                        <img
+                          src={cLogo}
+                          alt={c.channel_name}
+                          class="max-h-4 max-w-[60px] w-auto h-auto object-contain"
+                          style="max-height: 16px; max-width: 60px; height: 16px; width: auto; object-fit: contain;"
+                          onerror="this.style.display='none'"
+                        />
+                      </span>
+                    ) : (
+                      <span class="truncate">{c.channel_name}</span>
+                    )}
+                  </a>
+                </div>
+
+                <!-- Start Time Badge -->
+                <div class="absolute top-2.5 right-2.5 bg-[#DA291C] text-white px-2 py-0.5 rounded-lg text-xs font-black shadow">
+                  {sTime}
+                </div>
+
+                {cRating && (
+                  <div class="absolute bottom-2.5 left-2.5 bg-[#F5C518] text-black text-[11px] font-black px-2 py-0.5 rounded shadow">
+                    ★ {cRating}
+                  </div>
+                )}
+              </div>
+
+              <div class="p-4 flex flex-col justify-between flex-1">
+                <div>
+                  <h3 class="text-sm font-bold text-white group-hover:text-red-400 transition-colors line-clamp-1 mb-1">
+                    {c.title}
+                  </h3>
+                  {c.description && (
+                    <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3">
+                      {c.description}
+                    </p>
+                  )}
+                </div>
+
+                <div class="pt-3 border-t border-gray-800/80 flex items-center justify-between gap-2">
+                  <a
+                    href={channelPage}
+                    class="text-xs font-bold text-gray-300 hover:text-white transition-colors"
+                  >
+                    Palinsesto {c.channel_name} &rarr;
+                  </a>
+                  <a
+                    href={`/${c.channel_id}/`}
+                    class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                    <span>Oggi</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  <!-- SECTION 4: RELATED CHANNELS NAVIGATION PILLS -->
+  {relatedChannels.length > 0 && (
+    <section class="space-y-3 pt-4 border-t border-gray-800/80" aria-labelledby="related-channels-heading">
+      <h3 id="related-channels-heading" class="text-xs font-black uppercase tracking-wider text-gray-400">
+        Altri canali TV più visti
+      </h3>
+      <div class="flex items-center gap-2 flex-wrap">
+        {relatedChannels.map(rc => {
+          const rcLogo = getChannelLogo(rc.id, rc.logo);
+          return (
+            <a
+              href={`/${rc.id}/`}
+              class="flex items-center gap-2 bg-[#111827] hover:bg-gray-800 border border-gray-800 hover:border-gray-700 px-3 py-1.5 rounded-xl transition-all group"
+            >
+              {rcLogo ? (
+                <span class="inline-flex items-center justify-center h-4 max-h-4 max-w-[50px] overflow-hidden shrink-0">
+                  <img
+                    src={rcLogo}
+                    alt={rc.name}
+                    class="max-h-4 max-w-[50px] w-auto h-auto object-contain group-hover:scale-105 transition-transform"
+                    style="max-height: 16px; max-width: 50px; height: 16px; width: auto; object-fit: contain;"
+                    onerror="this.style.display='none'"
+                  />
+                </span>
+              ) : null}
+              <span class="text-xs font-bold text-gray-300 group-hover:text-white">{rc.name}</span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+</div>
+
+<!-- Client-side Real-time Clock, Timeline Auto-Shift, and Collapsible Toggle -->
+<script is:inline>
+  // 1. Live Italian Clock (Europe/Rome)
+  function updateItalianClock() {
+    const clockEl = document.getElementById('live-italian-clock');
+    if (!clockEl) return;
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString('it-IT', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Europe/Rome'
+    });
+  }
+  updateItalianClock();
+  setInterval(updateItalianClock, 1000);
+
+  // 2. Toggle Earlier Programs from Today
+  const toggleBtn = document.getElementById('toggle-earlier-btn');
+  const earlierContainer = document.getElementById('earlier-programs-container');
+  if (toggleBtn && earlierContainer) {
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = earlierContainer.classList.contains('hidden');
+      if (isHidden) {
+        earlierContainer.classList.remove('hidden');
+        const hideText = toggleBtn.getAttribute('data-hide-text') || 'Nascondi';
+        const span = toggleBtn.querySelector('span');
+        if (span) span.textContent = hideText;
+      } else {
+        earlierContainer.classList.add('hidden');
+        const showText = toggleBtn.getAttribute('data-show-text') || 'Mostra';
+        const span = toggleBtn.querySelector('span');
+        if (span) span.textContent = showText;
+      }
+    });
+  }
+
+  // 3. Real-time Progress Bar & Auto-Shift for Hero Card
+  function updateHeroProgress() {
+    const progressBar = document.getElementById('live-hero-progress');
+    const remainingEl = document.getElementById('live-hero-remaining');
+    const heroSection = document.querySelector('[data-start][data-end]');
+    if (!progressBar || !heroSection) return;
+
+    const startMs = new Date(heroSection.getAttribute('data-start') || '').getTime();
+    const endMs = new Date(heroSection.getAttribute('data-end') || '').getTime();
+    const nowMs = Date.now();
+
+    if (startMs && endMs && endMs > startMs) {
+      const duration = endMs - startMs;
+      const elapsed = Math.min(100, Math.max(0, Math.round(((nowMs - startMs) / duration) * 100)));
+      progressBar.style.width = elapsed + '%';
+      
+      const minsLeft = Math.max(0, Math.round((endMs - nowMs) / 60000));
+      if (remainingEl) {
+        remainingEl.textContent = minsLeft > 0 ? (minsLeft + ' min rimasti') : 'In conclusione';
+      }
+
+      // If program ended while user was viewing, softly reload once to shift the schedule
+      if (nowMs >= endMs + 5000 && (nowMs - endMs) < 600000) {
+        const reloadKey = 'intv_reload_' + endMs;
+        if (!sessionStorage.getItem(reloadKey)) {
+          sessionStorage.setItem(reloadKey, '1');
+          window.location.reload();
+        }
+      }
+    }
+  }
+  updateHeroProgress();
+  setInterval(updateHeroProgress, 30000);
+</script>

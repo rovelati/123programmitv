@@ -42,8 +42,8 @@ const CHANNEL_STREAMS: Record<string, ChannelStream> = {
   '20':            { url: 'https://mediasetinfinity.mediaset.it/diretta/20_cVE',           login_required: true, geo_it: true, label: 'Mediaset Infinity' },
 
   // ── La7 — libero, no geo-restriction ──────────────────────────────────────
-  'la7':  { url: 'https://www.la7.it/dirette-tv', login_required: false, geo_it: false, label: 'La7' },
-  'la7d': { url: 'https://www.la7.it/dirette-tv', login_required: false, geo_it: false, label: 'La7' },
+  'la7':  { url: 'https://www.la7play.it/dirette/la7', login_required: false, geo_it: false, label: 'La7 Play' },
+  'la7d': { url: 'https://www.la7play.it/',            login_required: false, geo_it: false, label: 'La7 Play' },
 
   // ── TV8 — geo-Italia, possibile account Sky ────────────────────────────────
   'tv8': { url: 'https://www.tv8.it/streaming', login_required: false, geo_it: true, label: 'TV8' },

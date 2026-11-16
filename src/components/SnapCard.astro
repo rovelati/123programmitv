@@ -2,6 +2,7 @@
 import { localizeCategory, cleanDescription, formatImdbRating } from '../lib/format';
 import { getProgramHeroImg } from '../lib/images';
 import { getChannelStream } from '../utils/channelStreams';
+import { getChannelLogo } from '../utils/channelLogos';
 
 interface Props {
   program: {
@@ -77,6 +78,7 @@ const streamUrl = streamData?.url || `https://www.google.com/search?q=${encodeUR
 const streamLabel = streamData?.label || program.channel_name;
 const streamOfficialTooltip = `Vedi streaming su sito ufficiale di ${program.channel_name}`;
 const heroImage = getProgramHeroImg(program);
+const channelLogo = getChannelLogo(program.channel_id, program.channel_logo);
 ---
 
 <article
@@ -104,29 +106,32 @@ const heroImage = getProgramHeroImg(program);
         <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-black/40"></div>
 
         <!-- Top Badges Overlay -->
-        <div class="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-30">
+        <div class="absolute top-3.5 left-3.5 right-3.5 sm:top-4 sm:left-4 sm:right-4 flex items-center justify-between gap-2 z-30">
           <!-- Channel Logo Link Pill -->
           <a
             href={channelPageUrl}
-            class="flex items-center gap-1.5 bg-black/85 hover:bg-black/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 hover:border-red-500/60 shadow-lg group/ch transition-all"
+            class="flex items-center gap-2 bg-black/85 hover:bg-black/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 hover:border-red-500/60 shadow-lg group/ch transition-all max-w-[65%]"
             title={`Palinsesto ${program.channel_name}`}
           >
-            {program.channel_logo ? (
-              <img
-                src={program.channel_logo}
-                alt={program.channel_name}
-                class="h-6 w-auto max-w-[80px] object-contain group-hover/ch:scale-105 transition-transform"
-                onerror="this.style.display='none'"
-              />
+            {channelLogo ? (
+              <span class="inline-flex items-center justify-center h-6 max-h-6 max-w-[80px] overflow-hidden shrink-0">
+                <img
+                  src={channelLogo}
+                  alt={program.channel_name}
+                  class="max-h-6 max-w-[80px] w-auto h-auto object-contain group-hover/ch:scale-105 transition-transform"
+                  style="max-height: 24px; max-width: 80px; height: 24px; width: auto; object-fit: contain;"
+                  onerror="this.style.display='none'"
+                />
+              </span>
             ) : (
-              <span class="text-xs font-black text-white">{program.channel_name}</span>
+              <span class="text-xs font-black text-white truncate">{program.channel_name}</span>
             )}
             {program.channel_number ? (
-              <span class="text-[10px] font-bold text-gray-400 bg-gray-800/80 px-1.5 py-0.5 rounded">
+              <span class="text-[10px] font-bold text-gray-400 bg-gray-800/80 px-1.5 py-0.5 rounded shrink-0">
                 CH {program.channel_number}
               </span>
             ) : null}
-            <svg class="w-3 h-3 text-gray-400 group-hover/ch:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3 h-3 text-gray-400 group-hover/ch:text-red-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
             </svg>
           </a>

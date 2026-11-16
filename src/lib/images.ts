@@ -153,7 +153,9 @@ export const POPULAR_ITALIAN_SHOWS: Record<string, string> = {
 export interface ProgramLike {
   id?: string;
   title?: string;
+  description?: string;
   category?: string;
+  genre?: string;
   channel_id?: string;
   startTime?: string;
   start_time?: string;
