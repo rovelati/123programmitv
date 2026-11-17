@@ -282,14 +282,7 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
     return getFallbackImage(p);
   }
 
-  // 2. Mappatura programmi TV italiani popolari
-  for (const [key, img] of Object.entries(POPULAR_ITALIAN_SHOWS)) {
-    if (t.includes(key)) {
-      return img;
-    }
-  }
-
-  // 3. Immagine TMDb / EPG se presente
+  // 2. Immagine reale (TivùSat, RaiPlay, Sky o TMDb) se presente nel database
   if (p.backdrop_url && p.backdrop_url.trim()) {
     const up = upscaleImageUrl(p.backdrop_url);
     if (up) return up;
@@ -297,6 +290,13 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
   if (p.poster_url && p.poster_url.trim()) {
     const up = upscaleImageUrl(p.poster_url);
     if (up) return up;
+  }
+
+  // 3. Mappatura programmi TV italiani popolari (fallback prima del catalogo generico)
+  for (const [key, img] of Object.entries(POPULAR_ITALIAN_SHOWS)) {
+    if (t.includes(key)) {
+      return img;
+    }
   }
 
   return getFallbackImage(p);
