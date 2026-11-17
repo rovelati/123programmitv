@@ -83,6 +83,11 @@ else
   log "WARN: scripts/run-epg-import.sh missing — building with existing DB data"
 fi
 
+if [ -f "$ASTRO_DIR/scripts/enrich_it_tmdb.py" ]; then
+  log "Running TMDb enrichment for tonight's movies, descriptions & backdrops..."
+  python3 "$ASTRO_DIR/scripts/enrich_it_tmdb.py" --limit 350 2>&1 | tee -a "$LOG" || log "WARN: TMDb enrichment failed or timed out, continuing with build"
+fi
+
 log "Starting Astro build (node adapter / static client)..."
 npm install 2>&1 | tee -a "$LOG"
 rm -rf dist .astro

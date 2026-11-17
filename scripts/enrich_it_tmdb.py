@@ -97,6 +97,12 @@ def is_service_broadcast(title: str, genre: Optional[str] = None) -> bool:
     return False
 
 
+def extract_year(title: str) -> Optional[int]:
+    """Extract 4-digit release year from title if present, e.g. (2024)."""
+    m = re.search(r'\((\d{4})\)', title or '')
+    return int(m.group(1)) if m else None
+
+
 def clean_title(title: str) -> str:
     """Normalize program title for clean TMDb query matching."""
     t = title or ''
@@ -111,7 +117,7 @@ def clean_title(title: str) -> str:
     t = re.sub(r'\s*-\s*parte\s*\d+.*', '', t, flags=re.IGNORECASE)
     # Strip broadcast markers
     t = re.sub(r'\s*\b(hd|uhd|4k|1a\s*tv|prima\s*tv|live|diretta|replica)\b.*', '', t, flags=re.IGNORECASE)
-    # Strip trailing colon or dash subtitles
+    # Normalize colons
     t = re.sub(r':\s*.*$', '', t)
     return t.strip(' -:.,"')
 
@@ -133,7 +139,6 @@ def is_title_match(query_title: str, res: Dict[str, Any]) -> bool:
         clean_cand = re.sub(r'[^a-z0-9]', '', cand)
         if clean_cand == clean_q:
             return True
-        # If query is short (<= 4 chars), must be exact
         if len(clean_q) <= 4:
             continue
         if clean_cand.startswith(clean_q) or clean_q.startswith(clean_cand):
@@ -148,24 +153,50 @@ def query_tmdb(title: str, year: Optional[int] = None) -> Optional[Dict[str, Any
     if not cleaned or len(cleaned) < 2 or cleaned.isdigit():
         return None
 
-    q = urllib.parse.quote(cleaned)
-    url = f"{TMDB_BASE}/search/multi?api_key={TMDB_API_KEY}&query={q}&language=it-IT&include_adult=false"
-    if year:
-        url += f"&year={year}"
+    if year is None:
+        year = extract_year(title)
 
-    req = urllib.request.Request(url, headers={'User-Agent': 'intvstasera-enrichment/1.0'})
-    try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
-            results = data.get('results', [])
-            for r in results:
-                media_type = r.get('media_type')
-                if media_type not in ('movie', 'tv'):
-                    continue
-                if is_title_match(cleaned, r):
-                    return r
-    except Exception as e:
-        logger.debug(f"TMDb query error for {title}: {e}")
+    def _fetch(search_url: str) -> Optional[Dict[str, Any]]:
+        req = urllib.request.Request(search_url, headers={'User-Agent': 'intvstasera-enrichment/1.0'})
+        try:
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                results = data.get('results', [])
+                for r in results:
+                    media_type = r.get('media_type')
+                    if media_type not in ('movie', 'tv'):
+                        continue
+                    if is_title_match(cleaned, r):
+                        return r
+        except Exception as e:
+            logger.debug(f"TMDb query error for {title}: {e}")
+        return None
+
+    q = urllib.parse.quote(cleaned)
+    # 1. Try with year if present
+    if year:
+        url_with_year = f"{TMDB_BASE}/search/multi?api_key={TMDB_API_KEY}&query={q}&year={year}&language=it-IT&include_adult=false"
+        hit = _fetch(url_with_year)
+        if hit:
+            return hit
+
+    # 2. Try clean title without year
+    url_base = f"{TMDB_BASE}/search/multi?api_key={TMDB_API_KEY}&query={q}&language=it-IT&include_adult=false"
+    hit = _fetch(url_base)
+    if hit:
+        return hit
+
+    # 3. Fallback: if title contains ' - ', try querying the primary title part
+    if ' - ' in cleaned:
+        primary_part = cleaned.split(' - ')[0].strip()
+        if len(primary_part) >= 3:
+            q_prim = urllib.parse.quote(primary_part)
+            url_prim = f"{TMDB_BASE}/search/multi?api_key={TMDB_API_KEY}&query={q_prim}&language=it-IT&include_adult=false"
+            if year:
+                url_prim += f"&year={year}"
+            hit = _fetch(url_prim)
+            if hit:
+                return hit
 
     return None
 
@@ -204,17 +235,22 @@ def enrich_programs(db_url: str = DEFAULT_DB_URL, limit: int = 600):
 
     logger.info("Fetching distinct program titles needing enrichment...")
     with conn.cursor() as cur:
-        # Prioritize prime-time and upcoming programs whose image has not been checked yet
+        # Prioritize films, prime-time and upcoming programs whose backdrop, poster, or description is missing
         cur.execute("""
-            SELECT DISTINCT ON (title) id, title, genre, poster_url, backdrop_url, rating
+            SELECT DISTINCT ON (title) id, title, genre, poster_url, backdrop_url, rating, description
             FROM programs
             WHERE date >= CURRENT_DATE - INTERVAL '1 day'
-              AND date <= CURRENT_DATE + INTERVAL '6 days'
-              AND image_fetched_at IS NULL
-              AND (backdrop_url IS NULL OR backdrop_url = '' OR rating IS NULL)
+              AND date <= CURRENT_DATE + INTERVAL '2 days'
+              AND (
+                (poster_url IS NULL OR poster_url = '')
+                OR (backdrop_url IS NULL OR backdrop_url = '')
+                OR (description IS NULL OR description = '' OR length(description) < 25)
+                OR rating IS NULL
+              )
             ORDER BY
               title,
-              CASE WHEN start_time >= CURRENT_DATE + TIME '20:30' THEN 0 ELSE 1 END,
+              CASE WHEN (genre ILIKE '%%film%%' OR genre ILIKE '%%cinema%%') THEN 0 ELSE 1 END,
+              CASE WHEN start_time >= CURRENT_DATE + TIME '20:00' THEN 0 ELSE 1 END,
               start_time ASC
             LIMIT %s;
         """, (limit,))
@@ -256,6 +292,7 @@ def enrich_programs(db_url: str = DEFAULT_DB_URL, limit: int = 600):
             vote_avg = res.get('vote_average')
             vote_count = res.get('vote_count', 0)
             tmdb_id = res.get('id')
+            overview = (res.get('overview') or '').strip() or None
 
             poster_url = f"https://image.tmdb.org/t/p/w780{poster_path}" if poster_path else None
             backdrop_url = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else (poster_url if poster_url else None)
@@ -269,15 +306,21 @@ def enrich_programs(db_url: str = DEFAULT_DB_URL, limit: int = 600):
                       backdrop_url = COALESCE(%s, backdrop_url),
                       rating = COALESCE(%s, rating),
                       tmdb_id = COALESCE(%s, tmdb_id),
+                      description = CASE 
+                        WHEN (description IS NULL OR description = '' OR length(description) < 25) 
+                        THEN COALESCE(%s, description) 
+                        ELSE description 
+                      END,
                       image_fetched_at = NOW()
                     WHERE title = %s AND date >= CURRENT_DATE - INTERVAL '1 day';
-                """, (poster_url, backdrop_url, rating_str, tmdb_id, title))
+                """, (poster_url, backdrop_url, rating_str, tmdb_id, overview, title))
                 updated = cur.rowcount
                 conn.commit()
 
             matched_count += 1
             total_rows_updated += updated
-            logger.info(f"[{idx}/{len(rows)}] ENRICHED ({updated} rows): '{title}' -> TMDb #{tmdb_id} (rating: {rating_str}, backdrop: {bool(backdrop_url)})")
+            desc_info = f", desc: {len(overview)} chars" if overview else ""
+            logger.info(f"[{idx}/{len(rows)}] ENRICHED ({updated} rows): '{title}' -> TMDb #{tmdb_id} (rating: {rating_str}, backdrop: {bool(backdrop_url)}{desc_info})")
         else:
             with conn.cursor() as cur:
                 cur.execute("""
