@@ -25,6 +25,16 @@ def slugify(text: str) -> str:
     s = re.sub(r'[^a-z0-9]+', '-', s)
     return s.strip('-')
 
+def get_time_slot(start_time: datetime) -> str:
+    rome_time = start_time.astimezone(TIMEZONE)
+    hour = rome_time.hour
+    minute = rome_time.minute
+    if 6 <= hour < 18:
+        return 'oggi'
+    if (hour > 20 or (hour == 20 and minute >= 30)) and hour < 24:
+        return 'stasera'
+    return 'stanotte'
+
 ESSENTIAL_CHANNELS = [
     {
         'id': 'inter-tv',
@@ -128,8 +138,8 @@ def ensure_channels():
                         et = TIMEZONE.localize(datetime(target_date.year, target_date.month, target_date.day, eh, em))
 
                     cur.execute("""
-                        INSERT INTO programs (channel_id, title, slug, description, start_time, end_time, date, genre, poster_url, indexable)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, false);
+                        INSERT INTO programs (channel_id, title, slug, description, start_time, end_time, date, time_slot, genre, poster_url, indexable)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, false);
                     """, (
                         cid,
                         title,
@@ -138,6 +148,7 @@ def ensure_channels():
                         st.isoformat(),
                         et.isoformat(),
                         target_date.isoformat(),
+                        get_time_slot(st),
                         'Sport',
                         logo,
                     ))
