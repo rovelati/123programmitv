@@ -82,7 +82,7 @@ export const FALLBACK_POOLS = {
   series: [
     'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1280&q=80', // Modern TV display in minimalist living room (no brand logo)
     'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1280&q=80', // Movie film camera & clapperboard
-    'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1280&q=80'  // Cinematic film screen
+    'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1280&q=80'  // Cinematic film projector and reel (brand-free)
   ],
 
   // Documentari / Viaggi / Natura / Storia / Bellezze del mondo
