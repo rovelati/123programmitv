@@ -151,12 +151,13 @@ export const POPULAR_ITALIAN_SHOWS: Record<string, string> = {
   'mangiare con gusto': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
   'l ingrediente perfetto': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
   'casa alice': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1280&q=80',
-  'affari tuoi': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
-  'la ruota della fortuna': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
-  'l eredita': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
-  'eredita': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
+  'affari tuoi': 'https://www.raiplay.it/resizegd/1280x-/dl/img/2026/09/07/1788768063693_2048x1152.jpg',
+  'cinque minuti': 'https://www.raiplay.it/resizegd/1280x-/dl/img/2023/03/01/1677675187944_2048x1152.jpg',
+  'la ruota della fortuna': 'https://services.tivulaguida.it/uploads/highlight/5ee3e84b673d50d64f261bca1a4d3b002f6edd2b.jpeg',
+  'l eredita': 'https://www.raiplay.it/resizegd/1280x-/dl/img/2026/09/08/1788862646684_2048x1152.jpg',
+  'eredita': 'https://www.raiplay.it/resizegd/1280x-/dl/img/2026/09/08/1788862646684_2048x1152.jpg',
   'reazione a catena': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
-  'striscia la notizia': 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1280&q=80',
+  'striscia la notizia': 'https://services.tivulaguida.it/uploads/highlight/b2189c3d95405b659db913963954028c8711702f.jpeg',
   'le iene': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1280&q=80',
   'amici': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1280&q=80',
   'uomini e donne': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1280&q=80',
@@ -282,7 +283,29 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
     return getFallbackImage(p);
   }
 
-  // 2. Immagine reale (TivùSat, RaiPlay, Sky o TMDb) se presente nel database
+  // 2. Se l'immagine nel DB è ufficiale dell'emittente (RaiPlay, TivùSat, Sky), usala subito
+  const isBroadcasterAsset = (url?: string | null): boolean => {
+    if (!url) return false;
+    const u = url.toLowerCase();
+    return u.includes('raiplay.it') || u.includes('tivulaguida.it') || u.includes('guidatv.sky.it') || u.includes('sky.it');
+  };
+  if (isBroadcasterAsset(p.backdrop_url)) {
+    const up = upscaleImageUrl(p.backdrop_url);
+    if (up) return up;
+  }
+  if (isBroadcasterAsset(p.poster_url)) {
+    const up = upscaleImageUrl(p.poster_url);
+    if (up) return up;
+  }
+
+  // 3. Mappatura programmi TV italiani popolari (foto ufficiali dedicate es. Affari Tuoi con De Martino, Cinque Minuti con Vespa)
+  for (const [key, img] of Object.entries(POPULAR_ITALIAN_SHOWS)) {
+    if (t.includes(key)) {
+      return img;
+    }
+  }
+
+  // 4. Immagine da database (TMDb / EPG)
   if (p.backdrop_url && p.backdrop_url.trim()) {
     const up = upscaleImageUrl(p.backdrop_url);
     if (up) return up;
@@ -290,13 +313,6 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
   if (p.poster_url && p.poster_url.trim()) {
     const up = upscaleImageUrl(p.poster_url);
     if (up) return up;
-  }
-
-  // 3. Mappatura programmi TV italiani popolari (fallback prima del catalogo generico)
-  for (const [key, img] of Object.entries(POPULAR_ITALIAN_SHOWS)) {
-    if (t.includes(key)) {
-      return img;
-    }
   }
 
   return getFallbackImage(p);

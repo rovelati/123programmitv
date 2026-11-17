@@ -309,7 +309,7 @@ def enrich_programs(db_url: str = DEFAULT_DB_URL, limit: int = 600):
                     UPDATE programs
                     SET
                       poster_url = COALESCE(poster_url, %s),
-                      backdrop_url = COALESCE(%s, backdrop_url),
+                      backdrop_url = COALESCE(backdrop_url, %s),
                       rating = COALESCE(%s, rating),
                       tmdb_id = COALESCE(%s, tmdb_id),
                       description = CASE 
