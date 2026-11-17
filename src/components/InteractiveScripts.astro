@@ -244,5 +244,36 @@ const toastMsg = 'Promemoria attivato! Riceverai una notifica prima dell’inizi
 
     updateLiveTimelines();
     setInterval(updateLiveTimelines, 30000);
+
+    // 6. Live Italian Clock Real-Time Ticker
+    function updateLiveItalianClock() {
+      var clockEl = document.getElementById('live-italian-clock');
+      if (!clockEl) return;
+      var now = new Date();
+      try {
+        var fmt = new Intl.DateTimeFormat('it-IT', {
+          timeZone: 'Europe/Rome',
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        var parts = fmt.formatToParts(now);
+        var getP = function(type) {
+          var item = parts.find(function(p) { return p.type === type; });
+          return item ? item.value : '';
+        };
+        var w = getP('weekday');
+        var m = getP('month');
+        var capW = w ? (w.charAt(0).toUpperCase() + w.slice(1)) : '';
+        var capM = m ? (m.charAt(0).toUpperCase() + m.slice(1)) : '';
+        clockEl.textContent = capW + ' ' + getP('day') + ' ' + capM + ' · Ore ' + getP('hour') + ':' + getP('minute');
+      } catch (e) {}
+    }
+
+    updateLiveItalianClock();
+    setInterval(updateLiveItalianClock, 1000);
   });
 </script>
