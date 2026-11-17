@@ -57,6 +57,15 @@ const rYear = nowRome.getFullYear();
 const rMonth = nowRome.getMonth();
 const rDate = nowRome.getDate();
 
+// Italian weekday and date label, e.g. "Martedì 17 Novembre · Ore 09:15"
+const weekdayRaw = nowRome.toLocaleDateString('it-IT', { weekday: 'long' });
+const capWeekday = weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1);
+const dayNum = nowRome.getDate();
+const monthRaw = nowRome.toLocaleDateString('it-IT', { month: 'long' });
+const capMonth = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
+const timeStr = nowRome.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+const liveHeaderDate = `${capWeekday} ${dayNum} ${capMonth} · Ore ${timeStr}`;
+
 // 06:00 today & 02:00 tomorrow
 const today0600Ms = new Date(rYear, rMonth, rDate, 6, 0, 0).getTime();
 const cutoff0200Ms = new Date(rYear, rMonth, rDate + 1, 2, 0, 0).getTime();
@@ -84,7 +93,8 @@ const earlierWithMeta = earlierPrograms.map(p => ({
 }));
 
 const upcomingWithMeta = upcomingPrograms.map(p => {
-  const timeStr = formatTime(p.startTime || (p as any).start_time);
+  const sIso = p.startTime || (p as any).start_time;
+  const timeStr = formatTime(sIso);
   const [hStr, mStr] = timeStr.split(':');
   const hours = parseInt(hStr, 10);
   const mins = parseInt(mStr, 10);
@@ -152,7 +162,42 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
   start_time: new Date().toISOString(),
   description: `Guida e diretta streaming per ${c.name}`
 }))).filter(c => c.channel_id !== channel.id).slice(0, 6);
+
+// Serialize schedule payload for client-side live precision alignment
+const schedulePayload = sortedPrograms.map(p => {
+  const sIso = p.startTime || (p as any).start_time;
+  const eIso = p.endTime || (p as any).end_time;
+  const sMs = new Date(sIso).getTime();
+  const eMs = new Date(eIso).getTime();
+  const sTime = formatTime(sIso);
+  const eTime = formatTime(eIso);
+  const [hStr, mStr] = sTime.split(':');
+  const hours = parseInt(hStr, 10);
+  const mins = parseInt(mStr, 10);
+  const timeNum = hours * 60 + mins;
+  const isPrimeTime = (timeNum >= 20 * 60 + 20 && timeNum <= 21 * 60 + 45);
+
+  return {
+    id: p.id,
+    title: p.title,
+    sub_title: (p as any).sub_title || '',
+    description: cleanDescription(p.description),
+    category: localizeCategory(p.category || (p as any).genre),
+    startMs: sMs,
+    endMs: eMs,
+    startTimeIso: sIso,
+    endTimeIso: eIso,
+    sTime,
+    eTime,
+    heroImg: getProgramHeroImg(p),
+    rating: formatImdbRating(p.rating, p.title, p.category || (p as any).genre),
+    isPrimeTime
+  };
+});
 ---
+
+<!-- JSON schedule for real-time live alignment -->
+<script id="channel-schedule-json" type="application/json" set:html={JSON.stringify(schedulePayload)} />
 
 <div class="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-8">
 
@@ -163,10 +208,11 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
       <span class="text-gray-600">/</span>
       <span class="text-gray-300 font-semibold">{channel.name}</span>
     </nav>
-    <div class="flex items-center gap-2 text-gray-300 font-mono text-[11px] bg-black/40 px-3 py-1 rounded-lg border border-white/5">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-      <span class="text-gray-400">Ora italiana (Roma):</span>
-      <span id="live-italian-clock" class="font-bold text-white tracking-wider">--:--:--</span>
+    <div class="flex items-center gap-2 text-gray-200 text-xs sm:text-sm bg-black/50 px-3.5 py-1.5 rounded-xl border border-white/10 shadow-inner">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+      <span id="live-italian-clock" class="font-bold text-white tracking-wide">
+        {liveHeaderDate}
+      </span>
     </div>
   </div>
 
@@ -228,7 +274,7 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
 
   <!-- SECTION 1: IN ONDA ADESSO (Extended Visual Hero Card) -->
   {liveProgram ? (
-    <section class="space-y-3" aria-labelledby="live-hero-heading" data-start={liveProgram.startTime || (liveProgram as any).start_time} data-end={liveProgram.endTime || (liveProgram as any).end_time}>
+    <section id="live-hero-section" class="space-y-3" aria-labelledby="live-hero-heading" data-start={liveProgram.startTime || (liveProgram as any).start_time} data-end={liveProgram.endTime || (liveProgram as any).end_time}>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="w-3 h-3 rounded-full bg-[#DA291C] animate-pulse"></span>
@@ -236,7 +282,7 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
             IN ONDA ADESSO
           </h2>
         </div>
-        <span class="text-xs text-gray-400 font-medium">
+        <span id="live-hero-time-range" class="text-xs text-gray-400 font-medium">
           {startTimeStr} - {endTimeStr}
         </span>
       </div>
@@ -247,8 +293,10 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
           <!-- 16:9 Cinematic Visual Banner with Overlay Play -->
           <div class="relative lg:col-span-7 aspect-video bg-black/60 overflow-hidden group">
             <img
+              id="live-hero-img"
               src={liveHeroImg}
               alt={liveProgram.title}
+              data-id={liveProgram.id}
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
             />
@@ -260,18 +308,18 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
                 <span class="w-2 h-2 rounded-full bg-white"></span>
                 <span>IN ONDA ORA</span>
               </div>
-              <div class="bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-bold text-white border border-white/10">
+              <div id="live-hero-time-badge" class="bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-bold text-white border border-white/10">
                 {startTimeStr} - {endTimeStr}
               </div>
             </div>
 
             <!-- Center Play Button with Tooltip on Hover -->
             <a
+              id="live-hero-play-link"
               href={streamUrl}
               target="_blank"
               rel="noopener noreferrer"
               class="absolute inset-0 flex flex-col items-center justify-center group/play z-20"
-              title={streamOfficialTooltip}
               aria-label={streamOfficialTooltip}
             >
               <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-[#DA291C]/90 text-white flex items-center justify-center shadow-2xl shadow-red-900/60 group-hover/play:scale-110 group-hover/play:bg-[#DA291C] transition-all duration-300 border border-white/40 sm:border-2 backdrop-blur-sm">
@@ -291,9 +339,9 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
             <!-- Progress Bar on Image Bottom -->
             <div class="absolute bottom-0 left-0 right-0 p-4 z-10">
               <div class="flex items-center justify-between text-xs text-white/95 font-semibold mb-1.5 drop-shadow">
-                <span>{startTimeStr}</span>
+                <span id="live-hero-start-time">{startTimeStr}</span>
                 <span id="live-hero-remaining">{remainingMins > 0 ? `${remainingMins} min rimasti` : 'In conclusione'}</span>
-                <span>{endTimeStr}</span>
+                <span id="live-hero-end-time">{endTimeStr}</span>
               </div>
               <div class="w-full h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
                 <div
@@ -309,13 +357,12 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
           <div class="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between bg-[#111827]">
             <div>
               <div class="flex items-center gap-2 mb-3 flex-wrap">
-                {liveDisplayCat && (
-                  <span class="text-[11px] font-bold uppercase tracking-wider text-red-400 bg-red-950/60 border border-red-800/50 px-2.5 py-0.5 rounded">
-                    {liveDisplayCat}
-                  </span>
-                )}
+                <span id="live-hero-cat" class="text-[11px] font-bold uppercase tracking-wider text-red-400 bg-red-950/60 border border-red-800/50 px-2.5 py-0.5 rounded">
+                  {liveDisplayCat || 'TV'}
+                </span>
                 {liveRating && (
                   <a
+                    id="live-hero-rating"
                     href={`https://www.google.com/search?q=${encodeURIComponent(liveProgram.title + ' recensione voto imdb')}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -327,15 +374,15 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
                 )}
               </div>
 
-              <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug mb-3">
+              <h3 id="live-hero-title" class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug mb-3">
                 {liveProgram.title}
               </h3>
               {(liveProgram as any).sub_title && (
-                <p class="text-xs font-bold text-red-400 mb-2">
+                <p id="live-hero-subtitle" class="text-xs font-bold text-red-400 mb-2">
                   {(liveProgram as any).sub_title}
                 </p>
               )}
-              <p class="text-sm text-gray-300 leading-relaxed line-clamp-4 mb-4">
+              <p id="live-hero-desc" class="text-sm text-gray-300 leading-relaxed line-clamp-4 mb-4">
                 {liveCleanDesc || 'Nessuna descrizione disponibile.'}
               </p>
             </div>
@@ -352,12 +399,10 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
                 <span>Guarda in streaming su {streamLabel}</span>
               </a>
 
-              {nextProgram && (
-                <div class="text-xs text-gray-400 flex items-center justify-between pt-1 border-t border-gray-800/40">
-                  <span class="truncate">A SEGUIRE: <strong class="text-gray-200">{nextProgram.title}</strong></span>
-                  <span class="shrink-0 text-red-400 font-mono font-bold ml-2">{nextProgram.sTime}</span>
-                </div>
-              )}
+              <div id="live-hero-next-box" class="text-xs text-gray-400 flex items-center justify-between pt-1 border-t border-gray-800/40">
+                <span class="truncate">A SEGUIRE: <strong id="live-hero-next-title" class="text-gray-200">{nextProgram?.title || 'Programma successivo'}</strong></span>
+                <span id="live-hero-next-time" class="shrink-0 text-red-400 font-mono font-bold ml-2">{nextProgram?.sTime || ''}</span>
+              </div>
             </div>
 
           </div>
@@ -387,27 +432,32 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
       </div>
 
       <!-- Toggle Earlier Shows from Today (06:00 - now) -->
-      {earlierPrograms.length > 0 && (
-        <button
-          type="button"
-          id="toggle-earlier-btn"
-          class="text-xs font-bold text-gray-400 hover:text-white bg-gray-800/80 hover:bg-gray-700 border border-gray-700/70 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto cursor-pointer"
-          data-show-text="Mostra programmi precedenti di oggi (dalle 06:00)"
-          data-hide-text="Nascondi programmi precedenti"
-        >
-          <span>Mostra programmi precedenti di oggi (dalle 06:00)</span>
-        </button>
-      )}
+      <button
+        type="button"
+        id="toggle-earlier-btn"
+        class={`text-xs font-bold text-gray-400 hover:text-white bg-gray-800/80 hover:bg-gray-700 border border-gray-700/70 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto cursor-pointer ${earlierPrograms.length > 0 ? '' : 'hidden'}`}
+        data-show-text="Mostra programmi precedenti di oggi (dalle 06:00)"
+        data-hide-text="Nascondi programmi precedenti"
+      >
+        <span>Mostra programmi precedenti di oggi (dalle 06:00)</span>
+      </button>
     </div>
 
     <!-- Earlier Programs Container (Collapsible) -->
-    {earlierWithMeta.length > 0 && (
-      <div id="earlier-programs-container" class="hidden space-y-2.5 pb-2">
-        <div class="text-[11px] font-black uppercase tracking-wider text-gray-500 px-1 py-1">
-          🌅 Programmi trasmessi stamattina e oggi
-        </div>
+    <div id="earlier-programs-container" class="hidden space-y-2.5 pb-2">
+      <div class="text-[11px] font-black uppercase tracking-wider text-gray-500 px-1 py-1">
+        🌅 Programmi trasmessi stamattina e oggi
+      </div>
+      <div id="earlier-programs-list" class="space-y-2.5">
         {earlierWithMeta.map(p => (
-          <div class="bg-[#111827]/60 hover:bg-[#111827] border border-gray-800/70 hover:border-gray-700 rounded-xl p-3 sm:p-4 transition-all flex items-start sm:items-center justify-between gap-3 opacity-75 hover:opacity-100">
+          <div
+            class="earlier-program-card bg-[#111827]/60 hover:bg-[#111827] border border-gray-800/70 hover:border-gray-700 rounded-xl p-3 sm:p-4 transition-all flex items-start sm:items-center justify-between gap-3 opacity-75 hover:opacity-100"
+            data-prog-id={p.id}
+            data-start={p.startTime || (p as any).start_time}
+            data-end={p.endTime || (p as any).end_time}
+            data-start-ms={new Date(p.startTime || (p as any).start_time).getTime()}
+            data-end-ms={new Date(p.endTime || (p as any).end_time).getTime()}
+          >
             <div class="flex items-start sm:items-center gap-3.5 min-w-0">
               <span class="text-xs font-black text-gray-400 bg-gray-800/90 border border-gray-700/50 px-2 py-1 rounded-lg shrink-0 font-mono">
                 {p.sTime}
@@ -435,7 +485,7 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
           </div>
         ))}
       </div>
-    )}
+    </div>
 
     <!-- Timeline of Upcoming Programs (from live now up to 02:00) -->
     <div class="space-y-3" id="timeline-list">
@@ -446,8 +496,11 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
               ? 'bg-gradient-to-r from-[#181824] via-[#111827] to-[#181824] border-red-500/50 shadow-xl shadow-red-950/20 hover:border-red-400'
               : 'bg-[#111827]/80 hover:bg-[#111827] border-gray-800/80 hover:border-gray-700 shadow-md'
           }`}
+          data-prog-id={p.id}
           data-start={p.startTime || (p as any).start_time}
           data-end={p.endTime || (p as any).end_time}
+          data-start-ms={new Date(p.startTime || (p as any).start_time).getTime()}
+          data-end-ms={new Date(p.endTime || (p as any).end_time).getTime()}
         >
           <!-- Left: Time + Visual 16:9 Thumbnail + Program Info -->
           <div class="flex items-start gap-4 min-w-0 flex-1">
@@ -541,106 +594,104 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
     </div>
   </section>
 
-  <!-- SECTION 3: SEO VISUAL TIPS (Cosa guardare adesso sugli altri canali) -->
-  {otherLive.length > 0 && (
-    <section class="space-y-4 pt-4 border-t border-gray-800/80" aria-labelledby="visual-tips-heading">
-      <div>
-        <h2 id="visual-tips-heading" class="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
-          <span>🎬 Cosa vedere adesso sugli altri canali</span>
-        </h2>
-        <p class="text-xs text-gray-400 mt-0.5">
-          Film in onda e top programmi con voti e anteprime in diretta.
-        </p>
-      </div>
+  <!-- SECTION 3: SEO VISUAL TIPS (Cosa vedere adesso sui canali) -->
+  <section class="space-y-4 pt-4 border-t border-gray-800/80" aria-labelledby="visual-tips-heading">
+    <div>
+      <h2 id="visual-tips-heading" class="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
+        <span>🎬 Cosa vedere adesso sugli altri canali</span>
+      </h2>
+      <p class="text-xs text-gray-400 mt-0.5">
+        Film in onda e top programmi con voti e anteprime in diretta.
+      </p>
+    </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {otherLive.map(c => {
-          const sTime = formatTime(c.start_time || c.startTime);
-          const channelPage = `/${c.channel_id}/`;
-          const cLogo = getChannelLogo(c.channel_id, c.channel_logo);
-          const cHero = getProgramHeroImg(c);
-          const cRating = formatImdbRating(c.rating, c.title, c.category);
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {otherLive.map(c => {
+        const sTime = formatTime(c.start_time || c.startTime);
+        const channelPage = `/${c.channel_id}/`;
+        const cLogo = getChannelLogo(c.channel_id, c.channel_logo);
+        const cHero = getProgramHeroImg(c);
+        const cRating = formatImdbRating(c.rating, c.title, c.category);
 
-          return (
-            <article class="bg-[#111827] border border-gray-800 hover:border-gray-700 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between group">
-              <div class="relative aspect-video bg-black/60 overflow-hidden">
-                <img
-                  src={cHero}
-                  alt={c.title}
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                  onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-black/60"></div>
-                
-                <!-- Channel Pill on Image -->
-                <div class="absolute top-2.5 left-2.5 z-10">
-                  <a
-                    href={channelPage}
-                    class="flex items-center gap-1.5 bg-black/80 hover:bg-black px-2.5 py-1 rounded-lg border border-white/15 text-xs font-bold text-white shadow max-w-[120px]"
-                  >
-                    {cLogo ? (
-                      <span class="inline-flex items-center justify-center h-4 max-h-4 max-w-[60px] overflow-hidden shrink-0">
-                        <img
-                          src={cLogo}
-                          alt={c.channel_name}
-                          class="max-h-4 max-w-[60px] w-auto h-auto object-contain"
-                          style="max-height: 16px; max-width: 60px; height: 16px; width: auto; object-fit: contain;"
-                          onerror="this.style.display='none'"
-                        />
-                      </span>
-                    ) : (
-                      <span class="truncate">{c.channel_name}</span>
-                    )}
-                  </a>
+        return (
+          <article class="bg-[#111827] border border-gray-800 hover:border-gray-700 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col justify-between group">
+            <div class="relative aspect-video bg-black/60 overflow-hidden">
+              <img
+                src={cHero}
+                alt={c.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1280&q=80';"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-black/60"></div>
+              
+              <!-- Channel Pill on Image -->
+              <div class="absolute top-2.5 left-2.5 z-10">
+                <a
+                  href={channelPage}
+                  class="flex items-center gap-1.5 bg-black/80 hover:bg-black px-2.5 py-1 rounded-lg border border-white/15 text-xs font-bold text-white shadow max-w-[120px]"
+                >
+                  {cLogo ? (
+                    <span class="inline-flex items-center justify-center h-4 max-h-4 max-w-[60px] overflow-hidden shrink-0">
+                      <img
+                        src={cLogo}
+                        alt={c.channel_name}
+                        class="max-h-4 max-w-[60px] w-auto h-auto object-contain"
+                        style="max-height: 16px; max-width: 60px; height: 16px; width: auto; object-fit: contain;"
+                        onerror="this.style.display='none'"
+                      />
+                    </span>
+                  ) : (
+                    <span class="truncate">{c.channel_name}</span>
+                  )}
+                </a>
+              </div>
+
+              <!-- Start Time Badge -->
+              <div class="absolute top-2.5 right-2.5 bg-[#DA291C] text-white px-2 py-0.5 rounded-lg text-xs font-black shadow">
+                {sTime}
+              </div>
+
+              {cRating && (
+                <div class="absolute bottom-2.5 left-2.5 bg-[#F5C518] text-black text-[11px] font-black px-2 py-0.5 rounded shadow">
+                  ★ {cRating}
                 </div>
+              )}
+            </div>
 
-                <!-- Start Time Badge -->
-                <div class="absolute top-2.5 right-2.5 bg-[#DA291C] text-white px-2 py-0.5 rounded-lg text-xs font-black shadow">
-                  {sTime}
-                </div>
-
-                {cRating && (
-                  <div class="absolute bottom-2.5 left-2.5 bg-[#F5C518] text-black text-[11px] font-black px-2 py-0.5 rounded shadow">
-                    ★ {cRating}
-                  </div>
+            <div class="p-4 flex flex-col justify-between flex-1">
+              <div>
+                <h3 class="text-sm font-bold text-white group-hover:text-red-400 transition-colors line-clamp-1 mb-1">
+                  {c.title}
+                </h3>
+                {c.description && (
+                  <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3">
+                    {c.description}
+                  </p>
                 )}
               </div>
 
-              <div class="p-4 flex flex-col justify-between flex-1">
-                <div>
-                  <h3 class="text-sm font-bold text-white group-hover:text-red-400 transition-colors line-clamp-1 mb-1">
-                    {c.title}
-                  </h3>
-                  {c.description && (
-                    <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3">
-                      {c.description}
-                    </p>
-                  )}
-                </div>
-
-                <div class="pt-3 border-t border-gray-800/80 flex items-center justify-between gap-2">
-                  <a
-                    href={channelPage}
-                    class="text-xs font-bold text-gray-300 hover:text-white transition-colors"
-                  >
-                    Palinsesto {c.channel_name} &rarr;
-                  </a>
-                  <a
-                    href={`/${c.channel_id}/`}
-                    class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors flex items-center gap-1"
-                  >
-                    <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                    <span>Oggi</span>
-                  </a>
-                </div>
+              <div class="pt-3 border-t border-gray-800/80 flex items-center justify-between gap-2">
+                <a
+                  href={channelPage}
+                  class="text-xs font-bold text-gray-300 hover:text-white transition-colors"
+                >
+                  Palinsesto {c.channel_name} &rarr;
+                </a>
+                <a
+                  href={`/${c.channel_id}/`}
+                  class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors flex items-center gap-1"
+                >
+                  <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                  <span>Oggi</span>
+                </a>
               </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
 
   <!-- SECTION 4: RELATED CHANNELS NAVIGATION PILLS -->
   {relatedChannels.length > 0 && (
@@ -679,17 +730,18 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
 
 <!-- Client-side Real-time Clock, Timeline Auto-Shift, and Collapsible Toggle -->
 <script is:inline>
-  // 1. Live Italian Clock (Europe/Rome)
+  // 1. Live Italian Clock (Europe/Rome): "Martedì 17 Novembre · Ore 09:15"
   function updateItalianClock() {
     const clockEl = document.getElementById('live-italian-clock');
     if (!clockEl) return;
     const now = new Date();
-    clockEl.textContent = now.toLocaleTimeString('it-IT', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZone: 'Europe/Rome'
-    });
+    const weekday = now.toLocaleDateString('it-IT', { weekday: 'long', timeZone: 'Europe/Rome' });
+    const day = now.toLocaleDateString('it-IT', { day: 'numeric', timeZone: 'Europe/Rome' });
+    const month = now.toLocaleDateString('it-IT', { month: 'long', timeZone: 'Europe/Rome' });
+    const time = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+    const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
+    clockEl.textContent = `${capWeekday} ${day} ${capMonth} · Ore ${time}`;
   }
   updateItalianClock();
   setInterval(updateItalianClock, 1000);
@@ -702,49 +754,134 @@ const otherLive = (liveCards.length > 0 ? liveCards : allChannels.map(c => ({
       const isHidden = earlierContainer.classList.contains('hidden');
       if (isHidden) {
         earlierContainer.classList.remove('hidden');
-        const hideText = toggleBtn.getAttribute('data-hide-text') || 'Nascondi';
+        const hideText = toggleBtn.getAttribute('data-hide-text') || 'Nascondi programmi precedenti';
         const span = toggleBtn.querySelector('span');
         if (span) span.textContent = hideText;
       } else {
         earlierContainer.classList.add('hidden');
-        const showText = toggleBtn.getAttribute('data-show-text') || 'Mostra';
+        const showText = toggleBtn.getAttribute('data-show-text') || 'Mostra programmi precedenti di oggi (dalle 06:00)';
         const span = toggleBtn.querySelector('span');
         if (span) span.textContent = showText;
       }
     });
   }
 
-  // 3. Real-time Progress Bar & Auto-Shift for Hero Card
-  function updateHeroProgress() {
-    const progressBar = document.getElementById('live-hero-progress');
-    const remainingEl = document.getElementById('live-hero-remaining');
-    const heroSection = document.querySelector('[data-start][data-end]');
-    if (!progressBar || !heroSection) return;
-
-    const startMs = new Date(heroSection.getAttribute('data-start') || '').getTime();
-    const endMs = new Date(heroSection.getAttribute('data-end') || '').getTime();
-    const nowMs = Date.now();
-
-    if (startMs && endMs && endMs > startMs) {
-      const duration = endMs - startMs;
-      const elapsed = Math.min(100, Math.max(0, Math.round(((nowMs - startMs) / duration) * 100)));
-      progressBar.style.width = elapsed + '%';
+  // 3. Dynamic Real-Time Live Alignment (Syncs Hero Card & Timeline dynamically)
+  function refreshLiveSchedule() {
+    const dataEl = document.getElementById('channel-schedule-json');
+    if (!dataEl) return;
+    try {
+      const allProgs = JSON.parse(dataEl.textContent);
+      const now = Date.now();
       
-      const minsLeft = Math.max(0, Math.round((endMs - nowMs) / 60000));
-      if (remainingEl) {
-        remainingEl.textContent = minsLeft > 0 ? (minsLeft + ' min rimasti') : 'In conclusione';
+      let liveIndex = allProgs.findIndex(p => now >= p.startMs && now < p.endMs);
+      if (liveIndex === -1) {
+        liveIndex = allProgs.findIndex(p => p.startMs > now);
       }
+      if (liveIndex === -1 && allProgs.length > 0) {
+        liveIndex = allProgs.length - 1;
+      }
+      
+      const liveP = allProgs[liveIndex];
+      const nextP = allProgs[liveIndex + 1];
+      
+      if (liveP) {
+        const hero = document.getElementById('live-hero-section');
+        if (hero) {
+          hero.setAttribute('data-start', liveP.startTimeIso);
+          hero.setAttribute('data-end', liveP.endTimeIso);
+          
+          const tEl = document.getElementById('live-hero-title');
+          if (tEl) tEl.textContent = liveP.title;
+          
+          const dEl = document.getElementById('live-hero-desc');
+          if (dEl) dEl.textContent = liveP.description || 'Nessuna descrizione disponibile.';
+          
+          const catEl = document.getElementById('live-hero-cat');
+          if (catEl && liveP.category) catEl.textContent = liveP.category;
+          
+          const rangeTop = document.getElementById('live-hero-time-badge');
+          if (rangeTop) rangeTop.textContent = `${liveP.sTime} - ${liveP.eTime}`;
+          
+          const rangeHead = document.getElementById('live-hero-time-range');
+          if (rangeHead) rangeHead.textContent = `${liveP.sTime} - ${liveP.eTime}`;
+          
+          const imgEl = document.getElementById('live-hero-img');
+          if (imgEl && liveP.heroImg && imgEl.getAttribute('data-id') !== liveP.id) {
+            imgEl.src = liveP.heroImg;
+            imgEl.alt = liveP.title;
+            imgEl.setAttribute('data-id', liveP.id);
+          }
+          
+          const sTimeEl = document.getElementById('live-hero-start-time');
+          if (sTimeEl) sTimeEl.textContent = liveP.sTime;
+          const eTimeEl = document.getElementById('live-hero-end-time');
+          if (eTimeEl) eTimeEl.textContent = liveP.eTime;
 
-      // If program ended while user was viewing, softly reload once to shift the schedule
-      if (nowMs >= endMs + 5000 && (nowMs - endMs) < 600000) {
-        const reloadKey = 'intv_reload_' + endMs;
-        if (!sessionStorage.getItem(reloadKey)) {
-          sessionStorage.setItem(reloadKey, '1');
-          window.location.reload();
+          if (nextP) {
+            const nextT = document.getElementById('live-hero-next-title');
+            if (nextT) nextT.textContent = nextP.title;
+            const nextTm = document.getElementById('live-hero-next-time');
+            if (nextTm) nextTm.textContent = nextP.sTime;
+          }
+        }
+        
+        // Progress bar and remaining minutes
+        const duration = Math.max(1, liveP.endMs - liveP.startMs);
+        const elapsed = Math.min(100, Math.max(0, Math.round(((now - liveP.startMs) / duration) * 100)));
+        const minsLeft = Math.max(0, Math.round((liveP.endMs - now) / 60000));
+        
+        const progBar = document.getElementById('live-hero-progress');
+        if (progBar) progBar.style.width = elapsed + '%';
+        
+        const remEl = document.getElementById('live-hero-remaining');
+        if (remEl) {
+          remEl.textContent = minsLeft > 0 ? (minsLeft + ' min rimasti') : 'In conclusione';
+        }
+
+        // Shift timeline cards dynamically
+        const timelineList = document.getElementById('timeline-list');
+        const earlierList = document.getElementById('earlier-programs-list');
+        const toggleBtn = document.getElementById('toggle-earlier-btn');
+        
+        if (timelineList && earlierList) {
+          const allCards = document.querySelectorAll('[data-prog-id]');
+          let earlierCount = 0;
+          allCards.forEach(card => {
+            const pStart = parseInt(card.getAttribute('data-start-ms') || '0', 10);
+            const pEnd = parseInt(card.getAttribute('data-end-ms') || '0', 10);
+            
+            if (pEnd <= liveP.startMs) {
+              // Program already aired earlier today
+              earlierList.appendChild(card);
+              card.classList.remove('hidden');
+              card.style.display = '';
+              earlierCount++;
+            } else if (pStart >= liveP.endMs) {
+              // Upcoming program
+              timelineList.appendChild(card);
+              card.classList.remove('hidden');
+              card.style.display = '';
+            } else {
+              // Current live show (already displayed in hero card)
+              card.style.display = 'none';
+            }
+          });
+          
+          if (toggleBtn) {
+            if (earlierCount > 0) {
+              toggleBtn.classList.remove('hidden');
+            } else {
+              toggleBtn.classList.add('hidden');
+            }
+          }
         }
       }
+    } catch(err) {
+      console.warn('Schedule sync error:', err);
     }
   }
-  updateHeroProgress();
-  setInterval(updateHeroProgress, 30000);
+
+  refreshLiveSchedule();
+  setInterval(refreshLiveSchedule, 30000);
 </script>

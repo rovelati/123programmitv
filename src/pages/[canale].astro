@@ -7,7 +7,7 @@ import SeoHubLinks from '../components/SeoHubLinks.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT } from '../utils/timeSlots';
+import { getTodayInRome, getTomorrowInRome, formatDateIT } from '../utils/timeSlots';
 import { buildHubChannelJsonLd } from '../utils/jsonld';
 import { getChannelStaseraDescription, getChannelStaseraTitle } from '../utils/seoDescriptions';
 import { getChannelStream } from '../utils/channelStreams';
@@ -17,13 +17,16 @@ import type { Channel, Program } from '../types';
 
 export async function getStaticPaths() {
   const today = getTodayInRome();
-  const [channels, programs] = await Promise.all([
+  const tomorrow = getTomorrowInRome();
+  const [channels, programsToday, programsTomorrow] = await Promise.all([
     fetchChannels(),
     fetchProgramsForDate(today),
+    fetchProgramsForDate(tomorrow),
   ]);
 
   const programsByChannel = new Map<string, Program[]>();
-  for (const program of programs) {
+  const allPrograms = [...programsToday, ...programsTomorrow];
+  for (const program of allPrograms) {
     const list = programsByChannel.get(program.channel_id ?? '') ?? [];
     list.push(program);
     programsByChannel.set(program.channel_id ?? '', list);

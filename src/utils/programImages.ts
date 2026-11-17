@@ -150,6 +150,12 @@ function cleanTitle(str?: string | null): string {
 export function upscaleImageUrl(url?: string | null): string | null {
   if (!url || typeof url !== 'string' || !url.startsWith('http')) return null;
 
+  const lower = url.toLowerCase();
+  // Rifiuta tassativamente banner promozionali, watermark o share-1200 di SuperguidaTV
+  if (lower.includes('superguidatv') || lower.includes('share-1200')) {
+    return null;
+  }
+
   let upgraded = url;
   if (upgraded.includes('/media/cache/epg_program_small/')) {
     upgraded = upgraded.replace('/media/cache/epg_program_small/', '/');

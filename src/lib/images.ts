@@ -191,9 +191,16 @@ export function pickFromPool(pool: string[], p: ProgramLike): string {
 
 /**
  * Migliora URL di immagini eliminando versioni thumbnail a bassa risoluzione.
+ * Blocca e scarta asset marchiati da terzi (es. SuperguidaTV share banner).
  */
 export function upscaleImageUrl(url?: string | null): string | null {
   if (!url || typeof url !== 'string' || !url.startsWith('http')) return null;
+
+  const lower = url.toLowerCase();
+  // Rifiuta tassativamente banner social o watermark terzi di SuperguidaTV
+  if (lower.includes('superguidatv') || lower.includes('share-1200')) {
+    return null;
+  }
 
   let upgraded = url;
   if (upgraded.includes('/media/cache/epg_program_small/')) {

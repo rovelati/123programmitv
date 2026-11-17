@@ -74,15 +74,16 @@ const isVideo      = ogType === 'video.movie' || ogType === 'video.tv_show';
 <!doctype html>
 <html lang="it" class="dark scroll-smooth">
   <head>
-    <!-- UniConsent CMP (IAB TCF v2.2 & Google Consent Mode v2) -->
-    <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="5d3bad073e"></script>
+    <!-- ═══ UniConsent CMP (Consent Management Platform) ═══════════════════ -->
+    <script is:inline src="https://cmp.uniconsent.com/v2/cmp.js" data-license="8d3a6d7837"></script>
 
-    <!-- Google Tag Manager / GA4 -->
-    <script is:inline async src="https://www.googletagmanager.com/gtm.js?id=GTM-WF5MSLH5"></script>
+    <!-- ═══ Google Analytics 4 ════════════════════════════════════════════ -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-824117SV8J"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      gtag('config', 'G-824117SV8J', { anonymize_ip: true });
     </script>
 
     <meta charset="UTF-8" />
