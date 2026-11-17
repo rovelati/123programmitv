@@ -11,6 +11,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 if [ -d "${HOME:-/root}/.nvm" ]; then
   export NVM_DIR="${HOME:-/root}/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm use 22 2>/dev/null || nvm use --lts 2>/dev/null || true
 fi
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
@@ -81,6 +82,11 @@ elif [ -f "$ASTRO_DIR/scripts/run-epg-import.sh" ]; then
   bash "$ASTRO_DIR/scripts/run-epg-import.sh" 2>&1 | tee -a "$LOG" || log "WARN: EPG import failed, continuing with existing DB data"
 else
   log "WARN: scripts/run-epg-import.sh missing — building with existing DB data"
+fi
+
+if [ -f "$ASTRO_DIR/scripts/enrich_it_official_posters.py" ]; then
+  log "Running official broadcaster poster enrichment (TivùSat & Sky HD)..."
+  python3 "$ASTRO_DIR/scripts/enrich_it_official_posters.py" --days 2 2>&1 | tee -a "$LOG" || log "WARN: Official poster enrichment failed or timed out, continuing"
 fi
 
 if [ -f "$ASTRO_DIR/scripts/enrich_it_tmdb.py" ]; then

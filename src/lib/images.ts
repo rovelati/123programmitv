@@ -222,8 +222,8 @@ export function upscaleImageUrl(url?: string | null): string | null {
   if (!url || typeof url !== 'string' || !url.startsWith('http')) return null;
 
   const lower = url.toLowerCase();
-  // Rifiuta tassativamente banner social o watermark terzi di SuperguidaTV
-  if (lower.includes('superguidatv') || lower.includes('share-1200')) {
+  // Rifiuta tassativamente banner social, watermark terzi (SuperguidaTV) o copertine/loghi segnaposto
+  if (lower.includes('superguidatv') || lower.includes('share-1200') || lower.includes('dtt_cover') || lower.includes('/channel/')) {
     return null;
   }
 
@@ -258,7 +258,15 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
   const c = (p.category || '').toLowerCase().trim();
   const fullText = `${t} ${c}`;
 
-  // 1. Notiziari, Meteo e Sport DEVONO SEMPRE usare i pool fotografici dedicati da catalogo
+  // Controllo presenza di immagini ufficiali certificate dell'emittente (RaiPlay, TivùSat, Sky)
+  const isOfficialBroadcasterImg = (url?: string | null): boolean => {
+    if (!url) return false;
+    const u = url.toLowerCase();
+    return u.includes('raiplay.it') || u.includes('tivulaguida.it') || u.includes('guidatv.sky.it') || u.includes('sky.it');
+  };
+  const hasOfficialBroadcasterImg = isOfficialBroadcasterImg(p.backdrop_url) || isOfficialBroadcasterImg(p.poster_url);
+
+  // 1. Notiziari, Meteo e Sport: usano foto ufficiale se fornita dall'emittente, altrimenti pool da catalogo
   const isMeteo = fullText.includes('meteo') || fullText.includes('previsioni') || fullText.includes('che tempo fa');
   const isNews = fullText.includes('tg1') || fullText.includes('tg2') || fullText.includes('tg3') ||
                  fullText.includes('tg4') || fullText.includes('tg5') || fullText.includes('tgr') ||
@@ -270,7 +278,7 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
                   fullText.includes('formula 1') || fullText.includes('motogp') || fullText.includes('basket') ||
                   fullText.includes('ciclismo') || fullText.includes('volley') || fullText.includes('supertennis');
 
-  if (isMeteo || isNews || isSport) {
+  if (!hasOfficialBroadcasterImg && (isMeteo || isNews || isSport)) {
     return getFallbackImage(p);
   }
 

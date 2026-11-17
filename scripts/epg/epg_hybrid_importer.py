@@ -506,6 +506,7 @@ def parse_duration_to_timedelta(value: Optional[str]) -> Optional[timedelta]:
 
 
 def pick_program_poster(program: Dict[str, Any]) -> Optional[str]:
+    disallowed_keywords = ('superguidatv', 'share-1200', 'dtt_cover', 'placeholder', 'blank', 'default_')
     direct_candidates = (
         program.get('poster'),
         program.get('image'),
@@ -516,7 +517,10 @@ def pick_program_poster(program: Dict[str, Any]) -> Optional[str]:
     )
     for candidate in direct_candidates:
         if isinstance(candidate, str) and candidate.strip():
-            return candidate.strip()
+            c = candidate.strip()
+            if any(bad in c.lower() for bad in disallowed_keywords):
+                continue
+            return c
 
     nested_candidates = (
         program.get('images'),
@@ -530,7 +534,10 @@ def pick_program_poster(program: Dict[str, Any]) -> Optional[str]:
         for key in ('poster', 'image', 'thumbnail', 'thumb', 'cover', 'artwork', 'landscape'):
             candidate = container.get(key)
             if isinstance(candidate, str) and candidate.strip():
-                return candidate.strip()
+                c = candidate.strip()
+                if any(bad in c.lower() for bad in disallowed_keywords):
+                    continue
+                return c
 
     return None
 

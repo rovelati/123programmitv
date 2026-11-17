@@ -38,6 +38,7 @@ const allPrograms = [
 const progsByChannel = new Map<string, Program[]>();
 for (const p of allPrograms) {
   const cid = p.channel_id;
+  if (!cid) continue;
   if (!progsByChannel.has(cid)) progsByChannel.set(cid, []);
   progsByChannel.get(cid)!.push(p);
 }
