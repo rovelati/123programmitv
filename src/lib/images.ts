@@ -31,7 +31,7 @@ export const FALLBACK_POOLS = {
   // Calcio / Serie A / Champions League / Coppa Italia
   football: [
     'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1280&q=80', // Ball on stadium pitch
-    'https://images.unsplash.com/photo-1517747614396-d21a78b850e8?auto=format&fit=crop&w=1280&q=80', // Stadium lights & match
+    'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80', // Stadium lights & match
     'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=1280&q=80', // Floodlit night arena
     'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1280&q=80', // Pitch grass & stadium
     'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1280&q=80'  // Stadium arena perspective
@@ -63,6 +63,17 @@ export const FALLBACK_POOLS = {
   basketball: [
     'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1280&q=80', // Basketball hoop
     'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1280&q=80'  // Sports arena
+  ],
+
+  // Pallavolo / Volley
+  volleyball: [
+    'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1280&q=80', // Volleyball court
+    'https://images.unsplash.com/photo-1592656094267-764a45160876?auto=format&fit=crop&w=1280&q=80'  // Volleyball net
+  ],
+
+  // Nuoto / Sport acquatici
+  swimming: [
+    'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1280&q=80'  // Swimming pool lanes
   ],
 
   // Sport generale
@@ -233,15 +244,19 @@ export function getProgramHeroImg(p?: ProgramLike | null): string {
   const c = (p.category || '').toLowerCase().trim();
   const fullText = `${t} ${c}`;
 
-  // 1. Notiziari e Meteo DEVONO SEMPRE usare i pool fotografici dedicati
+  // 1. Notiziari, Meteo e Sport DEVONO SEMPRE usare i pool fotografici dedicati da catalogo
   const isMeteo = fullText.includes('meteo') || fullText.includes('previsioni') || fullText.includes('che tempo fa');
   const isNews = fullText.includes('tg1') || fullText.includes('tg2') || fullText.includes('tg3') ||
                  fullText.includes('tg4') || fullText.includes('tg5') || fullText.includes('tgr') ||
                  fullText.includes('studio aperto') || fullText.includes('tg la7') || fullText.includes('tgla7') ||
                  fullText.includes('sky tg24') || fullText.includes('telegiornale') || fullText.includes('notiziario') ||
                  fullText.includes('notizie');
+  const isSport = c.includes('sport') || fullText.includes('uefa') || fullText.includes('atp') ||
+                  fullText.includes('wta') || fullText.includes('tennis') || fullText.includes('calcio') ||
+                  fullText.includes('formula 1') || fullText.includes('motogp') || fullText.includes('basket') ||
+                  fullText.includes('ciclismo') || fullText.includes('volley') || fullText.includes('supertennis');
 
-  if (isMeteo || isNews) {
+  if (isMeteo || isNews || isSport) {
     return getFallbackImage(p);
   }
 
@@ -290,37 +305,71 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.news, p);
   }
 
-  // 3. Calcio
+  // 3. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
+  if (
+    fullText.includes('tennis') || fullText.includes('atp') || fullText.includes('wta') ||
+    fullText.includes('wimbledon') || fullText.includes('davis') || fullText.includes('sinner') ||
+    fullText.includes('alcaraz') || fullText.includes('supertennis') || fullText.includes('nitto atp') ||
+    fullText.includes('us open') || fullText.includes('roland garros') || fullText.includes('australian open') ||
+    fullText.includes('the insider atp')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.tennis, p);
+  }
+
+  // 4. Motori (Formula 1, MotoGP, SBK, Rally)
+  if (
+    fullText.includes('formula 1') || fullText.includes('formula1') || fullText.includes(' f1 ') ||
+    fullText.includes('motogp') || fullText.includes('moto2') || fullText.includes('moto3') ||
+    fullText.includes('superbike') || fullText.includes('sbk') || fullText.includes('rally') ||
+    fullText.includes('gran premio') || fullText.includes('grand prix') || fullText.includes('motori') ||
+    fullText.includes('ferrari') || fullText.includes('wrc')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.motorsport, p);
+  }
+
+  // 5. Basket (NBA, Eurolega, LBA, Virtus)
+  if (
+    fullText.includes('basket') || fullText.includes('nba') || fullText.includes('pallacanestro') ||
+    fullText.includes('eurolega') || fullText.includes('lba') || fullText.includes('virtus') ||
+    fullText.includes('panathinaikos') || fullText.includes('olimpia milano')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.basketball, p);
+  }
+
+  // 6. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
+  if (
+    fullText.includes('ciclismo') || fullText.includes('giro d\'italia') || fullText.includes('tour de france') ||
+    fullText.includes('vuelta') || fullText.includes('bicicletta')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.cycling, p);
+  }
+
+  // 7. Pallavolo / Volley
+  if (fullText.includes('volley') || fullText.includes('pallavolo') || fullText.includes('superlega') || fullText.includes('cev')) {
+    return pickFromPool(FALLBACK_POOLS.volleyball, p);
+  }
+
+  // 8. Nuoto / Pallanuoto
+  if (fullText.includes('nuoto') || fullText.includes('pallanuoto') || fullText.includes('tuffi')) {
+    return pickFromPool(FALLBACK_POOLS.swimming, p);
+  }
+
+  // 9. Calcio / Football (Serie A, Champions League, UEFA, Nazionale, Coppe)
   if (
     fullText.includes('calcio') || fullText.includes('serie a') || fullText.includes('serie b') ||
     fullText.includes('champions league') || fullText.includes('europa league') ||
     fullText.includes('conference league') || fullText.includes('coppa italia') ||
-    fullText.includes('mondiali') || fullText.includes('uefa') || fullText.includes('fifa')
+    fullText.includes('mondiali') || fullText.includes('uefa') || fullText.includes('fifa') ||
+    fullText.includes('milan') || fullText.includes('inter') || fullText.includes('juve') ||
+    fullText.includes('juventus') || fullText.includes('roma') || fullText.includes('lazio') ||
+    fullText.includes('napoli') || fullText.includes('atalanta') || fullText.includes('partita') ||
+    fullText.includes('nazionale') || fullText.includes('danimarca') || fullText.includes('norvegia') ||
+    fullText.includes('premier league') || fullText.includes('liga') || fullText.includes('bundesliga')
   ) {
     return pickFromPool(FALLBACK_POOLS.football, p);
   }
 
-  // 4. Tennis
-  if (fullText.includes('tennis') || fullText.includes('atp') || fullText.includes('wta') || fullText.includes('wimbledon') || fullText.includes('davis')) {
-    return pickFromPool(FALLBACK_POOLS.tennis, p);
-  }
-
-  // 5. Motori
-  if (fullText.includes('formula 1') || fullText.includes('f1') || fullText.includes('motogp') || fullText.includes('gran premio') || fullText.includes('motori')) {
-    return pickFromPool(FALLBACK_POOLS.motorsport, p);
-  }
-
-  // 6. Ciclismo
-  if (fullText.includes('ciclismo') || fullText.includes('giro d\'italia') || fullText.includes('tour de france') || fullText.includes('vuelta')) {
-    return pickFromPool(FALLBACK_POOLS.cycling, p);
-  }
-
-  // 7. Basket
-  if (fullText.includes('basket') || fullText.includes('nba') || fullText.includes('pallacanestro') || fullText.includes('eurolega')) {
-    return pickFromPool(FALLBACK_POOLS.basketball, p);
-  }
-
-  // 8. Sport generale
+  // 10. Sport generale (Stadio olimpico, pista atletica - no calciatore)
   if (fullText.includes('sport') || fullText.includes('diretta sport')) {
     return pickFromPool(FALLBACK_POOLS.sports_general, p);
   }

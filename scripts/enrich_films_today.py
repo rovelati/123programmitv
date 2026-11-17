@@ -118,8 +118,13 @@ def main():
               AND (
                 genre ILIKE '%film%' OR genre ILIKE '%cinema%' 
                 OR title ILIKE '%(19%' OR title ILIKE '%(20%'
-                OR channel_id IN ('rai-movie', 'iris', 'cine34', 'twenty-seven', 'cielo')
+                OR channel_id IN ('rai-movie', 'iris', 'cine34')
               )
+              AND genre NOT ILIKE '%sport%'
+              AND genre NOT ILIKE '%sports%'
+              AND title NOT ILIKE '%uefa%'
+              AND title NOT ILIKE '%atp%'
+              AND title NOT ILIKE '%wta%'
               AND (
                 poster_url IS NULL OR poster_url = ''
                 OR backdrop_url IS NULL OR backdrop_url = ''

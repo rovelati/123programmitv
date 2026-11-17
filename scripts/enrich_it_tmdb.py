@@ -91,7 +91,10 @@ def is_service_broadcast(title: str, genre: Optional[str] = None) -> bool:
     if any(p.search(t) for p in SERVICE_REGEXES):
         return True
 
-    if any(k in g for k in ('notizie', 'news', 'telegiornale', 'meteo', 'attualita', 'attualità', 'informazione', 'shopping', 'lotto')):
+    if any(k in g for k in ('notizie', 'news', 'telegiornale', 'meteo', 'attualita', 'attualità', 'informazione', 'shopping', 'lotto', 'sport', 'sports', 'calcio', 'tennis', 'basket')):
+        return True
+
+    if any(k in t for k in ('uefa', 'champions league', 'europa league', 'atp', 'wta', 'diretta', 'serie a', 'motogp', 'formula 1')):
         return True
 
     return False
@@ -208,17 +211,20 @@ def get_db_connection(db_url: str):
 
 
 def sanitize_legacy_posters(conn):
-    """Clear out any bogus movie/anime posters for news and weather programs in PostgreSQL."""
-    logger.info("Sanitizing legacy service broadcast posters (TG, Meteo) in database...")
+    """Clear out any bogus movie/anime posters for news, weather and sports programs in PostgreSQL."""
+    logger.info("Sanitizing legacy service & sports broadcast posters (TG, Meteo, Sport) in database...")
     with conn.cursor() as cur:
         cur.execute(r"""
             UPDATE programs
-            SET poster_url = NULL, backdrop_url = NULL, rating = NULL
+            SET poster_url = NULL, backdrop_url = NULL, rating = NULL, tmdb_id = NULL
             WHERE (
                 title ILIKE '%tg1%' OR title ILIKE '%tg2%' OR title ILIKE '%tg3%'
                 OR title ILIKE '%tg4%' OR title ILIKE '%tg5%' OR title ILIKE '%studio aperto%'
                 OR title ILIKE '%tg la7%' OR title ILIKE '%tgla7%' OR title ILIKE '%telegiornale%'
                 OR title ILIKE '%meteo%'
+                OR genre ILIKE '%sport%' OR genre ILIKE '%sports%'
+                OR title ILIKE '%uefa%' OR title ILIKE '%atp%' OR title ILIKE '%wta%'
+                OR title ILIKE '%danimarca%norvegia%'
                 OR title ~* '^(ep|ep\.|episode|episodio|puntata|parte)\s*\d*$'
                 OR title ~* '^\d+[\^°a-z]*\s*(parte|tempo|episodio|puntata|part)'
             )
@@ -226,7 +232,7 @@ def sanitize_legacy_posters(conn):
         """)
         cleared = cur.rowcount
         conn.commit()
-        logger.info(f"Cleared bogus TMDb data for {cleared} service broadcast rows.")
+        logger.info(f"Cleared bogus TMDb data for {cleared} service/sport broadcast rows.")
 
 
 def enrich_programs(db_url: str = DEFAULT_DB_URL, limit: int = 600):

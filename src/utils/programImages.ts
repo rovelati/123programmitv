@@ -119,6 +119,98 @@ export const KNOWN_PROGRAM_POSTERS: Record<string, string> = {
   'motogp': 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80',
 };
 
+export const SPORT_CATALOG_ARTWORK: Record<string, string> = {
+  tennis: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=800&q=80', // Tennis court & net
+  calcio: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80', // Football pitch & ball (no calciatore)
+  basket: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80', // Basketball hoop
+  motori: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80', // Motorsport racetrack
+  ciclismo: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80', // Cycling road & tarmac
+  volley: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=800&q=80', // Volleyball court
+  nuoto: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80', // Swimming pool lanes
+  generale: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80' // Olympic stadium running track
+};
+
+export function getSportArtwork(
+  title?: string | null,
+  category?: string | null,
+  description?: string | null
+): string | null {
+  const t = (title || '').toLowerCase();
+  const c = (category || '').toLowerCase();
+  const d = (description || '').toLowerCase();
+  const all = `${t} ${c} ${d}`;
+
+  // 1. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
+  if (
+    all.includes('tennis') || all.includes('atp') || all.includes('wta') ||
+    all.includes('wimbledon') || all.includes('us open') || all.includes('roland garros') ||
+    all.includes('australian open') || all.includes('davis') || all.includes('sinner') ||
+    all.includes('alcaraz') || all.includes('djokovic') || all.includes('supertennis') ||
+    all.includes('nitto atp') || all.includes('internazionali')
+  ) {
+    return SPORT_CATALOG_ARTWORK.tennis;
+  }
+
+  // 2. Motori (Formula 1, MotoGP, SBK, Rally)
+  if (
+    all.includes('formula 1') || all.includes('formula1') || all.includes(' f1 ') ||
+    all.includes('motogp') || all.includes('moto2') || all.includes('moto3') ||
+    all.includes('superbike') || all.includes('sbk') || all.includes('rally') ||
+    all.includes('gran premio') || all.includes('grand prix') || all.includes('motori') ||
+    all.includes('ferrari') || all.includes('wrc')
+  ) {
+    return SPORT_CATALOG_ARTWORK.motori;
+  }
+
+  // 3. Basket (NBA, Eurolega, LBA, Virtus, Olimpia)
+  if (
+    all.includes('basket') || all.includes('pallacanestro') || all.includes('nba') ||
+    all.includes('eurolega') || all.includes('lba') || all.includes('virtus') ||
+    all.includes('panathinaikos') || all.includes('olimpia milano') || all.includes('real madrid basket')
+  ) {
+    return SPORT_CATALOG_ARTWORK.basket;
+  }
+
+  // 4. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
+  if (
+    all.includes('ciclismo') || all.includes('giro d\'italia') || all.includes('tour de france') ||
+    all.includes('vuelta') || all.includes('bicicletta')
+  ) {
+    return SPORT_CATALOG_ARTWORK.ciclismo;
+  }
+
+  // 5. Pallavolo / Volley
+  if (all.includes('volley') || all.includes('pallavolo') || all.includes('superlega') || all.includes('cev')) {
+    return SPORT_CATALOG_ARTWORK.volley;
+  }
+
+  // 6. Nuoto / Pallanuoto
+  if (all.includes('nuoto') || all.includes('pallanuoto') || all.includes('tuffi')) {
+    return SPORT_CATALOG_ARTWORK.nuoto;
+  }
+
+  // 7. Calcio (Serie A, Champions League, UEFA, Nazionale, Coppe)
+  if (
+    all.includes('calcio') || all.includes('serie a') || all.includes('serie b') ||
+    all.includes('champions league') || all.includes('europa league') ||
+    all.includes('conference league') || all.includes('coppa italia') ||
+    all.includes('uefa') || all.includes('fifa') || all.includes('mondiali') ||
+    all.includes('milan') || all.includes('inter') || all.includes('juve') ||
+    all.includes('juventus') || all.includes('roma') || all.includes('lazio') ||
+    all.includes('napoli') || all.includes('atalanta') || all.includes('partita') ||
+    all.includes('nazionale') || all.includes('danimarca') || all.includes('norvegia') ||
+    all.includes('premier league') || all.includes('liga') || all.includes('bundesliga')
+  ) {
+    return SPORT_CATALOG_ARTWORK.calcio;
+  }
+
+  if (c.includes('sport') || c.includes('sports')) {
+    return SPORT_CATALOG_ARTWORK.generale;
+  }
+
+  return null;
+}
+
 export const CATEGORY_ARTWORK: Record<string, string> = {
   meteo: 'https://images.unsplash.com/photo-1592210454359-9043f067919b?auto=format&fit=crop&w=800&q=80',
   film: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80',
@@ -215,6 +307,27 @@ export function resolveProgramPoster(
     if (cleaned.includes('propaganda')) return KNOWN_PROGRAM_POSTERS['propaganda live'];
     if (cleaned.includes('quarto grado')) return KNOWN_PROGRAM_POSTERS['quarto grado'];
     if (cleaned.includes('grande fratello')) return KNOWN_PROGRAM_POSTERS['grande fratello'];
+  }
+
+  // ── SPORT EVENTS: Assegna SEMPRE l'artwork di catalogo specifico per disciplina ──
+  // Rifiuta TMDb per eventi sportivi (evita film comici/kung-fu o Bruce Lee su match reali)
+  const catLow = (category || '').toLowerCase();
+  const titleLow = (title || '').toLowerCase();
+  const isSportEvent = catLow.includes('sport') ||
+                       titleLow.includes('uefa') ||
+                       titleLow.includes('atp') ||
+                       titleLow.includes('wta') ||
+                       titleLow.includes('tennis') ||
+                       titleLow.includes('calcio') ||
+                       titleLow.includes('formula 1') ||
+                       titleLow.includes('motogp') ||
+                       titleLow.includes('basket') ||
+                       titleLow.includes('ciclismo') ||
+                       titleLow.includes('supertennis');
+
+  if (isSportEvent) {
+    const sportArt = getSportArtwork(title, category, description);
+    if (sportArt) return sportArt;
   }
 
   if (currentPoster && typeof currentPoster === 'string' && currentPoster.startsWith('http')) {
