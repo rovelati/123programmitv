@@ -37,6 +37,7 @@ const LOCAL_LOGOS: Record<string, string> = {
   'mediaset-27-twentyseven':   '/channel-logos/twenty-seven.svg',
   '20':                        '/channel-logos/20.jpg',
   'la5':                       '/channel-logos/la5.png',
+  'la-5':                      '/channel-logos/la5.png',
   'iris':                      '/channel-logos/iris.svg',
   'top-crime':                 '/channel-logos/top-crime.png',
   'topcrime':                  '/channel-logos/topcrime.png',
@@ -53,6 +54,7 @@ const LOCAL_LOGOS: Record<string, string> = {
   'super':          '/channel-logos/super.png',
   'qvc':            '/channel-logos/qvc.png',
   'warner-tv':      '/channel-logos/warner-tv.png',
+  'automoto':       '/channel-logos/automoto.png',
   // ── Sky ──────────────────────────────────────────────────────────────────
   'sky-uno':        '/channel-logos/sky-uno.png',
   'sky-serie':      '/channel-logos/sky-serie.png',
@@ -73,16 +75,23 @@ const LOCAL_LOGOS: Record<string, string> = {
   'tv2000':         '/channel-logos/tv2000.png',
   'supertennis':    '/channel-logos/supertennis.png',
   'inter-tv':       '/channel-logos/inter-tv.png',
+  'milan-tv':       '/channel-logos/milan-tv.png',
   'history-channel':'/channel-logos/history-channel.png',
   'comedy-central': '/channel-logos/comedy-central.svg',
   'cartoon-network':'/channel-logos/cartoon-network.png',
+  'cartoon-plus-1': '/channel-logos/cartoon-plus-1.png',
   'boomerang':      '/channel-logos/boomerang.png',
+  'boomerang-plus-1':'/channel-logos/boomerang-plus-1.png',
   'nickelodeon':    '/channel-logos/nickelodeon.png',
   'antenna3':       '/channel-logos/antenna3.png',
   'telelombardia':  '/channel-logos/telelombardia.png',
   'class-tv-moda':  '/channel-logos/class-tv-moda.png',
   'al-jazeera':     '/channel-logos/al-jazeera.png',
   'alma-tv':        '/channel-logos/alma-tv.png',
+  'almatv':         '/channel-logos/alma-tv.png',
+  'sportitalia':    '/channel-logos/sport-italia.png',
+  'sport-italia':   '/channel-logos/sport-italia.png',
+  'gambero-rosso':  '/channel-logos/gambero-rosso.png',
   'euronews':       '/channel-logos/euronews.png',
   'bloomberg':      '/channel-logos/bloomberg.png',
 };
@@ -106,12 +115,14 @@ export const getChannelLogo = (channelId: string, logoUrl?: string | null, chann
     if (filename) return `/channel-logos/${filename}`;
   }
 
-  // 3. Usa l'URL del DB se è un URL esterno valido (non hotlink-protetto)
+  // 3. Usa l'URL del DB se è un URL esterno valido (non hotlink-protetto o di competitor)
   if (
     logoUrl
     && logoUrl.trim()
     && !logoUrl.includes('123programmitv.it')
     && !logoUrl.includes('intvstasera.it')
+    && !logoUrl.includes('superguidatv')
+    && !logoUrl.includes('share-1200')
     && logoUrl !== 'null'
   ) {
     return logoUrl;
