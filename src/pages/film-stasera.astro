@@ -2,31 +2,50 @@
 export const prerender = true;
 
 import HubLayout from '../layouts/HubLayout.astro';
-import ProgramRow from '../components/ProgramRow.astro';
+import SnapCard from '../components/SnapCard.astro';
 import ChannelNav from '../components/ChannelNav.astro';
-import Breadcrumb from '../components/Breadcrumb.astro';
 import SeoHubLinks from '../components/SeoHubLinks.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { ADSENSE_SLOTS } from '../lib/adsense';
 import { fetchChannels, fetchProgramsForDate } from '../lib/epg';
-import { getTodayInRome, formatDateIT, filterStaseraPrograms, toRomeMinutes } from '../utils/timeSlots';
+import { getTodayInRome, getTomorrowInRome, formatDateIT, toRomeMinutes, formatTime } from '../utils/timeSlots';
 import { buildHubCategoryJsonLd } from '../utils/jsonld';
 import { SEO_DESCRIPTIONS } from '../utils/seoDescriptions';
 import type { Channel, Program } from '../types';
 
 const today = getTodayInRome();
+const tomorrow = getTomorrowInRome();
 const dateLabel = formatDateIT(today);
 
-const [allChannels, allPrograms] = await Promise.all([
+const [allChannels, todayPrograms, tomorrowPrograms] = await Promise.all([
   fetchChannels(),
   fetchProgramsForDate(today),
+  fetchProgramsForDate(tomorrow),
 ]);
 
-// Mappa channel_id → Channel
+// Mappa channel_id → Channel e ordine preferenziale
 const channelMap = new Map<string, Channel>(allChannels.map(ch => [ch.id, ch]));
 const channelOrder = new Map<string, number>(allChannels.map((ch, i) => [ch.id, i]));
 
-// ─── Canali esclusivamente/prevalentemente cinematografici ───────────────────
+// Span fino alle 02:30 della notte successiva (broadcast day italiano)
+const cutoffTomorrowMs = new Date(`${tomorrow}T02:30:00+01:00`).getTime();
+const allPrograms = [
+  ...todayPrograms,
+  ...tomorrowPrograms.filter(p => new Date(p.startTime).getTime() <= cutoffTomorrowMs)
+];
+
+// Raggruppa programmi per canale e ordina per startTime (per determinare nextProg)
+const progsByChannel = new Map<string, Program[]>();
+for (const p of allPrograms) {
+  const cid = p.channel_id;
+  if (!progsByChannel.has(cid)) progsByChannel.set(cid, []);
+  progsByChannel.get(cid)!.push(p);
+}
+for (const list of progsByChannel.values()) {
+  list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+}
+
+// ─── Riconoscimento accurato dei film ────────────────────────────────────────
 const FILM_CHANNELS = new Set([
   'iris', 'cine34', 'rai-movie',
   'sky-cinema-uno', 'sky-cinema-due',
@@ -38,7 +57,11 @@ const FILM_CHANNELS = new Set([
 ]);
 
 const YEAR_RE = /\(\s*(?:19|20)\d{2}\s*\)/;
-const FILM_KW = ['film', 'cinema', 'movie'];
+const FILM_KW = [
+  'film', 'cinema', 'movie', 'commedia', 'thriller', 'drammatico',
+  'azione', 'western', 'avventura', 'fantascienza', 'horror', 'poliziesco',
+  'animazione', 'sentimentale', 'spielfilm'
+];
 
 function durationMin(p: Program): number {
   return (new Date(p.endTime).getTime() - new Date(p.startTime).getTime()) / 60000;
@@ -52,15 +75,12 @@ function hasEpisodeMarker(p: Program): boolean {
 
 const EXCLUDE_TITLE_FRAGMENTS = [
   'appuntamento al cinema', 'note di cinema', 'movie mag',
-  'cinematin',
-  'anica',
+  'cinematin', 'anica', 'supercinema',
   'tg24', 'telegiornale', 'tg2 ', 'tg1 ', 'tg3 ',
   'in pillole', 'mezz\'ora', 'notizie',
   'top 20 ', 'countdown',
-  'sfida implacabile',
-  'icarus ultra',
-  'rubrica',
-  'santa messa', 'messa in',
+  'sfida implacabile', 'icarus ultra',
+  'rubrica', 'santa messa', 'messa in',
 ];
 
 function isExcludedByTitle(p: Program): boolean {
@@ -70,92 +90,169 @@ function isExcludedByTitle(p: Program): boolean {
 
 function isFilm(p: Program): boolean {
   const cid = p.channel_id ?? '';
-  const dur  = durationMin(p);
+  const dur = durationMin(p);
 
   if (isExcludedByTitle(p)) return false;
   if (hasEpisodeMarker(p)) return false;
 
-  if (FILM_CHANNELS.has(cid) && dur >= 70) return true;
+  if (FILM_CHANNELS.has(cid) && dur >= 65) return true;
   if (YEAR_RE.test(p.title) && dur >= 60) return true;
-  if (p.description && YEAR_RE.test(p.description) && dur >= 70) return true;
-  if (p.description && dur >= 75) {
+  if (p.description && YEAR_RE.test(p.description) && dur >= 65) return true;
+  if (p.description && dur >= 70) {
     const desc = p.description.toLowerCase();
-    if (desc.includes('regia di') || desc.includes('regia:')) return true;
+    if (desc.includes('regia di') || desc.includes('regia:') || desc.includes('film ') || desc.includes('un film')) return true;
   }
-  if (FILM_KW.some(k => p.category?.toLowerCase().includes(k)) && dur >= 80) return true;
+  if (FILM_KW.some(k => (p.category ?? '').toLowerCase().includes(k)) && dur >= 70) return true;
 
   return false;
 }
 
-// Filtra SOLO film della fascia serale/notturna (20:30–02:00)
-const filmPrograms = filterStaseraPrograms(allPrograms.filter(isFilm));
-
-interface ChannelFilmGroup {
-  channel: Channel;
-  primeTime: Program[];
-  secondaSerata: Program[];
-  totalPrograms: number;
+function getMovieSubgenre(p: Program): string {
+  const text = `${p.category ?? ''} ${p.title} ${p.description ?? ''}`.toLowerCase();
+  if (text.includes('commedia') || text.includes('comico') || text.includes('brillante')) return 'commedia';
+  if (text.includes('azione') || text.includes('action') || text.includes('avventura') || text.includes('western')) return 'azione';
+  if (text.includes('thriller') || text.includes('giallo') || text.includes('suspense') || text.includes('poliziesco') || text.includes('noir') || text.includes('delitto')) return 'thriller';
+  if (text.includes('dramm') || text.includes('storico') || text.includes('biografic')) return 'drammatico';
+  if (text.includes('fantascienza') || text.includes('sci-fi') || text.includes('fantasy') || text.includes('horror')) return 'fantascienza';
+  if (text.includes('animazione') || text.includes('ragazzi') || text.includes('famiglia') || text.includes('bambini')) return 'famiglia';
+  return 'cinema';
 }
 
-const groupsByChannel = new Map<string, ChannelFilmGroup>();
+// ─── Estrazione & Preparazione SnapCards dei Film ─────────────────────────────
+const nowMs = Date.now();
 
-for (const p of filmPrograms) {
+interface FilmCardData {
+  id: string;
+  channel_id: string;
+  channel_name: string;
+  channel_logo: string;
+  channel_number?: number;
+  title: string;
+  sub_title?: string;
+  description?: string;
+  category?: string;
+  start_time: string;
+  end_time: string;
+  poster_url?: string | null;
+  backdrop_url?: string | null;
+  rating?: number | string | null;
+  next_title?: string;
+  next_time?: string;
+  slot: 'prime' | 'late' | 'live';
+  slotTag: string; // per data-slot (es. 'prime', 'late', 'live prime')
+  subgenre: string;
+  isLive: boolean;
+  channelOrder: number;
+}
+
+const rawFilms = allPrograms.filter(isFilm);
+const filmCards: FilmCardData[] = [];
+
+for (const p of rawFilms) {
   const cid = p.channel_id ?? '';
-  const ch  = channelMap.get(cid);
+  const ch = channelMap.get(cid);
   if (!ch) continue;
 
-  if (!groupsByChannel.has(cid)) {
-    groupsByChannel.set(cid, {
-      channel: ch,
-      primeTime: [],
-      secondaSerata: [],
-      totalPrograms: 0,
-    });
+  const startMs = new Date(p.startTime).getTime();
+  const endMs = new Date(p.endTime).getTime();
+  const mins = toRomeMinutes(p.startTime);
+  const isCurrentlyLive = startMs <= nowMs && nowMs < endMs;
+
+  // Programma successivo sul medesimo canale
+  const chList = progsByChannel.get(cid) || [];
+  const pIdx = chList.findIndex(item => item.id === p.id);
+  const nextProg = pIdx !== -1 && pIdx + 1 < chList.length ? chList[pIdx + 1] : undefined;
+  const nextTimeStr = nextProg ? formatTime(nextProg.startTime) : undefined;
+
+  let slot: 'prime' | 'late' | 'live' = 'prime';
+  let slotTag = 'prime';
+
+  if (mins >= 20 * 60 + 15 && mins < 23 * 60) {
+    slot = 'prime';
+    slotTag = isCurrentlyLive ? 'prime live' : 'prime';
+  } else if (mins >= 23 * 60 || mins < 3 * 60) {
+    slot = 'late';
+    slotTag = isCurrentlyLive ? 'late live' : 'late';
+  } else if (isCurrentlyLive) {
+    slot = 'live';
+    slotTag = 'live prime';
+  } else {
+    // Film pomeridiani / mattutini
+    slot = 'prime';
+    slotTag = 'prime';
   }
 
-  const group = groupsByChannel.get(cid)!;
-  const minutes = toRomeMinutes(p.startTime);
-  if (minutes >= 20 * 60 && minutes < 23 * 60) {
-    group.primeTime.push(p);
-  } else {
-    group.secondaSerata.push(p);
-  }
-  group.totalPrograms++;
+  const subgenre = getMovieSubgenre(p);
+
+  filmCards.push({
+    id: p.id,
+    channel_id: ch.id,
+    channel_name: ch.name,
+    channel_logo: ch.logo,
+    channel_number: ch.number,
+    title: p.title,
+    sub_title: '',
+    description: p.description,
+    category: p.category || 'Film',
+    start_time: p.startTime,
+    end_time: p.endTime,
+    poster_url: p.poster_url,
+    backdrop_url: p.backdrop_url,
+    rating: p.rating,
+    next_title: nextProg ? nextProg.title : undefined,
+    next_time: nextTimeStr,
+    slot,
+    slotTag,
+    subgenre,
+    isLive: isCurrentlyLive,
+    channelOrder: channelOrder.get(ch.id) ?? 999,
+  });
 }
 
-// Ordina i gruppi per posizione canale
-const allFilmGroups = [...groupsByChannel.values()]
-  .filter(g => g.totalPrograms > 0)
-  .sort((a, b) => (channelOrder.get(a.channel.id) ?? 999) - (channelOrder.get(b.channel.id) ?? 999));
+// Ordina prioritariamente per prestigio canale (LCN) e orario di inizio
+filmCards.sort((a, b) => {
+  if (a.channelOrder !== b.channelOrder) return a.channelOrder - b.channelOrder;
+  return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+});
 
-// Canali con prima serata
-const primeTimeGroups = allFilmGroups
-  .filter(g => g.primeTime.length > 0)
-  .map(g => ({ channel: g.channel, programs: g.primeTime }));
+const primeFilmsCount = filmCards.filter(f => f.slotTag.includes('prime')).length;
+const lateFilmsCount = filmCards.filter(f => f.slotTag.includes('late')).length;
+const liveFilmsCount = filmCards.filter(f => f.isLive).length;
+const totalFilms = filmCards.length;
 
-// Canali con seconda serata (successivamente)
-const secondaSerataGroups = allFilmGroups
-  .filter(g => g.secondaSerata.length > 0)
-  .map(g => ({ channel: g.channel, programs: g.secondaSerata }));
+// Orario italiano formattato per breadcrumb
+const formatterRomeDate = new Intl.DateTimeFormat('it-IT', {
+  timeZone: 'Europe/Rome',
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false
+});
+const partsDate = formatterRomeDate.formatToParts(new Date());
+const getPart = (type: string) => partsDate.find(p => p.type === type)?.value || '';
+const capW = getPart('weekday').charAt(0).toUpperCase() + getPart('weekday').slice(1);
+const capM = getPart('month').charAt(0).toUpperCase() + getPart('month').slice(1);
+const liveHeaderDate = `${capW} ${getPart('day')} ${capM} · Ore ${getPart('hour')}:${getPart('minute')}`;
 
-const totalFilms = filmPrograms.length;
-
+// FAQ & Schemas
 const filmFaqs = [
   {
     question: "Quali sono i canali TV del digitale terrestre dedicati esclusivamente al cinema?",
-    answer: "In Italia i canali interamente dedicati ai film sono Rai Movie (canale 24 DTT, specializzato in cinema d'autore, western e grandi classici), Iris (canale 22 DTT, orientato a pellicole d'azione, thriller e grandi successi internazionali) e Cine34 (canale 34 DTT, dedicato al cinema italiano, commedie cult e polizieschi storici).",
+    answer: "In Italia i canali interamente dedicati ai film sono Rai Movie (canale 24 DTT, specializzato in cinema d'autore, western e grandi classici), Iris (canale 22 DTT, orientato a pellicole d'azione, thriller e grandi successi internazionali), Cine34 (canale 34 DTT, dedicato al cinema italiano, commedie cult e polizieschi) e Twenty Seven (canale 27 DTT, commedie e blockbuster hollywoodiani).",
   },
   {
     question: "A che ora iniziano i film in prima serata in TV?",
-    answer: "Sui canali tematici come Iris, Rai Movie e Cine34 i film della prima serata iniziano regolarmente tra le 21:10 e le 21:15. Sulle reti generaliste (Rai 1, Canale 5, Italia 1, TV8, Nove) la proiezione prende il via abitualmente tra le 21:25 e le 21:40, al termine degli spazi di prima serata.",
+    answer: "Sui canali tematici come Iris, Rai Movie e Cine34 i film della prima serata iniziano regolarmente tra le 21:10 e le 21:15. Sulle reti generaliste (Rai 1, Canale 5, Italia 1, TV8, Nove) la proiezione prende il via abitualmente tra le 21:25 e le 21:40, al termine degli spazi di prima serata come Affari Tuoi o Striscia la Notizia.",
   },
   {
-    question: "Come posso sapere se un film è consigliato a tutta la famiglia?",
-    answer: "Su inTV stasera ogni scheda film riporta la trama sintetica, l'anno di uscita, la durata esatta e, quando disponibile, la classificazione dell'emittente (bollino verde per tutti, giallo con presenza di adulti o rosso per pubblico maturo).",
+    question: "Come posso vedere i film di stasera in streaming ufficiale gratis?",
+    answer: "Tutte le schede film di inTV stasera includono il pulsante diretto allo streaming ufficiale gratuito dell'emittente: RaiPlay per i film Rai, Mediaset Infinity per i film Mediaset (Canale 5, Italia 1, Rete 4, 20, Iris, Cine34, Twenty Seven), Discovery+ per Nove e Real Time, e La7 Play per i canali La7 e La7d.",
   },
   {
-    question: "Dove posso rivedere in streaming un film trasmesso ieri sera in TV?",
-    answer: "I film trasmessi in chiaro dalle reti Rai sono spesso disponibili in replica gratuita per 7 giorni su RaiPlay; per i canali Mediaset sono disponibili su Mediaset Infinity, mentre per i canali Warner/Discovery sono visibili su Discovery+.",
+    question: "Come funziona il voto e la valutazione del film?",
+    answer: "Accanto al genere di ogni pellicola è presente il badge con il voto medio TMDb / IMDb espresso in decimi (es. ★ 7.5/10), calcolato sulle recensioni della critica e del pubblico internazionale per aiutarti a scegliere rapidamente la pellicola migliore.",
   },
 ];
 
@@ -175,189 +272,227 @@ const filmFaqSchema = {
 const schemas = buildHubCategoryJsonLd({
   categoryName: 'Film',
   categorySlug: 'film-stasera',
-  programs: filmPrograms,
+  programs: rawFilms,
   today,
 });
 
 const allSchemas = [...schemas, filmFaqSchema];
 
-const title       = `Film stasera in TV: tutti i film di prima e seconda serata di oggi`;
+const title       = `Film stasera in TV: prima e seconda serata di oggi (${dateLabel})`;
 const description = SEO_DESCRIPTIONS.film;
-const keywords    = `film stasera in tv, film stasera, film in tv stasera, film stasera prima serata, programmazione cinema stasera`;
+const keywords    = `film stasera in tv, film stasera, film in tv stasera, film stasera prima serata, programmazione cinema stasera, film seconda serata`;
 
-const firstFilmWithPoster = filmPrograms.find(p => p.poster_url);
+const firstFilmWithPoster = filmCards.find(p => p.poster_url);
 const ogImage    = firstFilmWithPoster?.poster_url ?? '/og/default.png';
 const ogImageAlt = firstFilmWithPoster ? `${firstFilmWithPoster.title} - Film stasera in TV` : title;
 ---
 
 <HubLayout {title} {description} {keywords} canonicalPath="/film-stasera" schemas={allSchemas} {ogImage} {ogImageAlt}>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
-    <Breadcrumb items={[
-      { label: 'inTV stasera', href: '/' },
-      { label: 'Film stasera in TV' },
-    ]} />
-  </div>
+  <div class="max-w-6xl mx-auto px-3 sm:px-6 pt-4 space-y-4">
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-b border-slate-100 dark:border-slate-700">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">
-      🎬 Film stasera in TV: <span class="text-blue-600">prima e seconda serata di oggi</span>
-    </h1>
-    <p class="text-slate-500 dark:text-slate-400 text-sm">
-      {totalFilms} {totalFilms === 1 ? 'film' : 'film'} in programmazione stasera ({dateLabel}) su RAI, Mediaset e digitale terrestre. Consulta trame, orari e cast.
-    </p>
-  </section>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-    <ChannelNav />
-    <nav class="flex flex-wrap gap-2 mt-4" aria-label="Altre categorie">
-      <a href="/" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-600 hover:text-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors">Tutti i programmi stasera</a>
-      <a href="/serie-stasera/" class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white text-blue-700 dark:text-blue-300 text-xs font-medium transition-colors">Serie TV stasera</a>
-      <a href="/sport-stasera/" class="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 hover:bg-green-600 hover:text-white text-green-700 dark:text-green-300 text-xs font-medium transition-colors">Sport stasera</a>
-    </nav>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-10">
-
-    {/* ─── 1. PRIMA SERATA (DALLE 20:30) ─── */}
-    <section aria-labelledby="prime-time-heading">
-      <div class="flex items-center gap-2.5 mb-4">
-        <span class="w-3 h-3 bg-orange-500 rounded-full inline-block"></span>
-        <h2 id="prime-time-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-          Prima serata · <span class="text-blue-600">dalle 20:30</span>
-        </h2>
-        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
-          {primeTimeGroups.length} canali
+    <!-- ─── BREADCRUMBS & OROLOGIO ITALIANO DINAMICO ─── -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs bg-[#111827]/60 border border-gray-800/80 px-4 py-2.5 rounded-xl">
+      <nav class="flex items-center gap-2 text-gray-400 font-medium" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-white transition-colors">inTV stasera</a>
+        <span class="text-gray-600">/</span>
+        <span class="text-gray-300 font-semibold">Film stasera in TV</span>
+      </nav>
+      <div class="flex items-center gap-2 text-gray-200 text-xs sm:text-sm bg-black/50 px-3.5 py-1.5 rounded-xl border border-white/10 shadow-inner">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+        <span id="live-italian-clock" class="font-bold text-white tracking-wide">
+          {liveHeaderDate}
         </span>
       </div>
+    </div>
 
-      {primeTimeGroups.length === 0 ? (
-        <div class="p-6 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 text-center text-slate-400">
-          Nessun film in prima serata per oggi.
+    <!-- ─── HEADER BAR SLEEK FERRARI RED & DARK ─── -->
+    <section class="border-b border-gray-800/80 pb-3 pt-1">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-[#DA291C]"></span>
+            <span>Film stasera in TV · Prima e seconda serata di oggi</span>
+          </h1>
+          <p class="text-xs sm:text-sm text-gray-300 mt-1">
+            {totalFilms} film in programmazione stasera ({dateLabel}) su Rai, Mediaset e digitale terrestre con trame, voto IMDb e diretta streaming ufficiale.
+          </p>
         </div>
-      ) : (
-        <div class="space-y-4">
-          {primeTimeGroups.map(({ channel, programs: chPrograms }) => (
-            <div>
-              <div class="flex items-center gap-3 mb-2 px-1">
-                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
-                  <img
-                    src={channel.logo}
-                    alt={`Logo ${channel.name}`}
-                    width="26"
-                    height="26"
-                    class="w-[26px] h-[26px] object-contain"
-                    loading="lazy"
-                    onerror="this.style.display='none'"
-                  />
-                </div>
-                <a
-                  href={`/${channel.id}/`}
-                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
-                  {channel.name}
-                </a>
-                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                  {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
-                </span>
-              </div>
-              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
-                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
-                  {chPrograms.map(program => (
-                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        <span class="inline-flex items-center gap-1.5 self-start md:self-auto text-xs font-black uppercase text-amber-400 bg-amber-950/60 border border-amber-800/50 px-3 py-1.5 rounded-xl shadow-lg shrink-0">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="active-count-badge">{primeFilmsCount} Film in Prima Serata</span>
+        </span>
+      </div>
     </section>
 
+  </div>
+
+  <!-- ─── BARRA FILTRI CINEMA (FASCE ORARIE & GENERI) ─── -->
+  <div class="sticky top-14 z-30 border-t border-gray-800/60 bg-[#0B0F19]/95 backdrop-blur-md border-b border-gray-800/80 px-3 sm:px-6 py-2 shadow-xl">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+      
+      <!-- Time Slot Switcher: Prima Serata (Default) | Seconda Serata | In Onda | Tutti -->
+      <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 md:pb-0" id="film-slot-group">
+        <button
+          type="button"
+          class="film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer bg-[#DA291C] text-white shadow-lg shadow-red-900/40 shrink-0"
+          data-slot="prime"
+        >
+          ⭐ Prima Serata ({primeFilmsCount})
+        </button>
+
+        <button
+          type="button"
+          class="film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60 shrink-0"
+          data-slot="late"
+        >
+          🌙 Seconda Serata ({lateFilmsCount})
+        </button>
+
+        {liveFilmsCount > 0 && (
+          <button
+            type="button"
+            class="film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60 shrink-0"
+            data-slot="live"
+          >
+            🔴 In Onda Ora ({liveFilmsCount})
+          </button>
+        )}
+
+        <button
+          type="button"
+          class="film-slot-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60 shrink-0"
+          data-slot="all"
+        >
+          🎬 Tutti ({totalFilms})
+        </button>
+      </div>
+
+      <!-- Quick Genre Filter Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none" id="film-genre-group">
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer bg-gray-800 text-white border border-gray-700 shrink-0"
+          data-genre="all"
+        >
+          Tutti i generi
+        </button>
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0"
+          data-genre="commedia"
+        >
+          Commedia
+        </button>
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0"
+          data-genre="azione"
+        >
+          Azione & Western
+        </button>
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0"
+          data-genre="thriller"
+        >
+          Thriller & Giallo
+        </button>
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0"
+          data-genre="drammatico"
+        >
+          Drammatico
+        </button>
+        <button
+          type="button"
+          class="film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0"
+          data-genre="fantascienza"
+        >
+          Fantascienza
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── FEED WIDESCREEN 16:9 SNAPCARD DEI FILM ─── -->
+  <main class="max-w-6xl mx-auto px-3 sm:px-6 py-4">
+    
+    <!-- Empty State Alert (se nessun film corrisponde al filtro combinato) -->
+    <div id="no-films-alert" class="hidden p-8 bg-[#111827] border border-gray-800 rounded-2xl text-center space-y-3 my-6">
+      <span class="text-4xl">🍿</span>
+      <h3 class="text-lg font-bold text-white">Nessun film trovato per questo filtro</h3>
+      <p class="text-xs text-gray-400">
+        Prova a selezionare un altro genere o passa a "Tutti i film di stasera".
+      </p>
+      <button
+        type="button"
+        id="reset-filter-btn"
+        class="inline-block mt-2 bg-[#DA291C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+      >
+        Mostra tutti i film in prima serata
+      </button>
+    </div>
+
+    <div class="space-y-4" id="film-cards-feed">
+      {filmCards.map((prog) => (
+        <SnapCard
+          program={prog}
+          isLive={prog.isLive}
+          slot={prog.slotTag}
+          genre={prog.subgenre}
+          initiallyHidden={!prog.slotTag.includes('prime')}
+        />
+      ))}
+    </div>
+
+    <!-- Banner Pubblicitario Mid-Feed -->
     <AdSlot slot={ADSENSE_SLOTS.CHANNEL_MID_CONTENT} className="my-8" minHeight={180} />
 
-    {/* ─── 2. SECONDA SERATA (SUCCESSIVAMENTE · DALLE 23:00) ─── */}
-    {secondaSerataGroups.length > 0 && (
-      <section aria-labelledby="seconda-serata-heading" class="pt-6 border-t border-slate-200 dark:border-slate-700/60">
-        <div class="flex items-center gap-2.5 mb-4">
-          <span class="w-3 h-3 bg-blue-500 rounded-full inline-block"></span>
-          <h2 id="seconda-serata-heading" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-            Seconda serata · <span class="text-blue-600">fino alle 02:00</span>
-          </h2>
-          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-            {secondaSerataGroups.length} canali
-          </span>
-        </div>
+    <!-- ─── NAVIGAZIONE CANALI RAPIDA ─── -->
+    <section class="my-10">
+      <ChannelNav />
+    </section>
 
-        <div class="space-y-4">
-          {secondaSerataGroups.map(({ channel, programs: chPrograms }) => (
-            <div>
-              <div class="flex items-center gap-3 mb-2 px-1">
-                <div class="w-8 h-8 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center shadow-sm">
-                  <img
-                    src={channel.logo}
-                    alt={`Logo ${channel.name}`}
-                    width="26"
-                    height="26"
-                    class="w-[26px] h-[26px] object-contain"
-                    loading="lazy"
-                    onerror="this.style.display='none'"
-                  />
-                </div>
-                <a
-                  href={`/${channel.id}/`}
-                  class="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
-                  {channel.name}
-                </a>
-                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                  {chPrograms.length} {chPrograms.length === 1 ? 'film' : 'film'}
-                </span>
-              </div>
-              <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800/50 shadow-sm">
-                <ul role="list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
-                  {chPrograms.map(program => (
-                    <ProgramRow {program} channelId={channel.id} channelLogo={channel.logo} channelName={channel.name} />
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
-
-    <!-- ─── GUIDA CINEMA IN TV ─── -->
-    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm leading-relaxed">
-      <div class="flex items-center gap-2 mb-4">
+    <!-- ─── GUIDA CINEMA IN TV (DARK & FERRARI RED DESIGN) ─── -->
+    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-[#111827] border border-gray-800/90 shadow-2xl leading-relaxed">
+      <div class="flex items-center gap-3 mb-4">
         <span class="text-2xl">🎬</span>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
-          Guida al Cinema in TV: come scegliere il film di stasera
+        <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+          Guida al Cinema in TV: dove vedere i migliori film di stasera
         </h2>
       </div>
 
-      <div class="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+      <div class="space-y-4 text-xs sm:text-sm text-gray-300">
         <p>
           Ogni sera la televisione in chiaro propone decine di film tra grandi successi cinematografici hollywoodiani, pellicole storiche del neorealismo e della commedia all'italiana, thriller, horror e prime visioni televisive.
         </p>
 
         <div class="grid sm:grid-cols-3 gap-4 my-4">
-          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
-            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🎞️ Rai Movie (Ch 24)</h3>
-            <p class="text-slate-600 dark:text-slate-400">
-              Il punto di riferimento per il cinema internazionale di qualità, festival premiati, western americani ed europei e cinema contemporaneo d'autore.
+          <div class="p-4 rounded-xl bg-black/50 border border-gray-800">
+            <h3 class="font-bold text-white mb-1 text-sm flex items-center gap-1.5">
+              <span>🎞️</span> Rai Movie (Ch 24)
+            </h3>
+            <p class="text-xs text-gray-400">
+              Punto di riferimento per il cinema internazionale di qualità, festival premiati, western americani ed europei e cinema contemporaneo d'autore.
             </p>
           </div>
-          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
-            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🍿 Iris (Ch 22)</h3>
-            <p class="text-slate-600 dark:text-slate-400">
+          <div class="p-4 rounded-xl bg-black/50 border border-gray-800">
+            <h3 class="font-bold text-white mb-1 text-sm flex items-center gap-1.5">
+              <span>🍿</span> Iris (Ch 22)
+            </h3>
+            <p class="text-xs text-gray-400">
               Puntato sui grandi cult di Hollywood, cinema d'azione anni '80/'90, cicli dedicati a registi famosi (Kubrick, Eastwood, Spielberg) e polizieschi d'alta tensione.
             </p>
           </div>
-          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
-            <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1 text-sm">🇮🇹 Cine34 (Ch 34)</h3>
-            <p class="text-slate-600 dark:text-slate-400">
-              Dedicato al 100% al cinema italiano: dal bianco e nero di Totò e Sordi fino alle commedie comiche degli anni '80 e ai classici spaghetti-western.
+          <div class="p-4 rounded-xl bg-black/50 border border-gray-800">
+            <h3 class="font-bold text-white mb-1 text-sm flex items-center gap-1.5">
+              <span>🇮🇹</span> Cine34 (Ch 34)
+            </h3>
+            <p class="text-xs text-gray-400">
+              Dedicato al 100% al cinema italiano: dal bianco e nero di Totò, Sordi e De Sica fino alle commedie comiche anni '80 e ai classici spaghetti-western.
             </p>
           </div>
         </div>
@@ -365,14 +500,14 @@ const ogImageAlt = firstFilmWithPoster ? `${firstFilmWithPoster.title} - Film st
     </section>
 
     <!-- ─── FAQ CINEMA IN TV ─── -->
-    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80">
-      <div class="flex items-center gap-2 mb-6">
+    <section class="my-10 p-6 sm:p-8 rounded-2xl bg-[#111827] border border-gray-800/90 shadow-2xl">
+      <div class="flex items-center gap-3 mb-6">
         <span class="text-2xl">❓</span>
         <div>
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">
             Domande Frequenti sui Film di Stasera in TV
           </h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+          <p class="text-xs text-gray-400">
             Orari, canali tematici, repliche e consigli di visione cinematografici.
           </p>
         </div>
@@ -380,14 +515,14 @@ const ogImageAlt = firstFilmWithPoster ? `${firstFilmWithPoster.title} - Film st
 
       <div class="space-y-3">
         {filmFaqs.map((faq) => (
-          <details class="group bg-white dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700 p-4 transition-all">
-            <summary class="flex justify-between items-center font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-pointer list-none">
+          <details class="group bg-black/40 rounded-xl border border-gray-800 p-4 transition-all">
+            <summary class="flex justify-between items-center font-bold text-sm sm:text-base text-gray-200 cursor-pointer list-none hover:text-white">
               <span>{faq.question}</span>
-              <span class="text-blue-600 dark:text-blue-400 transition-transform group-open:rotate-180">
+              <span class="text-red-400 transition-transform group-open:rotate-180">
                 ▾
               </span>
             </summary>
-            <p class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p class="mt-3 pt-3 border-t border-gray-800/80 text-xs sm:text-sm text-gray-300 leading-relaxed">
               {faq.answer}
             </p>
           </details>
@@ -398,11 +533,159 @@ const ogImageAlt = firstFilmWithPoster ? `${firstFilmWithPoster.title} - Film st
     <AdSlot slot={ADSENSE_SLOTS.FOOTER_PRE_SEO} className="mt-8 mb-4" minHeight={200} />
 
     <SeoHubLinks
-      channels={allFilmGroups.map(group => group.channel)}
+      channels={allChannels.filter(c => filmCards.some(f => f.channel_id === c.id))}
       title="Film stasera: canali e altre guide TV"
-      intro="Approfondisci i canali che trasmettono film oppure passa alle altre guide short-tail della serata."
+      intro="Approfondisci i canali che trasmettono film oppure passa alle altre guide tematiche della serata."
       maxChannels={48}
     />
-  </div>
+
+  </main>
 
 </HubLayout>
+
+<!-- ─── SCRIPT FILTRAGGIO ISTANTANEO (ZERO LAG) ─── -->
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    var activeSlot = 'prime';
+    var activeGenre = 'all';
+
+    var slotBtns = document.querySelectorAll('.film-slot-btn');
+    var genreBtns = document.querySelectorAll('.film-genre-btn');
+    var snapCards = document.querySelectorAll('.snap-item');
+    var countBadge = document.getElementById('active-count-badge');
+    var noFilmsAlert = document.getElementById('no-films-alert');
+    var resetBtn = document.getElementById('reset-filter-btn');
+
+    function applyFilters() {
+      var visibleCount = 0;
+
+      snapCards.forEach(function(card) {
+        var cardSlot = card.getAttribute('data-slot') || '';
+        var cardGenre = (card.getAttribute('data-genre') || 'cinema').toLowerCase();
+
+        // Slot match
+        var slotMatch = false;
+        if (activeSlot === 'all') {
+          slotMatch = true;
+        } else if (activeSlot === 'prime') {
+          slotMatch = cardSlot.indexOf('prime') !== -1;
+        } else if (activeSlot === 'late') {
+          slotMatch = cardSlot.indexOf('late') !== -1;
+        } else if (activeSlot === 'live') {
+          slotMatch = cardSlot.indexOf('live') !== -1;
+        }
+
+        // Genre match
+        var genreMatch = false;
+        if (activeGenre === 'all') {
+          genreMatch = true;
+        } else if (activeGenre === cardGenre) {
+          genreMatch = true;
+        }
+
+        if (slotMatch && genreMatch) {
+          card.classList.remove('hidden');
+          card.style.display = '';
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+          card.style.display = 'none';
+        }
+      });
+
+      // Update badge count
+      if (countBadge) {
+        var slotLabel = 'Film Trovati';
+        if (activeSlot === 'prime') slotLabel = 'Film in Prima Serata';
+        else if (activeSlot === 'late') slotLabel = 'Film in Seconda Serata';
+        else if (activeSlot === 'live') slotLabel = 'Film In Onda Adesso';
+        countBadge.textContent = visibleCount + ' ' + slotLabel;
+      }
+
+      // Empty state toggle
+      if (noFilmsAlert) {
+        if (visibleCount === 0) {
+          noFilmsAlert.classList.remove('hidden');
+        } else {
+          noFilmsAlert.classList.add('hidden');
+        }
+      }
+    }
+
+    // Slot button events
+    slotBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var targetSlot = btn.getAttribute('data-slot');
+        if (!targetSlot) return;
+        activeSlot = targetSlot;
+
+        slotBtns.forEach(function(b) {
+          b.className = 'film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60 shrink-0';
+        });
+        btn.className = 'film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer bg-[#DA291C] text-white shadow-lg shadow-red-900/40 shrink-0';
+
+        applyFilters();
+      });
+    });
+
+    // Genre button events
+    genreBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var targetGenre = btn.getAttribute('data-genre');
+        if (!targetGenre) return;
+        activeGenre = targetGenre;
+
+        genreBtns.forEach(function(b) {
+          b.className = 'film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0';
+        });
+        btn.className = 'film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer bg-gray-800 text-white border border-gray-700 shrink-0';
+
+        applyFilters();
+      });
+    });
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        activeSlot = 'prime';
+        activeGenre = 'all';
+
+        slotBtns.forEach(function(b) {
+          var s = b.getAttribute('data-slot');
+          if (s === 'prime') {
+            b.className = 'film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer bg-[#DA291C] text-white shadow-lg shadow-red-900/40 shrink-0';
+          } else {
+            b.className = 'film-slot-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-gray-800/90 text-gray-300 hover:text-white hover:bg-gray-700/80 border border-gray-700/60 shrink-0';
+          }
+        });
+
+        genreBtns.forEach(function(b) {
+          var g = b.getAttribute('data-genre');
+          if (g === 'all') {
+            b.className = 'film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer bg-gray-800 text-white border border-gray-700 shrink-0';
+          } else {
+            b.className = 'film-genre-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer bg-gray-900/90 text-gray-400 hover:text-white hover:bg-gray-800 border border-transparent shrink-0';
+          }
+        });
+
+        applyFilters();
+      });
+    }
+
+    // Dynamic Clock ticker in Italian
+    var clockEl = document.getElementById('live-italian-clock');
+    if (clockEl) {
+      function updateClock() {
+        var now = new Date();
+        var days = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+        var months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+        var w = days[now.getDay()];
+        var d = now.getDate();
+        var m = months[now.getMonth()];
+        var h = String(now.getHours()).padStart(2, '0');
+        var min = String(now.getMinutes()).padStart(2, '0');
+        clockEl.textContent = w + ' ' + d + ' ' + m + ' · Ore ' + h + ':' + min;
+      }
+      setInterval(updateClock, 1000);
+    }
+  });
+</script>
