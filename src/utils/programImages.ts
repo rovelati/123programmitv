@@ -127,7 +127,10 @@ export const SPORT_CATALOG_ARTWORK: Record<string, string> = {
   ciclismo: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80', // Cycling road & tarmac
   volley: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=800&q=80', // Volleyball court
   nuoto: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80', // Swimming pool lanes
-  generale: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80' // Olympic stadium running track
+  ippica: 'https://images.unsplash.com/photo-1601726429844-acd8b1385972?auto=format&fit=crop&w=800&q=80', // Racehorses galloping on track with jockeys
+  sci: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=800&q=80', // Skier in powder snow / Alpine slope
+  atletica: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80', // Athletic track & starting blocks
+  generale: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80' // Grand illuminated sports arena (neutrale, no corridore)
 };
 
 export function getSportArtwork(
@@ -140,7 +143,28 @@ export function getSportArtwork(
   const d = (description || '').toLowerCase();
   const all = `${t} ${c} ${d}`;
 
-  // 1. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
+  // 1. Ippica / Cavalli / Galoppo / Trotto / Equitazione
+  if (
+    all.includes('ippica') || all.includes('ippodromo') || all.includes('cavalli') ||
+    all.includes('galoppo') || all.includes('trotto') || all.includes('equitazione') ||
+    all.includes('salto ostacoli') || all.includes('gran premio lotteria') ||
+    all.includes('prix d\'amerique') || all.includes('horse') || all.includes('uniresat')
+  ) {
+    return SPORT_CATALOG_ARTWORK.ippica;
+  }
+
+  // 2. Sci / Salto con gli sci / Sport Invernali (FIS, Trampolini, Slalom, Snowboard, Biathlon)
+  if (
+    all.includes('salto con gli sci') || all.includes('sci') || all.includes('trampolin') ||
+    all.includes('slalom') || all.includes('discesa') || all.includes('coppa del mondo fis') ||
+    all.includes('fis ') || all.includes('biathlon') || all.includes('snowboard') ||
+    all.includes('pattinaggio') || all.includes('curling') || all.includes('fondo') ||
+    all.includes('super-g') || all.includes('invernali') || all.includes('quattro trampolini')
+  ) {
+    return SPORT_CATALOG_ARTWORK.sci;
+  }
+
+  // 3. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
   if (
     all.includes('tennis') || all.includes('atp') || all.includes('wta') ||
     all.includes('wimbledon') || all.includes('us open') || all.includes('roland garros') ||
@@ -151,7 +175,7 @@ export function getSportArtwork(
     return SPORT_CATALOG_ARTWORK.tennis;
   }
 
-  // 2. Motori (Formula 1, MotoGP, SBK, Rally)
+  // 4. Motori (Formula 1, MotoGP, SBK, Rally)
   if (
     all.includes('formula 1') || all.includes('formula1') || all.includes(' f1 ') ||
     all.includes('motogp') || all.includes('moto2') || all.includes('moto3') ||
@@ -162,7 +186,7 @@ export function getSportArtwork(
     return SPORT_CATALOG_ARTWORK.motori;
   }
 
-  // 3. Basket (NBA, Eurolega, LBA, Virtus, Olimpia)
+  // 5. Basket (NBA, Eurolega, LBA, Virtus, Olimpia)
   if (
     all.includes('basket') || all.includes('pallacanestro') || all.includes('nba') ||
     all.includes('eurolega') || all.includes('lba') || all.includes('virtus') ||
@@ -171,7 +195,7 @@ export function getSportArtwork(
     return SPORT_CATALOG_ARTWORK.basket;
   }
 
-  // 4. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
+  // 6. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
   if (
     all.includes('ciclismo') || all.includes('giro d\'italia') || all.includes('tour de france') ||
     all.includes('vuelta') || all.includes('bicicletta')
@@ -179,17 +203,25 @@ export function getSportArtwork(
     return SPORT_CATALOG_ARTWORK.ciclismo;
   }
 
-  // 5. Pallavolo / Volley
+  // 7. Pallavolo / Volley
   if (all.includes('volley') || all.includes('pallavolo') || all.includes('superlega') || all.includes('cev')) {
     return SPORT_CATALOG_ARTWORK.volley;
   }
 
-  // 6. Nuoto / Pallanuoto
+  // 8. Nuoto / Pallanuoto
   if (all.includes('nuoto') || all.includes('pallanuoto') || all.includes('tuffi')) {
     return SPORT_CATALOG_ARTWORK.nuoto;
   }
 
-  // 7. Calcio (Serie A, Champions League, UEFA, Nazionale, Coppe)
+  // 9. Atletica leggera (SOLO per vera corsa, maratona, sprint)
+  if (
+    all.includes('atletica') || all.includes('maratona') || all.includes('golden gala') ||
+    all.includes('diamond league') || all.includes('100 metri') || all.includes('mezzofondo')
+  ) {
+    return SPORT_CATALOG_ARTWORK.atletica;
+  }
+
+  // 10. Calcio (Serie A, Champions League, UEFA, Nazionale, Coppe)
   if (
     all.includes('calcio') || all.includes('serie a') || all.includes('serie b') ||
     all.includes('champions league') || all.includes('europa league') ||

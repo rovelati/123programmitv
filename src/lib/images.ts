@@ -76,9 +76,23 @@ export const FALLBACK_POOLS = {
     'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1280&q=80'  // Swimming pool lanes
   ],
 
-  // Sport generale
+  // Ippica / Galoppo / Trotto / Cavalli
+  horse_racing: [
+    'https://images.unsplash.com/photo-1601726429844-acd8b1385972?auto=format&fit=crop&w=1280&q=80' // Racehorses galloping with jockeys
+  ],
+
+  // Sport invernali / Sci / Salto con gli sci (FIS)
+  ski: [
+    'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1280&q=80' // Skier on alpine powder snow slope
+  ],
+
+  // Atletica leggera / Corsa / Sprint (solo gare di atletica)
+  athletics: [
+    'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1280&q=80' // Olympic stadium track & starting blocks
+  ],
+
+  // Sport generale (Arena sportiva illuminata neutrale, mai corridore o calciatore)
   sports_general: [
-    'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1280&q=80', // Olympic stadium track
     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1280&q=80'  // Athletic arena
   ],
 
@@ -305,7 +319,28 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.news, p);
   }
 
-  // 3. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
+  // 3. Ippica / Galoppo / Trotto / Cavalli / Equitazione
+  if (
+    fullText.includes('ippica') || fullText.includes('ippodromo') || fullText.includes('cavalli') ||
+    fullText.includes('galoppo') || fullText.includes('trotto') || fullText.includes('equitazione') ||
+    fullText.includes('salto ostacoli') || fullText.includes('prix d\'amerique') || fullText.includes('uniresat') ||
+    fullText.includes('gran premio lotteria')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.horse_racing, p);
+  }
+
+  // 4. Sci / Salto con gli sci / Sport invernali (FIS, Trampolini, Slalom, Snowboard, Biathlon)
+  if (
+    fullText.includes('salto con gli sci') || fullText.includes('sci') || fullText.includes('trampolin') ||
+    fullText.includes('slalom') || fullText.includes('discesa') || fullText.includes('coppa del mondo fis') ||
+    fullText.includes('fis ') || fullText.includes('biathlon') || fullText.includes('snowboard') ||
+    fullText.includes('quattro trampolini') || fullText.includes('invernali') || fullText.includes('super-g') ||
+    fullText.includes('fondo') || fullText.includes('curling') || fullText.includes('pattinaggio')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.ski, p);
+  }
+
+  // 5. Tennis (ATP, WTA, Sinner, Wimbledon, Davis Cup, Roland Garros)
   if (
     fullText.includes('tennis') || fullText.includes('atp') || fullText.includes('wta') ||
     fullText.includes('wimbledon') || fullText.includes('davis') || fullText.includes('sinner') ||
@@ -316,7 +351,7 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.tennis, p);
   }
 
-  // 4. Motori (Formula 1, MotoGP, SBK, Rally)
+  // 6. Motori (Formula 1, MotoGP, SBK, Rally)
   if (
     fullText.includes('formula 1') || fullText.includes('formula1') || fullText.includes(' f1 ') ||
     fullText.includes('motogp') || fullText.includes('moto2') || fullText.includes('moto3') ||
@@ -327,7 +362,7 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.motorsport, p);
   }
 
-  // 5. Basket (NBA, Eurolega, LBA, Virtus)
+  // 7. Basket (NBA, Eurolega, LBA, Virtus)
   if (
     fullText.includes('basket') || fullText.includes('nba') || fullText.includes('pallacanestro') ||
     fullText.includes('eurolega') || fullText.includes('lba') || fullText.includes('virtus') ||
@@ -336,7 +371,7 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.basketball, p);
   }
 
-  // 6. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
+  // 8. Ciclismo (Giro d'Italia, Tour de France, Vuelta)
   if (
     fullText.includes('ciclismo') || fullText.includes('giro d\'italia') || fullText.includes('tour de france') ||
     fullText.includes('vuelta') || fullText.includes('bicicletta')
@@ -344,17 +379,25 @@ export function getFallbackImage(p: ProgramLike): string {
     return pickFromPool(FALLBACK_POOLS.cycling, p);
   }
 
-  // 7. Pallavolo / Volley
+  // 9. Pallavolo / Volley
   if (fullText.includes('volley') || fullText.includes('pallavolo') || fullText.includes('superlega') || fullText.includes('cev')) {
     return pickFromPool(FALLBACK_POOLS.volleyball, p);
   }
 
-  // 8. Nuoto / Pallanuoto
+  // 10. Nuoto / Pallanuoto
   if (fullText.includes('nuoto') || fullText.includes('pallanuoto') || fullText.includes('tuffi')) {
     return pickFromPool(FALLBACK_POOLS.swimming, p);
   }
 
-  // 9. Calcio / Football (Serie A, Champions League, UEFA, Nazionale, Coppe)
+  // 11. Atletica leggera (SOLO per gare di atletica/corsa/maratona)
+  if (
+    fullText.includes('atletica') || fullText.includes('maratona') || fullText.includes('golden gala') ||
+    fullText.includes('diamond league') || fullText.includes('100 metri') || fullText.includes('mezzofondo')
+  ) {
+    return pickFromPool(FALLBACK_POOLS.athletics, p);
+  }
+
+  // 12. Calcio / Football (Serie A, Champions League, UEFA, Nazionale, Coppe)
   if (
     fullText.includes('calcio') || fullText.includes('serie a') || fullText.includes('serie b') ||
     fullText.includes('champions league') || fullText.includes('europa league') ||

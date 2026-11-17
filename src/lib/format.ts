@@ -16,6 +16,8 @@ const CATEGORY_MAP: Record<string, string> = {
   'sport': 'Sport',
   'tennis': 'Tennis',
   'motori': 'Motori',
+  'kraftfahrzeuge': 'Motori',
+  'motorsport': 'Motori',
   'formula 1': 'Formula 1',
   'motogp': 'MotoGP',
   'basket': 'Basket',
