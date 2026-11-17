@@ -1505,6 +1505,15 @@ def remove_excluded_channels(supabase: Any) -> int:
     return removed
 
 
+PROTECTED_CANONICAL_IDS = {
+    'inter-tv',
+    'milan-tv',
+    'roma-tv',
+    'lazio-style-channel',
+    'supertennis',
+}
+
+
 def remove_stale_channels(supabase: Any, channels_data: List[Dict[str, Any]]) -> int:
     current_ids = {str(channel.get('id') or '') for channel in channels_data if channel.get('id')}
     if not current_ids:
@@ -1519,7 +1528,9 @@ def remove_stale_channels(supabase: Any, channels_data: List[Dict[str, Any]]) ->
     stale_ids = [
         str(row.get('channel_id'))
         for row in (result.data or [])
-        if row.get('channel_id') and str(row.get('channel_id')) not in current_ids
+        if row.get('channel_id') 
+        and str(row.get('channel_id')) not in current_ids
+        and str(row.get('channel_id')) not in PROTECTED_CANONICAL_IDS
     ]
     if not stale_ids:
         return 0

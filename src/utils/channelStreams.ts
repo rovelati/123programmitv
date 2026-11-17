@@ -55,10 +55,11 @@ const CHANNEL_STREAMS: Record<string, ChannelStream> = {
   'giallo':     { url: 'https://giallotv.it/live-streaming-giallo',    login_required: false, geo_it: false, label: 'Giallo' },
   'warner-tv':  { url: 'https://discovery.it/live-streaming-discovery',login_required: false, geo_it: false, label: 'Discovery' },
 
-  // ── Altri canali gratuiti ─────────────────────────────────────────────────
+  // ── Altri canali gratuiti & Sport ──────────────────────────────────────────
   'cielo':    { url: 'https://www.cielotv.it/streaming', login_required: false, geo_it: false, label: 'CieloTV' },
   'sky-tg24': { url: 'https://tg24.sky.it/diretta',     login_required: false, geo_it: false, label: 'Sky TG24' },
   'tv2000':   { url: 'https://www.play2000.it/live/tv', login_required: true,  geo_it: false, label: 'TV2000' },
+  'inter-tv': { url: 'https://www.inter.it/it/inter-tv', login_required: false, geo_it: false, label: 'Inter TV Official' },
 
   // ── Regionali & Locali ───────────────────────────────────────────────────
   'tele-norba':     { url: 'https://norbaplay.it/', login_required: false, geo_it: false, label: 'NorbaPlay' },

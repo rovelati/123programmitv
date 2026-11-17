@@ -57,6 +57,18 @@ interface RawChannelConfig {
   logo_override: string | null;
 }
 
+const MANDATORY_CANONICAL_CHANNELS: RawChannel[] = [
+  {
+    id: 9232,
+    channel_id: 'inter-tv',
+    name: 'Inter TV',
+    logo_url: '/channel-logos/inter-tv.png',
+    channel_number: 232,
+    category: 'Sport',
+    source: 'inter-tv-official',
+  },
+];
+
 function mapChannel(raw: RawChannel, config?: RawChannelConfig): Channel {
   const visible = config ? config.visible : true;
   const position = config?.position ?? 999;
@@ -103,6 +115,19 @@ export async function fetchChannels(): Promise<Channel[]> {
     LEFT JOIN channels_config cc ON cc.id = c.channel_id
     LIMIT 1000
   `);
+
+  for (const canon of MANDATORY_CANONICAL_CHANNELS) {
+    if (!rows.some(r => r.channel_id === canon.channel_id)) {
+      rows.push({
+        ...canon,
+        config_id: canon.channel_id,
+        config_name: canon.name,
+        config_visible: true,
+        config_position: canon.channel_number ?? 999,
+        logo_override: null,
+      });
+    }
+  }
 
   return rows
     .map(ch => mapChannel(ch, ch.config_id ? {

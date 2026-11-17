@@ -7,6 +7,7 @@ const CHANNEL_NUMBER_MAP: Record<string, number> = {
   'top-crime': 39, 'boing': 40, 'k2': 41, 'frisbee': 44,
   'cartoonito': 46, 'italia-2': 49, 'tgcom24': 51, 'dmax': 52,
   'mediaset-extra': 55, 'r101': 101, 'radio-105': 105,
+  'inter-tv': 232,
 };
 
 const CHANNEL_NAME_MAP: Record<string, number> = {
@@ -18,6 +19,7 @@ const CHANNEL_NAME_MAP: Record<string, number> = {
   'top crime': 39, 'boing': 40, 'k2': 41, 'frisbee': 44,
   'cartoonito': 46, 'italia 2': 49, 'tgcom 24': 51, 'dmax': 52,
   'mediaset extra': 55, 'radio 101': 101, 'radio 105': 105,
+  'inter tv': 232,
 };
 
 const normalizeKey = (value: unknown): string =>

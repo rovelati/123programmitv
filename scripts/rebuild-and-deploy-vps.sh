@@ -94,6 +94,11 @@ if [ -f "$ASTRO_DIR/scripts/enrich_it_official_posters.py" ]; then
   python3 "$ASTRO_DIR/scripts/enrich_it_official_posters.py" --days 2 2>&1 | tee -a "$LOG" || log "WARN: Official poster enrichment failed or timed out, continuing"
 fi
 
+if [ -f "$ASTRO_DIR/scripts/ensure_essential_channels.py" ]; then
+  log "Ensuring essential channels (Inter TV, etc.) are present in database..."
+  python3 "$ASTRO_DIR/scripts/ensure_essential_channels.py" 2>&1 | tee -a "$LOG" || log "WARN: ensure_essential_channels failed, continuing with build"
+fi
+
 log "Starting Astro build (node adapter / static client)..."
 npm install 2>&1 | tee -a "$LOG"
 rm -rf dist .astro
