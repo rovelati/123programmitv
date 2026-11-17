@@ -383,23 +383,71 @@ export function buildAllSlotCards(channels: Channel[], programs: Program[]): Slo
     });
   }
 
-  // 2. PRIME TIME CARDS (21:00 - 21:45 in Italia)
+  // 2. PRIME TIME CARDS (20:30 - 22:30 in Italia)
   for (const ch of channels) {
     const chProgs = progsByChannel.get(ch.id);
     if (!chProgs || chProgs.length === 0) continue;
 
-    let primeProg = chProgs.find(p => {
-      const d = new Date(p.startTime);
+    const getProgMinutes = (iso: string) => {
+      const d = new Date(iso);
       const hours = (d.getUTCHours() + 1) % 24; // Europe/Rome
       const mins = d.getUTCMinutes();
-      const timeNum = hours * 60 + mins;
-      return timeNum >= 20 * 60 + 30 && timeNum <= 22 * 60; // 20:30 - 22:00
+      return hours * 60 + mins;
+    };
+
+    const getDurationMin = (p: Program) => {
+      const s = new Date(p.startTime).getTime();
+      const e = new Date(p.endTime).getTime();
+      return isNaN(s) || isNaN(e) ? 0 : Math.round((e - s) / 60000);
+    };
+
+    const hasPhoto = (p: Program) => {
+      return Boolean((p.backdrop_url && p.backdrop_url.trim()) || (p.poster_url && p.poster_url.trim()));
+    };
+
+    // Candidati serata tra le 20:30 e le 22:45
+    const primeCandidates = chProgs.filter(p => {
+      const timeNum = getProgMinutes(p.startTime);
+      return timeNum >= 20 * 60 + 30 && timeNum <= 22 * 60 + 45;
     });
+
+    let primeProg: Program | undefined = undefined;
+
+    if (primeCandidates.length > 0) {
+      let idx = 0;
+      let curr = primeCandidates[idx];
+
+      // Regola: in prima serata, se il programma dura poco (<= 20 min, es. Cinque Minuti, meteo, pillole)
+      // OPPURE se non ha la foto e il programma successivo esiste ed ha la foto, metti già il successivo!
+      while (idx + 1 < primeCandidates.length) {
+        const nextP = primeCandidates[idx + 1];
+        const dur = getDurationMin(curr);
+        const currHasPhoto = hasPhoto(curr);
+        const nextHasPhoto = hasPhoto(nextP);
+
+        // Se dura poco (<= 20 min) -> avanza al successivo
+        if (dur > 0 && dur <= 20) {
+          idx++;
+          curr = nextP;
+          continue;
+        }
+
+        // Se non ha la foto e il successivo ha la foto -> avanza al successivo
+        if (!currHasPhoto && nextHasPhoto) {
+          idx++;
+          curr = nextP;
+          continue;
+        }
+
+        break;
+      }
+
+      primeProg = curr;
+    }
 
     if (!primeProg) {
       primeProg = chProgs.find(p => {
-        const d = new Date(p.startTime);
-        const hours = (d.getUTCHours() + 1) % 24;
+        const hours = (new Date(p.startTime).getUTCHours() + 1) % 24;
         return hours >= 20 && hours <= 23;
       });
     }

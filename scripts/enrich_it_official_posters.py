@@ -332,6 +332,27 @@ def process_sky_channel(sky_id: int, channel_slug: str, dt_from: datetime, dt_to
     return records
 
 
+def are_titles_similar(t1: Optional[str], t2: Optional[str]) -> bool:
+    if not t1 or not t2:
+        return True
+    def clean(s: str) -> str:
+        s = re.sub(r'[\(\[\{].*?[\)\]\}]', '', s)  # Remove brackets
+        s = re.sub(r'[^a-zA-Z0-9\s]', '', s.lower())
+        return ' '.join(s.split())
+    c1, c2 = clean(t1), clean(t2)
+    if not c1 or not c2:
+        return True
+    if c1 in c2 or c2 in c1:
+        return True
+    w1, w2 = set(c1.split()), set(c2.split())
+    stop = {'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'una', 'uno', 'di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra', 'del', 'della', 'dei', 'e', 'ed', 'o', 'puntata', 'episodio', 'ep', 's1', 's2'}
+    w1_sig = w1 - stop
+    w2_sig = w2 - stop
+    if w1_sig and w2_sig and (w1_sig & w2_sig):
+        return True
+    return False
+
+
 # ---------------------------------------------------------------------------
 # Database Batch Enrichment
 # ---------------------------------------------------------------------------
@@ -343,35 +364,49 @@ def apply_enrichment_records(conn, records: List[Dict[str, Any]]) -> int:
     updated_count = 0
     with conn.cursor() as cur:
         for r in records:
-            # Match program within ±5 minutes of the broadcast start time
+            # 1. Match ONLY the closest single program row within a tight window (<= 150s).
+            # Avoids cross-matching between consecutive short broadcasts (e.g. Cinque Minuti at 20:30 and Affari Tuoi at 20:35).
+            cur.execute("""
+                SELECT id, title, start_time
+                FROM programs
+                WHERE channel_id = %s
+                  AND ABS(EXTRACT(EPOCH FROM (start_time - %s))) <= 150
+                ORDER BY ABS(EXTRACT(EPOCH FROM (start_time - %s))) ASC
+                LIMIT 1;
+            """, (
+                r['channel_id'],
+                r['start_time'],
+                r['start_time']
+            ))
+            match = cur.fetchone()
+            if not match:
+                continue
+
+            prog_id = match['id']
+            db_title = match['title']
+
+            # If time differs by more than 60 seconds, ensure titles are not completely divergent
+            time_diff = abs((match['start_time'] - r['start_time']).total_seconds())
+            if time_diff > 60 and not are_titles_similar(db_title, r['title']):
+                continue
+
             cur.execute("""
                 UPDATE programs
                 SET
-                  poster_url = COALESCE(%s, poster_url),
-                  backdrop_url = COALESCE(%s, backdrop_url),
+                  poster_url = %s,
+                  backdrop_url = %s,
                   description = CASE
                     WHEN (description IS NULL OR description = '' OR length(description) < 25)
                     THEN COALESCE(%s, description)
                     ELSE description
                   END,
                   image_fetched_at = NOW()
-                WHERE channel_id = %s
-                  AND ABS(EXTRACT(EPOCH FROM (start_time - %s))) <= 300
-                  AND (
-                    poster_url IS NULL
-                    OR poster_url = ''
-                    OR backdrop_url IS NULL
-                    OR backdrop_url = ''
-                    OR poster_url ILIKE '%%tivulaguida%%'
-                    OR poster_url ILIKE '%%raiplay%%'
-                    OR poster_url ILIKE '%%sky.it%%'
-                  );
+                WHERE id = %s;
             """, (
                 r['poster_url'],
                 r['backdrop_url'],
                 r['description'],
-                r['channel_id'],
-                r['start_time']
+                prog_id
             ))
             updated_count += cur.rowcount
 

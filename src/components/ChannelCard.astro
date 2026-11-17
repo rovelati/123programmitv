@@ -28,8 +28,34 @@ const PRIME_END     = 23 * 60;       // 23:00
 const MORNING_START = 6 * 60;        // 06:00
 const EVENING_START = 18 * 60;       // 18:00
 
+const getDurationMin = (p: Program) => {
+  const s = new Date(p.startTime).getTime();
+  const e = new Date(p.endTime).getTime();
+  return isNaN(s) || isNaN(e) ? 0 : Math.round((e - s) / 60000);
+};
+const hasPhoto = (p: Program) => Boolean((p.backdrop_url && p.backdrop_url.trim()) || (p.poster_url && p.poster_url.trim()));
+
 // ─── Selezione programma SERVER-SIDE (per stasera/domani) ─────────────────
-const primeTimeProgram = programs.find(p => { const m = toRomeMinutes(p.startTime); return m >= PRIME_START && m < PRIME_END; }) ?? null;
+const eveningProgs = programs.filter(p => {
+  const m = toRomeMinutes(p.startTime);
+  return m >= PRIME_START && m < PRIME_END;
+});
+
+let primeTimeProgram: Program | null = eveningProgs[0] ?? null;
+if (eveningProgs.length > 1) {
+  let idx = 0;
+  while (idx + 1 < eveningProgs.length) {
+    const curr = eveningProgs[idx];
+    const nextP = eveningProgs[idx + 1];
+    const dur = getDurationMin(curr);
+    if ((dur > 0 && dur <= 20) || (!hasPhoto(curr) && hasPhoto(nextP))) {
+      idx++;
+      primeTimeProgram = nextP;
+      continue;
+    }
+    break;
+  }
+}
 const eveningProgram   = programs.find(p => toRomeMinutes(p.startTime) >= EVENING_START) ?? null;
 const morningFirst     = programs.find(p => toRomeMinutes(p.startTime) >= MORNING_START) ?? null;
 
